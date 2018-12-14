@@ -1,0 +1,5 @@
+.PHONY: clean
+clean:
+	rm -rf $(OUTDIR)
+
+-include $(shell find $(OUTDIR) -name "*.d")

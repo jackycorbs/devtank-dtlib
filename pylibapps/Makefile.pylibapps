@@ -1,0 +1,14 @@
+
+
+$(OUTDIR)/build/dt_db_base : $(LIBDEVTANKROOT)/pylibapps/dt_db_base/*.py
+	mkdir -p $(OUTDIR)/lib/dt_db_base
+	cp -pv $(LIBDEVTANKROOT)/pylibapps/dt_db_base/*.py $(OUTDIR)/lib/dt_db_base/
+	mkdir -p $(OUTDIR)/build
+	touch $(OUTDIR)/build/dt_db_base
+
+
+$(OUTDIR)/build/dt_gui_base : $(LIBDEVTANKROOT)/pylibapps/dt_gui_base/*.py
+	mkdir -p $(OUTDIR)/lib/dt_gui_base
+	cp -pv $(LIBDEVTANKROOT)/pylibapps/dt_gui_base/*.py $(OUTDIR)/lib/dt_gui_base/
+	mkdir -p $(OUTDIR)/build
+	touch $(OUTDIR)/build/dt_gui_base

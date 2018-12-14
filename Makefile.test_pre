@@ -1,0 +1,7 @@
+
+CFLAGS := -O0 -g -fprofile-arcs -ftest-coverage
+LDFLAGS := -lgcov --coverage
+
+TESTS :=
+
+.PHONY: test

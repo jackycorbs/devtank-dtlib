@@ -1,0 +1,11 @@
+{
+    "exit_on_fail": { 'desc'   : 'Exit on Fail',
+                      'type'   : 'bool',
+                      'default': True },
+    "my_test_var": { 'desc' : 'Test Variable',
+                      'type' : 'int',
+                      'min'  : 0,
+                      'max'  : 10,
+                      'value' : 1,
+                      'step'  : 1},
+}

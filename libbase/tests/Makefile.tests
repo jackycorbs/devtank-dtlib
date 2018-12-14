@@ -1,0 +1,25 @@
+
+TESTS_CFLAGS    := -D_GNU_SOURCE -std=gnu11 -Wall -pedantic -Werror $(CFLAGS) -MMD -MP -Wall -I$(LIBDEVTANKBASE)/include
+TESTS_LDFLAGS   := -lm $(LDFLAGS) -lpthread
+
+TESTS += $(OUTDIR)/bin/buffer_tests $(OUTDIR)/bin/map_test $(OUTDIR)/bin/rel_ptr_test $(OUTDIR)/bin/loop_test
+
+$(OUTDIR)/build/tests/%.o : $(LIBDEVTANKBASE)/tests/%.c
+	mkdir -p `dirname $@`
+	$(CC) $(TESTS_CFLAGS) -c $< -o $@
+
+$(OUTDIR)/bin/buffer_tests : $(OUTDIR)/build/tests/buffer_tests.o $(OUTDIR)/lib/libbase.a
+	mkdir -p `dirname $@`
+	$(CC) $(TESTS_LDFLAGS) $^ -o $@
+
+$(OUTDIR)/bin/map_test : $(OUTDIR)/build/tests/map_test.o $(OUTDIR)/lib/libbase.a
+	mkdir -p `dirname $@`
+	$(CC) $(TESTS_LDFLAGS) $^ -o $@
+
+$(OUTDIR)/bin/rel_ptr_test : $(OUTDIR)/build/tests/rel_ptr_test.o $(OUTDIR)/lib/libbase.a
+	mkdir -p `dirname $@`
+	$(CC) $(TESTS_LDFLAGS) $^ -o $@
+
+$(OUTDIR)/bin/loop_test : $(OUTDIR)/build/tests/loop_test.o $(OUTDIR)/lib/libbase.a
+	mkdir -p `dirname $@`
+	$(CC) $(TESTS_LDFLAGS) $^ -o $@

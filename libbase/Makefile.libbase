@@ -1,0 +1,61 @@
+ifndef LIBDEVTANKBASE
+
+LIBDEVTANKBASE:= $(LIBDEVTANKROOT)/libbase
+
+LIBDEVTANK_INCLUDES += -I$(LIBDEVTANKBASE)/include
+
+LIBDEVTANK_LDFLAGS += -L$(OUTDIR)/lib
+
+GIT_COMMIT := $(shell git log -n 1 --format="%h-%f")
+BUILD_TIME := $(shell date -u)
+
+LIBDEVTANKBASE_CFLAGS := $(CFLAGS) -D_GNU_SOURCE -std=gnu11 -Wall -Werror -MMD -MP -Wall -Wextra $(LIBDEVTANK_INCLUDES)
+LIBDEVTANKBASE_LDFLAGS := $(LDFLAGS)
+
+LIBDEVTANKBASE_SRCS := $(shell find $(LIBDEVTANKBASE)/src -type f -name '*.c')
+LIBDEVTANKBASE_OBJS_STC := $(LIBDEVTANKBASE_SRCS:$(LIBDEVTANKBASE)/%.c=$(OUTDIR)/build/libbase.a/%.o)
+LIBDEVTANKBASE_OBJS_DYN := $(LIBDEVTANKBASE_SRCS:$(LIBDEVTANKBASE)/%.c=$(OUTDIR)/build/libbase.so/%.o)
+
+LIBDEVTANKBASE_SRCS += $(OUTDIR)/build/src/build_config.c
+LIBDEVTANKBASE_OBJS_STC += $(OUTDIR)/build/libbase.a/build_config.o
+LIBDEVTANKBASE_OBJS_DYN += $(OUTDIR)/build/libbase.so/build_config.o
+
+$(OUTDIR)/build/.git.$(GIT_COMMIT):
+	mkdir -p `dirname $@`
+	rm -f $(OUTDIR)/build/.git.*
+	touch $@
+
+$(OUTDIR)/build/src/build_config.c : $(OUTDIR)/build/.git.$(GIT_COMMIT)
+	mkdir -p `dirname $@`
+	echo "#include \"build_config.h\"" > $@
+	echo "const char * build_git_commit = \"$(GIT_COMMIT)\";" >> $@
+	echo "const char * build_date = \"$(BUILD_TIME)\";" >> $@
+
+$(OUTDIR)/build/libbase.a/build_config.o : $(OUTDIR)/build/src/build_config.c
+	mkdir -p `dirname $@`
+	$(CC) $(LIBDEVTANKBASE_CFLAGS) -I$(LIBDEVTANKBASE)/src -c $< -o $@
+
+$(OUTDIR)/build/libbase.so/build_config.o : $(OUTDIR)/build/src/build_config.c
+	mkdir -p `dirname $@`
+	$(CC) $(LIBDEVTANKBASE_CFLAGS) -I$(LIBDEVTANKBASE)/src -fPIC -c $< -o $@
+
+$(OUTDIR)/build/libbase.a/%.o : $(LIBDEVTANKBASE)/%.c $(LIBDEVTANKBASE)/Makefile.libbase
+	mkdir -p `dirname $@`
+	$(CC) $(LIBDEVTANKBASE_CFLAGS) -c $< -o $@
+
+$(OUTDIR)/build/libbase.so/%.o : $(LIBDEVTANKBASE)/%.c $(LIBDEVTANKBASE)/Makefile.libbase
+	mkdir -p `dirname $@`
+	$(CC) $(LIBDEVTANKBASE_CFLAGS) -fPIC -c $< -o $@
+
+$(OUTDIR)/lib/libbase.a : $(LIBDEVTANKBASE_OBJS_STC)
+	mkdir -p `dirname $@`
+	$(AR) rcs $@ $^
+
+$(OUTDIR)/lib/libbase.so : $(LIBDEVTANKBASE_OBJS_DYN)
+	mkdir -p `dirname $@`
+	$(CC) --shared -o $@ $^ $(LIBDEVTANKBASE_LDFLAGS)
+
+LIBDEVTANK_DYN += $(OUTDIR)/lib/libbase.so
+LIBDEVTANK_STC := $(OUTDIR)/lib/libbase.a $(LIBDEVTANK_STC)
+
+endif

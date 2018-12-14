@@ -1,0 +1,17 @@
+{
+    groups : [
+        {
+            name : "Example Group",
+            desc : "Example Test Group",
+            tests:
+            [
+                [
+                    "test.py",
+                    {
+                        "my_test_var"    : 4
+                    }
+                ],
+            ]
+        },
+    ]
+}

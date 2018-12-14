@@ -1,0 +1,45 @@
+
+tests: $(TESTS)
+
+.PHONY: test
+test: $(TESTS)
+	set -e; \
+	for test in $(TESTS);\
+	do\
+		$$test;\
+		echo "$$test -- passed"; \
+	done
+
+.PHONY: valgrind
+valgrind: $(TESTS)
+	set -e; \
+	for test in $(TESTS);\
+	do\
+		valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes --track-fds=yes --suppressions=$(LIBDEVTANKROOT)/misc/valgrind.supp $$test;\
+		echo "$$test -- passed"; \
+	done
+
+
+.PHONY: coverage
+coverage: default
+	lcov --zerocounters -d $(OUTDIR)/
+	lcov --capture --initial -d $(OUTDIR)/ --output-file $(OUTDIR)/coverage.info
+	make test
+	lcov --capture -d $(OUTDIR)/ --output-file $(OUTDIR)/coverage.info
+	mkdir -p $(OUTDIR)/coverage
+	cd $(OUTDIR)/coverage && genhtml ../coverage.info
+	sensible-browser $(OUTDIR)/coverage/index.html
+
+.PHONY: test_coverage
+test_coverage: $(TEST)
+	lcov --zerocounters -d $(OUTDIR)/
+	lcov --capture --initial -d $(OUTDIR)/ --output-file $(OUTDIR)/coverage.info
+	./$(TEST)
+	lcov --capture -d $(OUTDIR)/ --output-file $(OUTDIR)/coverage.info
+	mkdir -p $(OUTDIR)/coverage
+	cd $(OUTDIR)/coverage && genhtml ../coverage.info
+	sensible-browser $(OUTDIR)/coverage/index.html
+
+.PHONY: test_valgrind
+test_valgrind: $(TEST)
+	valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes --track-fds=yes --suppressions=$(LIBDEVTANKROOT)/misc/valgrind.supp $(TEST)

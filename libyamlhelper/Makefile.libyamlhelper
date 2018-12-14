@@ -1,0 +1,36 @@
+ifndef LIBDEVTANKYAML
+
+LIBDEVTANKYAML:= $(LIBDEVTANKROOT)/libyamlhelper
+
+include $(LIBDEVTANKROOT)/libbase/Makefile.libbase
+
+LIBDEVTANK_INCLUDES += -I$(LIBDEVTANKYAML)/include
+LIBDEVTANK_LDFLAGS += `pkg-config yaml-0.1 --libs`
+
+LIBDEVTANKYAML_CFLAGS := $(CFLAGS) -D_GNU_SOURCE -std=gnu11 -Wall -Werror -MMD -MP -Wall $(LIBDEVTANK_INCLUDES)
+LIBDEVTANKYAML_LDFLAGS := $(LDFLAGS) `pkg-config yaml-0.1 --libs`
+
+LIBDEVTANKYAML_SRCS := $(shell find $(LIBDEVTANKYAML)/src -type f -name '*.c')
+LIBDEVTANKYAML_OBJS_STC := $(LIBDEVTANKYAML_SRCS:$(LIBDEVTANKYAML)/%.c=$(OUTDIR)/build/libyamlhelper.a/%.o)
+LIBDEVTANKYAML_OBJS_DYN := $(LIBDEVTANKYAML_SRCS:$(LIBDEVTANKYAML)/%.c=$(OUTDIR)/build/libyamlhelper.so/%.o)
+
+$(OUTDIR)/build/libyamlhelper.a/%.o : $(LIBDEVTANKYAML)/%.c $(LIBDEVTANKYAML)/Makefile.libyamlhelper
+	mkdir -p `dirname $@`
+	$(CC) $(LIBDEVTANKYAML_CFLAGS) -c $< -o $@
+
+$(OUTDIR)/build/libyamlhelper.so/%.o : $(LIBDEVTANKYAML)/%.c $(LIBDEVTANKYAML)/Makefile.libyamlhelper
+	mkdir -p `dirname $@`
+	$(CC) $(LIBDEVTANKYAML_CFLAGS) -fPIC -c $< -o $@
+
+$(OUTDIR)/lib/libyamlhelper.a : $(LIBDEVTANKYAML_OBJS_STC) $(OUTDIR)/lib/libbase.a
+	mkdir -p `dirname $@`
+	$(AR) rcs $@ $^
+
+$(OUTDIR)/lib/libyamlhelper.so : $(LIBDEVTANKYAML_OBJS_DYN) $(OUTDIR)/lib/libbase.so
+	mkdir -p `dirname $@`
+	$(CC) --shared -o $@ $^ $(LIBDEVTANKYAML_LDFLAGS)
+
+LIBDEVTANK_DYN += $(OUTDIR)/lib/libyamlhelper.so
+LIBDEVTANK_STC := $(OUTDIR)/lib/libyamlhelper.a $(LIBDEVTANK_STC)
+
+endif
