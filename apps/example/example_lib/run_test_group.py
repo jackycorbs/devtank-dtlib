@@ -1,8 +1,9 @@
 import os
 import time
-import c_base
 
-from dt_db_base import base_run_group_context, base_run_group_manager
+from dt_db_base import base_run_group_context, \
+                       base_run_group_manager, \
+                       c_base
 
 
 
