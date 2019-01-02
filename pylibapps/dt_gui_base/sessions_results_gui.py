@@ -29,12 +29,32 @@ class base_session_results_singlton(object):
 
         back_btn.connect("clicked", lambda btn: self._on_back())
         window.connect("show", lambda x: self._on_show())
-
         self.db_dev = None
+
+        ok_btn = context.builder.get_object("results_ok_btn")
+        ok_btn.connect("clicked", lambda btn: self._on_ok())
+
+        self.session_list.connect("row-activated", lambda treeview, path, column: \
+            self._on_row_double_click(treeview.get_model()[path][3]))
+
+    def _on_ok(self):
+        selection = self.session_list.get_selection()
+        model = self.session_list.get_model()
+        treeiters = selection.get_selected_rows()[1]
+        for treeiter in treeiters:
+            self._on_row_double_click(model[treeiter][3])
+            return
+
+    def _on_row_double_click(self, session):
+        self.context.tests_group.populate_from(session.group)
+        self._on_open_ran_view(session)
+
+
+    def _on_open_ran_view(self, session):
+        raise Exception("Unimplemented")
 
     def _on_back(self):
         self.context.pop_view()
-
 
     def _on_show(self):
 
