@@ -71,6 +71,13 @@ def _thread_test(test_context):
 
     lib_inf.output_normal("Starting test group: " + test_context.test_group)
 
+
+    exec_map = {'exit': _forced_exit,
+                'test_check': lambda a,b: _test_check(lib_inf, name, results, a, b),
+                'output_normal' :  lib_inf.output_normal,
+                'output_good' : lib_inf.output_good,
+                'output_bad' : lib_inf.output_bad}
+
     with bus as bus_con:
 
         ready_devices = test_context.get_ready_devices(bus_con)
@@ -124,13 +131,13 @@ def _thread_test(test_context):
                 try:
                     start_time = time.time()
                     lib_inf.enable_info_msgs(True)
-                    execfile(test_file, { 'args': args,
+                    test_exec_map = exec_map.copy()
+                    test_exec_map.update({ 'args': args,
                                           'dev': dev,
                                           'name': name,
                                           'results': results,
-                                          '__file__' : os.path.abspath(test_file),
-                                          'exit': _forced_exit,
-                                          'test_check': lambda a,b: _test_check(lib_inf, name, results, a, b) } )
+                                          '__file__' : os.path.abspath(test_file)})
+                    execfile(test_file, test_exec_map)
                     lib_inf.enable_info_msgs(False)
                     duration = time.time() - start_time
                     post_dev_uuid = dev.uuid.rstrip('\0')

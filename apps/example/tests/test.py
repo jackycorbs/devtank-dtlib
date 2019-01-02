@@ -15,5 +15,7 @@ Test Specific Arguments:
 
 '''
 
-test_check (dev.uuid == "<unknown>", "UUID check" )
+output_normal("UUID : " + dev.uuid)
+output_good("I'm happy")
+output_bad("I'm sad")
 test_check (args["my_test_var"] == 4, "Variable check")
