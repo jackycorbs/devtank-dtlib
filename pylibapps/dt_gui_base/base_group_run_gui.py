@@ -108,6 +108,11 @@ class base_run_context(object):
             self.start_test_group()
 
     def update_status_time(self):
+        if not self.run_group_man.live:
+            self._stop_update()
+            self.test_list.set_sensitive(True)
+            self.dev_list.set_sensitive(True)
+            return
         total_seconds = time.time() - self.test_start_time
         total_minutes = int(total_seconds / 60)
         total_hours   = total_minutes / 60

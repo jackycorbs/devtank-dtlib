@@ -244,6 +244,18 @@ class base_run_group_manager(object):
         line = self.stdout_in.readline()
         return self.process_line(line)
 
+    def _process_die_catch(self):
+        if not self.process:
+            return False
+        if self.process.exitcode is None:
+            return True
+        if self.process.exitcode < 0:
+            print "Process terminated."
+            self.live = False
+            self._complete_stop()
+            self._finished()
+            return False
+        return True
 
     def _finished(self):
         if self.outfile:
@@ -372,7 +384,7 @@ class base_run_group_manager(object):
                         sys.stderr.write(ansi + line + _ANSI_DEFAULT)
                     else:
                         sys.stderr.write(line)
-    
+
         return True
 
     def start(self):
@@ -398,6 +410,7 @@ class base_run_group_manager(object):
 
             self.process = Process(target=_thread_test,
                                   args=(self.test_context,))
+            GLib.timeout_add_seconds(1, self._process_die_catch)
             self.process.start()
             return True
 
@@ -454,18 +467,21 @@ class base_run_group_manager(object):
                 r[uuid] = (results, outfiles, logfiles, durations, old_uuid)
         return r
 
-    def stop(self):
+    def _complete_stop(self):
+        self.process.join(4)
+        self.test_context.stop_devices()
+        self.process = None
+        self.last_end_time = time.time()
         lib_inf = self._run_group_context_class.lib_inf
+        lib_inf.set_log_file(None)
+        lib_inf.set_output(None)
+        self.context.release_bus()
+
+    def stop(self):
         self.live = False
         if self.process:
             self.process.terminate()
-            self.process.join(4)
-            self.test_context.stop_devices()
-            self.process = None
-            self.last_end_time = time.time()
-            lib_inf.set_log_file(None)
-            lib_inf.set_output(None)
-            self.context.release_bus()
+            self._complete_stop()
 
         self._finished()
 
