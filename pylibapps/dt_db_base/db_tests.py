@@ -224,13 +224,13 @@ class test_group_obj:
                     print "Unknown UUID %s, can't store results." % dev_uuid
         db.commit()
 
-        for dev_uuid in results:
-            dev = self.db.get_dev(dev_uuid)
-            if dev:
-                dev.update_latest_results()
+    def get_sessions_count(self):
+        cmd = self.db.sql.get_test_group_results_count(self.id)
+        rows = self.db.db.query(cmd)
+        return rows[0][0]
 
-    def get_sessions(self):
-        cmd = self.db.sql.get_test_group_results(self.id)
+    def get_sessions(self, offset, count):
+        cmd = self.db.sql.get_test_group_results(self.id, offset, count)
         rows = self.db.db.query(cmd)
         return [ test_group_sessions(self, self.db, *row) \
                  for row in rows ]

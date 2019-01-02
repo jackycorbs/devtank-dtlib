@@ -13,6 +13,7 @@ class base_session_results_singlton(object):
         self.context = context
         self.session_list = context.builder.get_object("session_results_list")
         self.session_lab = context.builder.get_object("results_lab")
+        self.session_hscroll = context.builder.get_object("results_hscroll")
 
         self.session_list_store = Gtk.ListStore(str, str, str, object)
 
@@ -37,6 +38,12 @@ class base_session_results_singlton(object):
         self.session_list.connect("row-activated", lambda treeview, path, column: \
             self._on_row_double_click(treeview.get_model()[path][3]))
 
+        self.session_hscroll.set_increments(100, 100)
+        self.session_hscroll.connect("move-slider", lambda range, step: \
+            self._on_hscroll())
+        self.session_hscroll_max = 0
+
+
     def _on_ok(self):
         selection = self.session_list.get_selection()
         model = self.session_list.get_model()
@@ -56,12 +63,16 @@ class base_session_results_singlton(object):
     def _on_back(self):
         self.context.pop_view()
 
-    def _on_show(self):
+    def _on_hscroll(self):
+        pos = self.session_hscroll.get_value()
+        self._update_view(int(pos))
 
+    def _update_view(self, offset):
         self.session_list_store.clear()
 
         if self.db_dev:
-            results = self.db_dev.get_latest_results()
+            results       = self.db_dev.get_results(offset,
+                      min(100, self.session_hscroll_max - offset))
             sessions = []
             for v in results['Pass'] + results['Fail']:
                 sessions += [ v['session_id'] ]
@@ -71,7 +82,8 @@ class base_session_results_singlton(object):
                 "Results for Device\n\"%s\"" % (self.db_dev.uuid))
         else:
             tests_group = self.context.tests_group
-            sessions = tests_group.db_group.get_sessions()
+            sessions = tests_group.db_group.get_sessions(0,
+                                min(100, self.session_hscroll_max - offset))
             self.session_lab.set_text(
                 "Results for Test Group\n\"%s\"" % tests_group.name)
 
@@ -87,6 +99,22 @@ class base_session_results_singlton(object):
             icon = get_pass_fail_icon_name(session.pass_fail)
             self.session_list_store.append(
                 [str(stamp), session.group.name, icon, session])
+
+
+    def _on_show(self):
+
+        if self.db_dev:
+            results_count = self.db_dev.get_results_count()
+            self.session_hscroll.set_range(0, results_count)
+            self.session_hscroll_max = results_count
+        else:
+            tests_group = self.context.tests_group
+            sessions_count = tests_group.db_group.get_sessions_count()
+            self.session_hscroll.set_range(0, sessions_count)
+            self.session_hscroll_max = sessions_count
+
+        self._update_view(0)
+
 
     def open(self, db_dev=None):
         self.db_dev = db_dev

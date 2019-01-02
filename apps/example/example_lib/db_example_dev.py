@@ -8,7 +8,6 @@ class db_example_dev(db_child):
                  dev_db_id,
                  uuid):
         db_child.__init__(self, db, db_id=dev_db_id, db_serial=serial_number, db_extra=uuid)
-        self.test_results = { "Pass": [], "Fail": [] }
         self.uuid = uuid
 
     @staticmethod
@@ -35,8 +34,13 @@ class db_example_dev(db_child):
         dev_id = db.db.insert(cmd)
         return db_example_dev.get_by_id(db, dev_id)
 
-    def update_latest_results(self):
-        cmd = self.db.sql.dev_latest_results(self.id)
+    def get_results_count(self):
+        cmd = self.db.sql.dev_results_count(self.id)
+        rows = self.db.db.query(cmd)
+        return rows[0][0]
+
+    def get_results(self, offset, count):
+        cmd = self.db.sql.dev_results(self.id, offset, count)
         rows = self.db.db.query(cmd)
         r = { "Pass": [], "Fail": [] }
         for row in rows:
@@ -45,10 +49,4 @@ class db_example_dev(db_child):
                               'group_name'      : row[3],
                               'session_id'      : row[4],
                               'result_id'       : row[0]}]
-        self.test_results = r
-
-    def get_latest_results(self):
-        if not len(self.test_results['Pass']) or \
-           not len(self.test_results['Fail']):
-            self.update_latest_results()
-        return self.test_results
+        return r

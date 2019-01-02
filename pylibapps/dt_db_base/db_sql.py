@@ -216,10 +216,15 @@ valid_from<=%i AND \
 INSERT INTO test_group_results (group_id, Time_Of_tests) \
 VALUES (%i, %i)" % (group_id, now)
 
-    def get_test_group_results(self, group_id):
+    def get_test_group_results_count(self, group_id):
         return "\
-SELECT id, Time_Of_tests FROM test_group_results WHERE group_id=%i" % \
+SELECT COUNT(id) FROM test_group_results WHERE group_id=%i" % \
 group_id
+
+    def get_test_group_results(self, group_id, offset, count):
+        return "\
+SELECT id, Time_Of_tests FROM test_group_results WHERE group_id=%i \
+LIMIT %u OFFSET %u" % (group_id, count, offset)
 
     def get_sessions(self, session_ids):
         return "\

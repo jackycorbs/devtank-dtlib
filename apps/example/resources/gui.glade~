@@ -409,6 +409,22 @@
               </packing>
             </child>
             <child>
+              <object class="GtkScrollbar" id="results_hscroll">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">10</property>
+                <property name="margin_right">10</property>
+                <property name="margin_top">10</property>
+                <property name="margin_bottom">10</property>
+                <property name="show_fill_level">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkButton" id="results_ok_btn">
                 <property name="label">gtk-ok</property>
                 <property name="visible">True</property>
@@ -422,7 +438,7 @@
                 <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="pack_type">end</property>
-                <property name="position">1</property>
+                <property name="position">3</property>
               </packing>
             </child>
           </object>
@@ -1247,7 +1263,7 @@
                       <object class="GtkLabel" id="start_ip_lab">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Autosense Tester</property>
+                        <property name="label" translatable="yes">Example Tester</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -1259,7 +1275,7 @@
                       <object class="GtkLabel" id="start_version_lab">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">v1.02</property>
+                        <property name="label" translatable="yes">v0.01</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
