@@ -37,10 +37,10 @@ def _is_board_in_rig(context, db_dev, next_view, serial_number):
 def _view_results(context, db_dev, next_view, serial_number, yes_no):
 
     if yes_no:
-        from sessions_results_gui import open_ret_tests_sessions_results
+        from sessions_results_gui import open_dev_tests_sessions_results
         context.db_dev = db_dev
         context.devices = [fake_example_dev(serial_number)]
-        open_ret_tests_sessions_results(context, db_dev)
+        open_dev_tests_sessions_results(context, db_dev)
         return
 
     _is_board_in_rig(context, db_dev, next_view, serial_number)
