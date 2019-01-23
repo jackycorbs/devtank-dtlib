@@ -17,7 +17,7 @@ from gi.repository import Gtk, Gdk, GLib
 
 parser = argparse.ArgumentParser(description='Graphical interface for Example tester')
 parser.add_argument('-v','--verbose', help='Increase log information', action='store_true')
-parser.add_argument('--desktop', help='Running on a desktop', action='store_false')
+parser.add_argument('--desktop', help='Running on a desktop', action='store_true')
 parser.add_argument('--production', help='Hide advanced and quit.', action='store_true')
 
 
