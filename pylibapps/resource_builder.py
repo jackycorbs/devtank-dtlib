@@ -22,7 +22,7 @@ st_mtime = os.stat(sys.argv[0]).st_mtime
 for in_filename in sys.argv[2:]:
     with open(in_filename) as in_file:
         data = in_file.read()
-        out.write('"%s" : "' % in_filename)
+        out.write('"%s" : "' % os.path.basename(in_filename))
         for b in data:
             out.write("\\x%02x" % ord(b))
         out.write('",\n')

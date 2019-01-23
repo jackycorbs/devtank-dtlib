@@ -22,7 +22,7 @@ parser.add_argument('--production', help='Hide advanced and quit.', action='stor
 
 
 def get_schema():
-    schema = example_lib.resources["resources/db.sql"]
+    schema = example_lib.resources["db.sql"]
 
     # Break into statements
     schema = schema.split(';')
@@ -41,7 +41,8 @@ def main():
         example_lib.enable_info_msgs(True)
 
     builder = Gtk.Builder()
-    builder.add_from_string(example_lib.resources['resources/gui.glade'])
+    builder.add_from_string(example_lib.resources['gui_base.glade'])
+    builder.add_from_string(example_lib.resources['gui.glade'])
 
     db_def_file = "config_sqlite_db.yaml"
 
