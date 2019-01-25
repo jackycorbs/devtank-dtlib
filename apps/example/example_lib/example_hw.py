@@ -1,30 +1,40 @@
-
+import random
 
 ## Example device
 class example_dev(object):
-    def __init__(self):
-        self._uuid = "<unknown>"
+    def __init__(self, uuid="<unknown>"):
+        self._uuid=uuid
 
     ## Get Example device Universal Unique ID
     @property
     def uuid(self):
         return self._uuid
 
+    def update_uuid_from_hw(self):
+        self.uuid = "%02x:%02x:%02x:%02x:%02x:%02x" % \
+                    (random.randint(0, 255),
+                     random.randint(0, 255),
+                     random.randint(0, 255),
+                     random.randint(0, 255),
+                     random.randint(0, 255),
+                     random.randint(0, 255))
     @uuid.setter
     def uuid(self, uuid):
         self._uuid = uuid
-
-    ## Example serial number is duplicate of UUID.
-    @property
-    def serial_number(self):
-        return self._uuid
 
 
 
 ## Open connection to a Example bus.
 class example_bus_con(object):
     def __init__(self):
-        self._devices = [ example_dev() ]
+        self._devices = []
+
+    ## Load in known device UUIDs
+    def ready_devices(self, known_devices):
+        if len(known_devices):
+            self._devices = [ example_dev(known_devices[0].uuid) ]
+        else:
+            self._devices = []
 
     ## Get the Example device from the open bus.
     @property

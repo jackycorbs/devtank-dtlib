@@ -69,7 +69,8 @@ class base_run_context(object):
              "START_OUTPUT":  lambda outfile:  self.start_outfile(outfile),
              "START_LOGFILE": lambda logfile:  self.start_logfile(logfile),
              "STATUS_TEST":   lambda args:     self.test_status(args),
-             "STATUS_DEV":    lambda passfail: self.dev_status(passfail == "True")
+             "STATUS_DEV":    lambda passfail: self.dev_status(passfail == "True"),
+             "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid)
             })
 
         self.total_duration = None
@@ -192,6 +193,14 @@ class base_run_context(object):
         treeiters = selection.get_selected_rows()[1]
         for treeiter in treeiters:
             dev_list_store[treeiter][1] = get_pass_fail_icon_name(passfail)
+
+    def dev_set_uuid(self, new_uuid):
+        dev_list = self.dev_list
+        selection = dev_list.get_selection()
+        dev_list_store = dev_list.get_model()
+        treeiters = selection.get_selected_rows()[1]
+        for treeiter in treeiters:
+            dev_list_store[treeiter][0] = new_uuid
 
     def _stop_update(self):
         if not self.update_id is None:

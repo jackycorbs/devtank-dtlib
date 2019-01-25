@@ -50,3 +50,7 @@ class db_example_dev(db_child):
                               'session_id'      : row[4],
                               'result_id'       : row[0]}]
         return r
+
+    def update_uuid(self, new_uuid):
+        cmd = self.db.sql.get_update_dev_uid(self.id, new_uuid)
+        self.db.db.update(cmd)

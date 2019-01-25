@@ -11,9 +11,9 @@ _singleton = None
 
 
 class fake_example_dev(object):
-    def __init__(self, serial_number):
-        self.uuid = serial_number
+    def __init__(self, serial_number, uuid):
         self.serial_number = serial_number
+        self.uuid          = uuid
 
 
 def _board_in_rig(context, db_dev, next_view, serial_number, yes_no):
@@ -22,9 +22,8 @@ def _board_in_rig(context, db_dev, next_view, serial_number, yes_no):
         return
 
     if not db_dev:
-        db_dev = example_lib.db_example_dev.create(context.db, serial_number, serial_number)
-    context.db_dev = db_dev
-    context.devices = [fake_example_dev(serial_number)]
+        db_dev = example_lib.db_example_dev.create(context.db, serial_number, "UNSET")
+    context.devices = [fake_example_dev(serial_number, db_dev.uuid)]
 
     next_view(context)
 
@@ -38,8 +37,7 @@ def _view_results(context, db_dev, next_view, serial_number, yes_no):
 
     if yes_no:
         from sessions_results_gui import open_dev_tests_sessions_results
-        context.db_dev = db_dev
-        context.devices = [fake_example_dev(serial_number)]
+        context.devices = [fake_example_dev(serial_number, db_dev.uuid)]
         open_dev_tests_sessions_results(context, db_dev)
         return
 
@@ -67,7 +65,7 @@ class _start_double_scan(scan_box_base):
         else:
             next_view = example_lib_gui.open_groups_list
 
-        db_dev = example_lib.db_example_dev.get_by_uuid(context.db, serial_number)
+        db_dev = example_lib.db_example_dev.get_by_serial(context.db, serial_number)
         if not db_dev:
             _is_board_in_rig(context, db_dev, next_view, serial_number)
         else:

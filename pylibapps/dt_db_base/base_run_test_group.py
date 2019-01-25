@@ -317,6 +317,9 @@ class base_run_group_manager(object):
         if "old_uuid" not in dev_values:
             dev_values["old_uuid"] = self.current_device
         self.session_results[new_uuid] = dev_values
+        for dev in self.context.devices:
+            if dev.uuid.strip() == self.current_device:
+                dev.uuid = new_uuid
         self.current_device = new_uuid
 
 

@@ -13,30 +13,14 @@ class _run_group_context(base_run_group_context):
     def __init__(self, context, bus, last_end_time, stdout_out):
         tmp_dir="/tmp"
         base_run_group_context.__init__(self, context, bus, last_end_time, stdout_out, tmp_dir)
-        self.db_dev = context.db_dev
+        self.devices = context.devices
 
-    def get_ready_devices(self, bus_con, prep_device=True):
-        r = bus_con.devices
-        if len(r):
-            dev = r[0]
-            dev.uuid = self.db_dev.uuid
-            dev.supply_enabled = True
-        return r
+    def get_ready_devices(self, bus_con):
+        bus_con.ready_devices(self.devices)
+        return bus_con.devices
 
     def stop_devices(self):
-        bus_con = self.bus.get_current()
-        if bus_con:
-            if len(bus_con.devices):
-                bus_con.devices[0].supply_enabled = False
-        else:
-            with self.bus as bus_con:
-                if len(bus_con.devices):
-                    bus_con.devices[0].supply_enabled = False
-
-    def finished(self, bus_con):
-        base_run_group_context.finished(self, bus_con)
-        if len(bus_con.devices):
-            bus_con.devices[0].supply_enabled = False
+        pass
 
 
 class run_group_manager(base_run_group_manager):

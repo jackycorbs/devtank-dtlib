@@ -13,6 +13,17 @@ class sql_common(object):
     """
     ====================================================================
 
+     Device related SQL
+
+    """
+    def get_update_dev_uid(self, dev_id, new_uuid):
+        return "\
+UPDATE %s SET uid='%s' WHERE id=%i" % \
+(self.devices_table_name, db_safe_str(new_uuid), dev_id)
+
+    """
+    ====================================================================
+
      File related SQL
 
     """

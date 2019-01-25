@@ -15,7 +15,11 @@ Test Specific Arguments:
 
 '''
 
-output_normal("UUID : " + dev.uuid)
+output_normal("Original UUID : " + dev.uuid)
 output_good("I'm happy")
 output_bad("I'm sad")
 test_check (args["my_test_var"] == 4, "Variable check")
+
+dev.update_uuid_from_hw()
+
+output_normal("New UUID : " + dev.uuid)

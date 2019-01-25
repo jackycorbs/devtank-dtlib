@@ -213,7 +213,8 @@ class test_group_obj:
                 dev = self.db.get_dev(dev_uuid)
                 if not dev and old_uuid:
                     dev = self.db.get_dev(old_uuid)
-
+                    if dev:
+                        dev.update_uuid(dev_uuid)
                 if dev:
                     c.insert(self.db.sql.add_dev_result(results_id,
                                                   dev.id,
