@@ -53,12 +53,21 @@ def _forced_exit():
     raise Exception("Forced Exit")
 
 
-def _test_check(lib_inf, test_name, results, result, desc):
+def _test_check(lib_inf, test_name, args, results, result, desc):
     if result:
         lib_inf.output_good("%s - passed" % desc)
     else:
         results[test_name] = False
         lib_inf.output_bad("%s - FAILED" % desc)
+        if "exit_on_fail" in args and args["exit_on_fail"]:
+            _forced_exit()
+
+def _threshold_check(lib_inf, test_name, args, results, sbj, ref, margin, unit, desc):
+    _test_check(lib_inf, test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s == %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
+
+def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
+    _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%u == %u) check" % (desc, sbj, ref))
+
 
 
 
@@ -73,8 +82,7 @@ def _thread_test(test_context):
 
 
     exec_map = {'exit': _forced_exit,
-                'test_check': lambda a,b: _test_check(lib_inf, name, results, a, b),
-                'output_normal' :  lib_inf.output_normal,
+                'output_normal' : lib_inf.output_normal,
                 'output_good' : lib_inf.output_good,
                 'output_bad' : lib_inf.output_bad}
 
@@ -135,6 +143,9 @@ def _thread_test(test_context):
                     test_exec_map.update({ 'args': args,
                                           'dev': dev,
                                           'name': name,
+                                          'test_check': lambda a,b: _test_check(lib_inf, name, args, results, a, b),
+                                          'threshold_check' : lambda a,b,c,d,e: _threshold_check(lib_inf, name, args, results, a, b, c, d, e),
+                                          'exact_check' : lambda a,b,c: _exact_check(lib_inf, name, args, results, a, b, c),
                                           'results': results,
                                           '__file__' : os.path.abspath(test_file)})
                     execfile(test_file, test_exec_map)
