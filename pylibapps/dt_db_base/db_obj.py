@@ -10,7 +10,7 @@ class null_safe_ref(object):
 
 
 class db_child(object):
-    def __init__(self, db, db_id=None, db_serial=None, db_extra=None):
+    def __init__(self, db, db_id=None, db_serial=None, db_extras=None):
         self._db = null_safe_ref(db)
         self.id = db_id
         self.serial_number = db_serial
@@ -18,11 +18,12 @@ class db_child(object):
         db_obj_type_maps = db_child._get_db_obj_type_maps(db, db_obj_type)
         ref_link = weakref.ref(self)
         if db_id is not None:
-            db_obj_type_maps['id'][db_id] = ref_link
+            db_obj_type_maps.get('id', {})[db_id] = ref_link
         if db_serial is not None:
-            db_obj_type_maps['serial'][db_serial] = ref_link
-        if db_extra is not None:
-            db_obj_type_maps['extra'][db_extra] = ref_link
+            db_obj_type_maps.get('serial', {})[db_serial] = ref_link
+        if db_extras is not None:
+            for key in db_extras:
+                db_obj_type_maps.get(key, {})[db_extras[key]] = ref_link
 
         db._known_objs[db_obj_type] = db_obj_type_maps
 
@@ -32,9 +33,7 @@ class db_child(object):
 
     @staticmethod
     def _get_db_obj_type_maps(db, db_obj_type):
-        return db._known_objs.get(db_obj_type, {'id': {},
-                                                'serial':{},
-                                                'extra':{}})
+        return db._known_objs.get(db_obj_type, {})
 
     @staticmethod
     def _set(db, key, cache_key, db_obj_type, instance):
@@ -59,7 +58,7 @@ class db_child(object):
         if key is None:
             return None
         db_obj_type_maps = db_child._get_db_obj_type_maps(db, db_obj_type)
-        known_map = db_obj_type_maps[cache_key]
+        known_map = db_obj_type_maps.get(cache_key, {})
         r = known_map.get(key, None)
         if r:
             r = r()
@@ -80,8 +79,8 @@ class db_child(object):
         return db_child._get(db, db_serial, 'serial', sql_cmd, db_obj_type)
 
     @staticmethod
-    def _get_by_extra(db, db_obj_type, sql_cmd, db_extra):
-        return db_child._get(db, db_extra, 'extra', sql_cmd, db_obj_type)
+    def _get_by_extra(db, db_obj_type, key, sql_cmd, db_extra):
+        return db_child._get(db, db_extra, key, sql_cmd, db_obj_type)
 
 
 class lazy_id_to_db_child(object):

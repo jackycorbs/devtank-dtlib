@@ -23,6 +23,7 @@ def _board_in_rig(context, db_dev, next_view, serial_number, yes_no):
 
     if not db_dev:
         db_dev = example_lib.db_example_dev.create(context.db, serial_number, "UNSET")
+        db_dev.update_uuid("<unknown>-%u" % db_dev.id)
     context.devices = [fake_example_dev(serial_number, db_dev.uuid)]
 
     next_view(context)

@@ -2,7 +2,7 @@ import random
 
 ## Example device
 class example_dev(object):
-    def __init__(self, uuid="<unknown>"):
+    def __init__(self, uuid):
         self._uuid=uuid
 
     ## Get Example device Universal Unique ID
