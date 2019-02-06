@@ -48,7 +48,7 @@ class db_child(object):
     @staticmethod
     def _swap(db, old_key, new_key, cache_key, db_obj_type):
         db_obj_type_maps = db_child._get_db_obj_type_maps(db, db_obj_type)
-        known_map = db_obj_type_maps[cache_key]
+        known_map = db_obj_type_maps.get(cache_key, {})
         r = known_map.pop(old_key, None)
         if r is not None and new_key is not None:
             known_map[new_key] = r
