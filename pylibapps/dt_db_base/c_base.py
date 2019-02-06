@@ -72,7 +72,8 @@ def output_bad(msg):
     else:
         print("BAD: %s" % msg, file=_msg_stream)
     _msg_stream.flush()
-    warning_msg("Python bad output: " + msg.splitlines()[0])
+    lines = msg.splitlines()
+    warning_msg("Python bad output: " + lines[0] if len(lines) else "")
 
 def output_good(msg):
     """ Output information about a success case. """
@@ -82,13 +83,15 @@ def output_good(msg):
     else:
         print("Good: %s" % msg, file=_msg_stream)
     _msg_stream.flush()
-    info_msg("Python good output: " + msg.splitlines()[0])
+    lines = msg.splitlines()
+    info_msg("Python good output: " + lines[0] if len(lines) else "")
 
 def output_normal(msg):
     global _msg_stream
     print(msg, file=_msg_stream)
     _msg_stream.flush()
-    info_msg("Python normal output: " + msg.splitlines()[0])
+    lines = msg.splitlines()
+    info_msg("Python normal output: " + lines[0] if len(lines) else "")
 
 def set_output(sink):
     if sink:
