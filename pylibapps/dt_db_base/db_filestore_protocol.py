@@ -2,21 +2,18 @@ import os
 import time
 import shutil
 import paramiko
+import smbc
 from shutil import copyfile
-
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, GLib, GObject
-
-_SMB_AUTO_UMOUNT = 60 * 5 # Seconds until a unused mount is umounted.
-
 
 
 class smb_transferer(object):
     protocol_id=2
     def __init__(self):
-        self._mounts = {}
-        self._mnt_path = None
+        print "Using smbc for smb transfer"
+        self._ctx = None
+        self._host = None
+        self._base_folder = None
+        self._cache_con = {}
 
     def _get_smb_username(self):
         return None
@@ -27,111 +24,68 @@ class smb_transferer(object):
     def _get_smb_domain(self):
         return None
 
-    def open(self, file_store, file_store_folder):
+    def _do_auth(self, svr, shr, wg, un, pw):
+        r = (self._get_smb_domain(),
+                self._get_smb_username(),
+                self._get_smb_password())
+        return r
 
-        def mount_done_cb(obj, res, mount_finished):
-            mount_finished['res'] = \
-                obj.mount_enclosing_volume_finish(res)
+    def open(self, file_store_host, file_store_folder):
+        cache_key = (file_store_host, file_store_folder)
+        cache_entry = self._cache_con.get(cache_key, None)
 
-        def ask_password_cb(op, message, default_user, default_domain, flags):
-            username = self._get_smb_username()
-            password = self._get_smb_password()
-            domain  = self._get_smb_domain()
-            username = username if username else default_user
-            domain = domain if domain else default_domain
-            if username and password and domain:
-                op.set_username(username)
-                op.set_domain(domain)
-                op.set_password(password)
-                op.set_password_save(Gio.PasswordSave.FOR_SESSION)
+        if cache_entry:
+            now = time.time()
+            if cache_entry[1] - now < 60 * 5:
+                cache_entry[1] = now
+                self._ctx = cache_entry[0]
+                self._host = file_store_host
+                self._base_folder = file_store_folder
+                return
             else:
-                op.set_anonymous(True)
-            op.reply(Gio.MountOperationResult.HANDLED)
+                self._cache_con.pop(cache_key)
 
-        uri='smb://%s/%s' % (file_store, file_store_folder)
+        self._ctx = smbc.Context(auth_fn=self._do_auth)
+        self._host = file_store_host
+        self._base_folder = file_store_folder
 
-        gvfs=Gio.Vfs.get_default()
-        f = gvfs.get_file_for_uri(uri)
-        r = f.get_path()
-
-        if not r or not os.path.exists(r):
-            op = Gio.MountOperation()
-            op.connect('ask-password', ask_password_cb)
-            mount_finished={}
-            cancelable = Gio.Cancellable()
-            f.mount_enclosing_volume(Gio.MountMountFlags.NONE, op, cancelable, mount_done_cb, mount_finished)
-            loop = GObject.MainLoop()
-            context = loop.get_context()
-            f = gvfs.get_file_for_uri(uri)
-            r = f.get_path()
-            start = time.time()
-            while not len(mount_finished):
-                if (time.time() - start) > 10:
-                    cancelable.cancel()
-                    break
-                context.iteration(True)
-
-            f = gvfs.get_file_for_uri(uri)
-            r = f.get_path()
-            if not r:
-                raise Exception('SMB mount "%s" failed.' % file_store_folder)
-
-        self._mnt_path = r
-        self._mounts[uri] = time.time()
-
+        self._cache_con[cache_key] = [self._ctx, time.time()]
 
     def clean(self):
-        def _unmount_complete(obj, res, results) :
-            results['res'] = obj.unmount_finish(res)
+        self._ctx = None
+        self._host = None
+        self._base_folder = None
+        self._cache_con = {}
 
-        stale_mounts = []
-
-        for uri, last_used in self._mounts.iteritems():
-            delta = time.time() - last_used
-            if delta > _SMB_AUTO_UMOUNT:
-                stale_mounts += [uri]
-
-        gvfs=Gio.Vfs.get_default()
-
-        for uri in stale_mounts:
-            f = gvfs.get_file_for_uri(uri)
-            if f:
-                mnt = f.find_enclosing_mount()
-                if mnt and mnt.can_unmount():
-                    results = {}
-                    cancelable = Gio.Cancellable()
-                    mnt.unmount(Gio.MountUnmountFlags.NONE,
-                                cancelable,
-                                _unmount_complete,
-                                results)
-                    start = time.time()
-                    loop = GObject.MainLoop()
-                    context = loop.get_context()
-                    while not len(results):
-                        if (time.time() - start) > 10:
-                            cancelable.cancel()
-                            break
-                        context.iteration(True)
-
-                    f = gvfs.get_file_for_uri(uri)
-                    if not f.get_path():
-                        self._mounts.pop(uri)
-
-    def _get_remote_name(self, filepath, file_id):
-        filename = os.path.basename(filepath)
-        bad = '\/:*?"<>|'
-        filename = "".join(['_' if c in bad else c for c in filename])
-        remote_file = os.path.join(self._mnt_path, "%i.%s" % (file_id, filename))
-        return remote_file
+    def _safe_name(self, filename):
+        filename = "".join(
+            map(lambda x: "_" if x in ':*/\?<>"|' else x, filename))
+        return urllib.pathname2url(filename) # Spaces are safe like this
 
     def upload(self, filepath, file_id):
-        remote_file = self._get_remote_name(filepath, file_id)
-        copyfile(filepath, remote_file)
+        filename = os.path.basename(filepath)
+        remote_uri = "smb://%s/%s/%i.%s" % (self._host,
+                                            self._base_folder,
+                                            file_id,
+                                            self._safe_name(filename))
+        f = self._ctx.open(remote_uri, os.O_CREAT | os.O_TRUNC | os.O_WRONLY, 0644)
+
+        with open(filepath) as f2:
+            shutil.copyfileobj(f2, f)
 
     def download(self, filepath, file_id, mod_time):
-        remote_file = self._get_remote_name(filepath, file_id)
-        copyfile(remote_file, filepath)
+        filename = os.path.basename(filepath)
+        remote_uri = "smb://%s/%s/%i.%s" % (self._host,
+                                            self._base_folder,
+                                            file_id,
+                                            self._safe_name(filename))
+        f = self._ctx.open(remote_uri, os.O_RDONLY)
+
+        with open(filepath, "w") as f2:
+            shutil.copyfileobj(f, f2)
+
         os.utime(filepath, (mod_time, mod_time))
+
 
 
 class _localsftp(object):
