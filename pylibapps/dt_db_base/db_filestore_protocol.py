@@ -2,8 +2,16 @@ import os
 import time
 import shutil
 import paramiko
+import hashlib
 import smbc
 from shutil import copyfile
+
+
+def get_hash_folders(filename):
+    hash_md5 = hashlib.md5()
+    hash_md5.update(filename)
+    h = hash_md5.hexdigest()
+    return [ h[n:n+2] for n in range(0, 8, 2) ]
 
 
 class smb_transferer(object):
@@ -87,20 +95,50 @@ class smb_transferer(object):
         os.utime(filepath, (mod_time, mod_time))
 
 
+class sftp_connection(object):
+    def __init__(self, file_store_host):
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(file_store_host)
+        self.ssh = ssh
+        self.sftp_con = ssh.open_sftp()
 
-class _localsftp(object):
+    def put(self, filepath, remote_file):
+        self.sftp_con.put(filepath, remote_file)
+
+    def get(self, remote_file, filepath):
+        self.sftp_con.get(remote_file, filepath)
+
+    def exists(self, path):
+        try:
+            self.sftp_con.stat(path)
+            return True
+        except:
+            return False
+
+    def mkdir(self, path):
+        self.sftp_con.mkdir(path)
+
+
+class local_connection(object):
+
     def put(self, filepath, remote_file):
         shutil.copy(filepath, remote_file)
 
     def get(self, remote_file, filepath):
         shutil.copy(remote_file, filepath)
 
+    def exists(self, path):
+        return os.path.exists(path)
+
+    def mkdir(self, path):
+        os.mkdir(path)
+
 
 class sftp_transferer(object):
     protocol_id=1
     def __init__(self):
-        self._ssh = None
-        self._sftp = None
+        self._con = None
         self._base_folder = None
         self._cache_con = {}
 
@@ -110,10 +148,9 @@ class sftp_transferer(object):
 
         if cache_entry:
             now = time.time()
-            if cache_entry[2] - now < 60 * 5:
-                cache_entry[2] = now
-                self._ssh = cache_entry[0]
-                self._sftp = cache_entry[1]
+            if cache_entry[1] - now < 60 * 5:
+                cache_entry[1] = now
+                self._con = cache_entry[0]
                 self._base_folder = file_store_folder
                 return
             else:
@@ -122,27 +159,41 @@ class sftp_transferer(object):
         self._base_folder = file_store_folder
 
         if file_store_host.lower() == "localhost":
-            self._ssh = None
-            self._sftp = _localsftp()
+            self._con = local_connection()
         else:
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(file_store_host)
-            self._ssh = ssh
-            self._sftp = ssh.open_sftp()
-        self._cache_con[cache_key] = [self._ssh, self._sftp, time.time()]
+            self._con = sftp_connection(file_store_host)
+        self._cache_con[cache_key] = [self._con, time.time()]
+
+    def _get_remote_name(self, filepath, file_id, upload=False):
+        filename = os.path.basename(filepath)
+        remote_filename = "%i.%s" % (file_id, filename)
+        folders = get_hash_folders(remote_filename)
+        path = self._base_folder
+        for folder in folders:
+            path = os.path.join(path, folder)
+            if not self._con.exists(path):
+                if upload:
+                    self._con.mkdir(path)
+        remote_filepath = os.path.join(path, remote_filename)
+        return remote_filepath
 
     def clean(self):
         pass
 
     def upload(self, filepath, file_id):
-        filename = os.path.basename(filepath)
-        remote_file = os.path.join(self._base_folder, "%i.%s" % (file_id, filename))
-        self._sftp.put(filepath, remote_file)
+        remote_filepath = self._get_remote_name(filepath, file_id, True)
+        shutil.copy(filepath, remote_filepath)
+        self._con.put(filepath, remote_filepath)
+        print "upload", remote_filepath
 
     def download(self, filepath, file_id, mod_time):
+        # Look flat first
         filename = os.path.basename(filepath)
-        remote_file = os.path.join(self._base_folder,
-                                   "%i.%s" % (file_id, filename))
-        self._sftp.get(remote_file, filepath)
+        remote_filepath = os.path.join(self._base_folder, "%i.%s" % (file_id, filename))
+        if not self._con.exists(remote_filepath):
+            print "No", remote_filepath
+            remote_filepath = self._get_remote_name(filepath, file_id)
+        else:
+            print "found", remote_filepath
+        self._con.get(remote_filepath, filepath)
         os.utime(filepath, (mod_time, mod_time))
