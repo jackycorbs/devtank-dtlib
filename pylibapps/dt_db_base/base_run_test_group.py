@@ -520,15 +520,17 @@ class base_run_group_manager(object):
                     if isinstance(f, int):
                         try:
                             local_file = self.context.db.get_file_to_local(f)
+                            values[k] = local_file
                         except Exception as e:
                             self.process_line("BAD: Failed to load session: %s\n" % str(e))
                             self.live = False
-                        values[k] = local_file
+                            local_file = None
                     else:
                         local_file = f
-                    with open(local_file, "r") as f:
-                        for line in f:
-                            self.process_line(line)
+                    if local_file:
+                        with open(local_file, "r") as f:
+                            for line in f:
+                                self.process_line(line)
         self.live = False
 
     def load_session(self, session):
