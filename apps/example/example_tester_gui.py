@@ -79,6 +79,7 @@ def main():
     main_window.show()
 
     if args['production']:
+        context.on_exit_cbs += [ lambda : os.system("systemctl poweroff") ]
         cursor = Gdk.Cursor(Gdk.CursorType.BLANK_CURSOR)
         main_window.get_window().set_cursor(cursor)
 
