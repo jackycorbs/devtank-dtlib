@@ -184,16 +184,13 @@ class sftp_transferer(object):
         remote_filepath = self._get_remote_name(filepath, file_id, True)
         shutil.copy(filepath, remote_filepath)
         self._con.put(filepath, remote_filepath)
-        print "upload", remote_filepath
 
     def download(self, filepath, file_id, mod_time):
         # Look flat first
         filename = os.path.basename(filepath)
         remote_filepath = os.path.join(self._base_folder, "%i.%s" % (file_id, filename))
         if not self._con.exists(remote_filepath):
-            print "No", remote_filepath
             remote_filepath = self._get_remote_name(filepath, file_id)
         else:
-            print "found", remote_filepath
         self._con.get(remote_filepath, filepath)
         os.utime(filepath, (mod_time, mod_time))
