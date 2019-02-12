@@ -1,4 +1,4 @@
-from dt_gui_base import base_groups_list_gui
+from dt_gui_base import base_groups_list_gui, open_notify_gui
 
 _singleton = None
 
@@ -11,9 +11,12 @@ class groups_lists_gui(base_groups_list_gui):
         self.adv_more_btn.hide()
 
     def _on_run_btn(self):
-        from group_run_gui import open_run_group
-        self._use_selection()
-        open_run_group(self.context)
+        if len(self.context.devices):
+            from group_run_gui import open_run_group
+            self._use_selection()
+            open_run_group(self.context)
+        else:
+            open_notify_gui(self.context, "No devices known.")
 
     def _results_btn(self):
         from sessions_results_gui import open_tests_sessions_results

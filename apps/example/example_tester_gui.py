@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser(description='Graphical interface for Example te
 parser.add_argument('-v','--verbose', help='Increase log information', action='store_true')
 parser.add_argument('--desktop', help='Running on a desktop', action='store_true')
 parser.add_argument('--production', help='Hide advanced and quit.', action='store_true')
+parser.add_argument('--admin', help='Show Test Groups', action='store_true')
 
 
 def get_schema():
@@ -68,6 +69,8 @@ def main():
     example_lib_gui.init(context)
 
     example_lib_gui.open_start_page(context)
+    if args['admin']:
+        example_lib_gui.open_groups_list(context)
 
     main_window = context.builder.get_object("main_window")
 
