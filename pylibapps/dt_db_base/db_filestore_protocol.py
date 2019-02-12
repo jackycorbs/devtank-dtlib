@@ -191,6 +191,5 @@ class sftp_transferer(object):
         remote_filepath = os.path.join(self._base_folder, "%i.%s" % (file_id, filename))
         if not self._con.exists(remote_filepath):
             remote_filepath = self._get_remote_name(filepath, file_id)
-        else:
         self._con.get(remote_filepath, filepath)
         os.utime(filepath, (mod_time, mod_time))
