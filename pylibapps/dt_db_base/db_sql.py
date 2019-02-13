@@ -230,16 +230,15 @@ group_id
     def get_test_group_results(self, group_id, offset, count):
         return "\
 SELECT id, Time_Of_tests FROM test_group_results WHERE group_id=%i \
-LIMIT %u OFFSET %u" % (group_id, count, offset)
+ORDER BY Time_Of_tests DESC LIMIT %u OFFSET %u" % (group_id, count, offset)
 
     def get_sessions(self, session_ids):
         return "\
 SELECT test_group_results.id, Time_Of_tests, \
     group_id, name, description \
 FROM test_group_results JOIN test_groups ON test_groups.id = group_id \
-WHERE %s" % \
-" OR ".join(["test_group_results.id=%i" % session_id \
-             for session_id in session_ids])
+WHERE test_group_results.id IN (%s) ORDER BY Time_Of_tests DESC" % \
+",".join([str(session_id) for session_id in session_ids])
 
     def get_dev_results(self, session_id):
         dev_result_table_name = self.__class__.dev_result_table_name
