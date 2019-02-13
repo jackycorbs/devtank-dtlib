@@ -246,15 +246,13 @@ class tester_database(object):
             return None
         return self._new_test_obj( row[0], row[1], row[2])
 
-    def get_test_by_id(self, test_id, db_cursor=None, now=None):
-        if now is None:
-            now = db_ms_now()
+    def get_test_by_id(self, test_id, db_cursor=None):
         db = self.db
         if db_cursor is None:
             c = db.cursor()
         else:
             c = db_cursor
-        row = c.query_one(self.sql.get_test_by_id(test_id, now))
+        row = c.query_one(self.sql.get_test_by_id(test_id))
         if row is None:
             return None
         return self._new_test_obj( row[0], row[1], row[2])

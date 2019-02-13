@@ -94,13 +94,11 @@ JOIN files ON tests.file_id=files.id \
 WHERE tests.valid_from<=%i AND \
 (tests.valid_to IS NULL OR tests.valid_to>%i)" % (now, now)
 
-    def get_test_by_id(self, test_id, now):
+    def get_test_by_id(self, test_id):
         return "\
 SELECT tests.id, files.filename, tests.file_id FROM tests \
 JOIN files ON tests.file_id=files.id \
-WHERE files.id=%i AND \
-tests.valid_from<=%i AND (tests.valid_to IS NULL OR tests.valid_to>%i)"\
-% (test_id, now, now)
+WHERE tests.id=%i" % (test_id)
 
     def get_test_by_name(self, name, now):
         return "\
