@@ -1,5 +1,12 @@
 import time
 
+_db_debug_print = lambda msg : None
+
+
+def set_debug_print(cb):
+    global _db_debug_print
+    _db_debug_print = cb
+
 
 class db_cursor(object):
     def __init__(self, parent):
@@ -10,6 +17,7 @@ class db_cursor(object):
         self._parent._last_used = time.time()
         try:
             self._c.execute(cmd)
+            _db_debug_print("SQL : '%s'" % cmd)
         except Exception as e:
             print 'SQL "%s" failed' % cmd
             raise e

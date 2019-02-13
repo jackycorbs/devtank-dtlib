@@ -137,11 +137,8 @@ JOIN test_group_entries ON test_group_entries.Test_id=tests.id \
 WHERE (test_group_entries.valid_to IS NULL OR \
 test_group_entries.valid_to>%i) AND \
 test_group_entries.valid_from<=%i AND \
-(tests.valid_to IS NULL OR \
-tests.valid_to>%i) AND \
-tests.valid_from<=%i AND \
 test_group_entries.test_group_id=%i \
-ORDER BY order_position " % (now, now, now, now, group_id)
+ORDER BY order_position " % (now, now, group_id)
 
     def set_test_duration(self, group_entry_id, duration):
         return "\

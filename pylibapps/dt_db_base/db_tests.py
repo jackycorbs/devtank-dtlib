@@ -60,13 +60,8 @@ class test_script_obj(object):
         c = db_cursor
         if c is None:
             c = db.cursor()
-        if self.group_entry_id:
-            cmd = sql.remove_test_group_tests(self.group_entry_id,
-                                              now)
-            c.update(cmd)
-        else:
-            cmd = sql.remove_test(self.id, now)
-            c.update(cmd)
+        cmd = sql.remove_test(self.id, now)
+        c.update(cmd)
         if db_cursor is None:
             db.commit()
 
@@ -131,6 +126,17 @@ class test_group_obj:
         if db_cursor is None:
             db.commit()
 
+    def remove_test(self, test, db_cursor=None, now=None):
+        if now is None:
+            now = _ms_now()
+        c = db_cursor
+        if c is None:
+            c = db.cursor()
+        cmd = self.db.sql.remove_test_group_tests(test.group_entry_id, now)
+        c.update(cmd)
+        if db_cursor is None:
+            db.commit()
+
     def update(self, name, desc, tests):
         db = self.db.db
         c = db.cursor()
@@ -150,7 +156,7 @@ class test_group_obj:
 
         if len(old_tests) > len(tests):
             for dead_test in old_tests[len(tests):]:
-                dead_test.remove(c, now)
+                self.remove_test(dead_test, c, now)
             old_tests = old_tests[:len(tests)]
 
         for old_test in old_tests:
@@ -161,7 +167,7 @@ class test_group_obj:
             old_test = old_tests[n] if n < len(old_tests) else None
             if str(old_test) != str(new_test):
                 if old_test:
-                    old_test.remove(c, now)
+                    self.remove_test(old_test, c, now)
                 self.add_test(new_test, c, n, now)
 
         db.commit()
