@@ -8,4 +8,7 @@
                       'max'  : 10,
                       'value' : 1,
                       'step'  : 1},
+    "my_test_str": { 'desc' : 'Test Text',
+                      'type' : 'text',
+                      'default' : 'cheese!'},
 }

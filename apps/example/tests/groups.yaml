@@ -11,6 +11,12 @@
                         "my_test_var"    : 4
                     }
                 ],
+                [
+                    "test2.py",
+                    {
+                        "my_test_var"    : 4
+                    }
+                ],
             ]
         },
     ]
