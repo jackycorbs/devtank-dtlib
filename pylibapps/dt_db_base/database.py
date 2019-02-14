@@ -339,29 +339,8 @@ class tester_database(object):
         if db_cursor is None:
             db.commit()
 
-
     def add_tests_folder(self, local_folder, db_cursor=None, now=None):
-        r = []
-        if now is None:
-            now = db_ms_now()
-        db = self.db
-        if db_cursor is None:
-            c = db.cursor()
-        else:
-            c = db_cursor
-
-        default_args = _get_defaults(local_folder)
-        all_files = os.listdir(local_folder)
-
-        for test_filename in all_files:
-            test_file = os.path.join(local_folder, test_filename)
-            if test_file.endswith(".py"):
-                args = _extract_defaults(test_file, default_args)
-                test_obj = self.add_test(test_file, args, c, now)
-                r += [test_obj]
-        if db_cursor is None:
-            db.commit()
-        return r
+        self.update_tests_in_folder(local_folder, db_cursor, now)
 
     def group_from_dict(self, group_data, folder=None, db_cursor=None, now=None):
         if now is None:
