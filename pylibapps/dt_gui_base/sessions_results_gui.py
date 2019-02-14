@@ -52,9 +52,12 @@ class base_session_results_singlton(object):
         self.session_list.connect("row-activated", lambda treeview, path, column: \
             self._on_row_double_click(treeview.get_model()[path][3]))
 
+        self._size = None
+        self.session_results_scroll.connect("size-allocate", lambda w, r : self._on_resize(r))
+
         self.adj = self.session_results_scroll.get_vadjustment()
 
-        self.adj.connect("value-changed", lambda adj : self._scroll_change())
+        self.adj.connect("value-changed", lambda adj : self._update_view())
 
         self.results_count = 0
 
@@ -69,6 +72,7 @@ class base_session_results_singlton(object):
 
     def _on_row_double_click(self, session):
         self.context.tests_group.populate_from(session.group)
+        self._size = None
         self._on_open_ran_view(session)
 
 
@@ -76,31 +80,42 @@ class base_session_results_singlton(object):
         raise Exception("Unimplemented")
 
     def _on_back(self):
+        self._size = None
         self.context.pop_view()
 
-    def _scroll_change(self):
+    def _on_resize(self, r):
+        old_r = self._size
+        if old_r is None or old_r[0] != r.width or old_r[1] != r.height:
+            self._size = (r.width, r.height)
+            self._update_view()
+
+    def _update_view(self):
         value = self.adj.get_value()
-        limit = self.adj.get_upper() - self.adj.get_page_size()
+        limit = self.adj.get_upper()
         frac = value / limit
 
-        self.session_results_pos.move(self.session_list, 0, int(value))
-
         offset = int(self.results_count * frac)
+        pos    = int(value)
 
-        self._update_view(offset)
-
-
-    def _update_view(self, offset):
-        hadj = self.session_results_scroll.get_hadjustment()
+        h_page_size = self.session_results_scroll.get_hadjustment().get_page_size()
+        v_page_size = self.adj.get_page_size()
 
         total_height =  self.header_height + (self.results_count * (self.line_height + self.line_space))
-        self.session_list.set_size_request(hadj.get_page_size(), total_height)
+
+        self.session_results_pos.move(self.session_list, 0, pos)
+
+        self._resize_self = True
+        self.session_list.set_size_request(h_page_size, total_height - pos)
 
         self.session_list_store.clear()
 
-        visable_lines = self.adj.get_page_size() - self.header_height
+        visable_lines = v_page_size - self.header_height
         visable_lines /= float(self.line_height + self.line_space)
-        visable_lines = int(math.ceil(visable_lines))
+
+        if frac < 0.99:
+            visable_lines = int(math.ceil(visable_lines))
+        else:
+            visable_lines = int(visable_lines)
 
         if self.db_dev:
             results = self.db_dev.get_results(offset,
@@ -135,8 +150,13 @@ class base_session_results_singlton(object):
             tests_group = self.context.tests_group
             self.results_count = tests_group.db_group.get_sessions_count()
 
-        self._update_view(0)
+        # Get again incase of theme change.
+        self.line_height = self.columns[0].cell_get_size().height
+        self.header_height = max([size.height for size in
+            self.columns[0].get_button().get_preferred_size() ])
+        self.line_space = self.session_list.style_get_property("vertical-separator")
 
+        self.adj.set_step_increment(self.line_height)
 
 
     def open(self, db_dev=None):
