@@ -60,6 +60,7 @@ class base_session_results_singlton(object):
         self.adj.connect("value-changed", lambda adj : self._update_view())
 
         self.results_count = 0
+        self.prev_offset = -1
 
 
     def _on_ok(self):
@@ -87,6 +88,7 @@ class base_session_results_singlton(object):
         old_r = self._size
         if old_r is None or old_r[0] != r.width or old_r[1] != r.height:
             self._size = (r.width, r.height)
+            self.prev_offset = -1
             self._update_view()
 
     def _update_view(self):
@@ -100,26 +102,57 @@ class base_session_results_singlton(object):
         h_page_size = self.session_results_scroll.get_hadjustment().get_page_size()
         v_page_size = self.adj.get_page_size()
 
+        lines_to_get = v_page_size - self.header_height
+        lines_to_get /= float(self.line_height + self.line_space)
+
+        if frac < 0.99:
+            lines_to_get = int(math.ceil(lines_to_get))
+        else:
+            lines_to_get = int(lines_to_get)
+
+        list_store = self.session_list_store
+
+        append = True
+
+        if self.prev_offset >= 0:
+            delta = offset - self.prev_offset
+            count = list_store.iter_n_children()
+
+            if delta == 0:
+                return
+            elif delta > 0:
+                if delta >= count:
+                    list_store.clear()
+                else:
+                    lines_to_get = delta
+                    while delta:
+                        list_store.remove(list_store.get_iter_first())
+                        delta -= 1
+            else:
+                delta = abs(delta)
+                if delta >= count:
+                    list_store.clear()
+                else:
+                    lines_to_get = delta
+                    append = False
+                    last_index = count - 1
+                    while delta:
+                        it = list_store.iter_nth_child(None, last_index)
+                        list_store.remove(it)
+                        last_index -= 1
+                        delta -= 1
+        else:
+            list_store.clear()
+
         total_height =  self.header_height + (self.results_count * (self.line_height + self.line_space))
 
         self.session_results_pos.move(self.session_list, 0, pos)
 
-        self._resize_self = True
         self.session_list.set_size_request(h_page_size, total_height - pos)
-
-        self.session_list_store.clear()
-
-        visable_lines = v_page_size - self.header_height
-        visable_lines /= float(self.line_height + self.line_space)
-
-        if frac < 0.99:
-            visable_lines = int(math.ceil(visable_lines))
-        else:
-            visable_lines = int(visable_lines)
 
         if self.db_dev:
             results = self.db_dev.get_results(offset,
-                      min(visable_lines,
+                      min(lines_to_get,
                           self.results_count - offset))
             sessions = []
             for v in results['Pass'] + results['Fail']:
@@ -131,16 +164,26 @@ class base_session_results_singlton(object):
         else:
             tests_group = self.context.tests_group
             sessions = tests_group.db_group.get_sessions(offset,
-                                min(visable_lines,
+                                min(lines_to_get,
                                     self.results_count - offset))
             self.session_lab.set_text(
                 "Results for Test Group\n\"%s\"" % tests_group.name)
 
+        if not append:
+            sessions.reverse()
+
         for session in sessions:
             stamp = datetime.datetime.fromtimestamp(session.time_of_tests)
             icon = get_pass_fail_icon_name(session.pass_fail)
-            self.session_list_store.append(
-                [str(stamp), session.group.name, icon, session])
+            row = [str(stamp), session.group.name, icon, session]
+
+            if append:
+                list_store.append(row)
+            else:
+                list_store.insert(0, row)
+
+        self.prev_offset = offset
+
 
     def _on_show(self):
 
@@ -157,6 +200,7 @@ class base_session_results_singlton(object):
         self.line_space = self.session_list.style_get_property("vertical-separator")
 
         self.adj.set_step_increment(self.line_height)
+        self.prev_offset = -1
 
 
     def open(self, db_dev=None):
