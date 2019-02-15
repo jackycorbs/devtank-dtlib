@@ -14,7 +14,7 @@
                 [
                     "test2.py",
                     {
-                        "my_test_var"    : 4
+                        "my_test_str"    : "hello world"
                     }
                 ],
             ]
