@@ -2,6 +2,7 @@
 from db_common import *
 
 _id_null = lambda x: ("%i" % x) if x else "NULL"
+_int_null = lambda x: ("%i" % x) if x is not None else "NULL"
 
 
 class sql_common(object):
@@ -275,17 +276,18 @@ test_group_entries.valid_from<=%i AND \
  ORDER BY test_group_entries.order_position" % (session_id, now, now)
 
     def add_dev_result(self, session_id, dev_id, group_entry_id,
-                           pass_fail, output_file_id, log_file_id):
+                       pass_fail, output_file_id, log_file_id,
+                       duration):
         dev_result_table_name = self.__class__.dev_result_table_name
         device_key_name = self.__class__.device_key_name
         return "\
 INSERT INTO %s \
 (group_result_id, %s, group_entry_id, pass_fail, output_file_id,\
-log_file_id) \
-VALUES (%i, %i, %i, %i, %s, %s)" % \
+log_file_id, duration) \
+VALUES (%i, %i, %i, %i, %s, %s, %s)" % \
  (dev_result_table_name, device_key_name, session_id, dev_id,
   group_entry_id, int(pass_fail), _id_null(output_file_id),\
-  _id_null(log_file_id))
+  _id_null(log_file_id), _int_null(duration))
     """
     ====================================================================
 

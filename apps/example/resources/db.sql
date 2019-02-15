@@ -84,6 +84,7 @@ CREATE TABLE "example_dev_test_results" (
 	"output_file_id"	INTEGER,
 	"log_file_id"	INTEGER,
 	"group_result_id" INTEGER NOT NULL,
+	"duration" INTEGER,
 	FOREIGN KEY("example_dev_id") REFERENCES "example_devs" ("id"),
 	FOREIGN KEY("group_entry_id") REFERENCES "test_group_entries" ("id"),
 	FOREIGN KEY("output_file_id") REFERENCES "files" ("id"),

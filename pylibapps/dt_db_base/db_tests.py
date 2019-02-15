@@ -226,7 +226,8 @@ class test_group_obj:
                                                   dev.id,
                                                   group_entry_id,
                                                   pass_fail,
-                                                  output, log))
+                                                  output, log,
+                                                  db_time(duration)))
                 else:
                     print "Unknown UUID %s, can't store results." % dev_uuid
         db.commit()
