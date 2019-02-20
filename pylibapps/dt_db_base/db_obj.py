@@ -30,9 +30,10 @@ class db_child(object):
                 value = db_extras[key]
                 if not key in db_obj_type_maps:
                     db_obj_type_maps[key] = {}
-                if not value in db_obj_type_maps[key]:
-                    db_obj_type_maps[key][value] = {}
-                db_obj_type_maps[key][value] = ref_link
+                key_cache_map = db_obj_type_maps[key]
+                if not value in key_cache_map:
+                    key_cache_map[value] = {}
+                key_cache_map[value] = ref_link
 
         db._known_objs[db_obj_type] = db_obj_type_maps
 
