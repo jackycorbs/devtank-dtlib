@@ -17,23 +17,22 @@ class db_child(object):
         db_obj_type = type(self)
         db_obj_type_maps = db_child._get_db_obj_type_maps(db, db_obj_type)
         ref_link = weakref.ref(self)
+
+        if db_extras is None:
+            db_extras = {}
         if db_id is not None:
-            if not 'id' in db_obj_type_maps:
-                db_obj_type_maps['id'] = {}
-            db_obj_type_maps['id'][db_id] = ref_link
+            db_extras['id'] = db_id
         if db_serial is not None:
-            if not 'serial' in db_obj_type_maps:
-                db_obj_type_maps['serial'] = {}
-            db_obj_type_maps['serial'][db_serial] = ref_link
-        if db_extras is not None:
-            for key in db_extras:
-                value = db_extras[key]
-                if not key in db_obj_type_maps:
-                    db_obj_type_maps[key] = {}
-                key_cache_map = db_obj_type_maps[key]
-                if not value in key_cache_map:
-                    key_cache_map[value] = {}
-                key_cache_map[value] = ref_link
+            db_extras['serial'] = db_serial
+
+        for key in db_extras:
+            value = db_extras[key]
+            if not key in db_obj_type_maps:
+                db_obj_type_maps[key] = {}
+            key_cache_map = db_obj_type_maps[key]
+            if not value in key_cache_map:
+                key_cache_map[value] = {}
+            key_cache_map[value] = ref_link
 
         db._known_objs[db_obj_type] = db_obj_type_maps
 
