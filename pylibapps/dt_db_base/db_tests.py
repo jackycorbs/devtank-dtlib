@@ -10,7 +10,7 @@ class test_script_obj(object):
         self.filename = filename
         self.file_id = file_id
         self.group_entry_id = group_entry_id
-        self._duration = None
+        self._duration = duration
         self.pending_properties = {}
 
     def get_file_to_local(self):
@@ -27,11 +27,7 @@ class test_script_obj(object):
 
     @duration.setter
     def duration(self, duration):
-        duration = db_time(duration)
-        cmd = self.db.sql.set_test_duration(self.group_entry_id,
-                                            duration)
-        self.db.db.update(cmd)
-        self._duration = duration
+        self._duration = db_time(duration)
 
     @property
     def run_arguments(self):
@@ -90,17 +86,17 @@ class test_group_obj:
     def get_tests(self):
         now = db_ms_now()
         rows = self.db.db.query(self.db.sql.get_tests(self.id, now))
-        return [ test_script_obj(self.db, row[0], row[1], row[2], row[3], row[4]) for row in rows ]
+        return [ test_script_obj(self.db, row[0], row[1], row[2], row[3], row[4], row[6]) for row in rows ]
 
     def get_duration(self):
         db = self.db.db
         now = db_ms_now()
         r = 0
         rows = db.query(self.db.sql.get_test_group_durations(self.id, now))
-        for duration in rows:
-            if duration[0] is None:
+        for row in rows:
+            if row[1] is None:
                 return None
-            r += duration[0]
+            r += row[1]
         return db2py_time(r)
 
     def add_test(self, test, db_cursor=None, order_pos=None, now=None):

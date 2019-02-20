@@ -54,7 +54,6 @@ CREATE TABLE "test_group_entries" (
 	"valid_from"	BIGINT NOT NULL,
 	"valid_to"	BIGINT,
 	"order_position"	INTEGER NOT NULL,
-	"duration" INTEGER,
 	FOREIGN KEY("test_group_id") REFERENCES "test_groups" ("id"),
 	FOREIGN KEY("test_id") REFERENCES "tests" ("id")
 );

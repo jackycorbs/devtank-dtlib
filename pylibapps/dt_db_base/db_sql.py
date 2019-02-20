@@ -129,9 +129,13 @@ WHERE tests.valid_from<=%i AND \
 UPDATE tests SET valid_to=%i WHERE id=%i" % (now, test_id)
 
     def get_tests(self, group_id, now):
+        dev_result_table_name = self.__class__.dev_result_table_name
         return "\
 SELECT tests.id, filename, file_id, test_group_entries.name, \
-       test_group_entries.id AS entry_id, order_position \
+       test_group_entries.id AS entry_id, order_position, \
+       (SELECT MAX(duration) FROM %s \
+          WHERE group_entry_id=test_group_entries.id \
+                AND pass_fail=1) AS duration \
 FROM tests \
 JOIN files ON tests.file_id=files.id \
 JOIN test_group_entries ON test_group_entries.Test_id=tests.id \
@@ -139,13 +143,7 @@ WHERE (test_group_entries.valid_to IS NULL OR \
 test_group_entries.valid_to>%i) AND \
 test_group_entries.valid_from<=%i AND \
 test_group_entries.test_group_id=%i \
-ORDER BY order_position " % (now, now, group_id)
-
-    def set_test_duration(self, group_entry_id, duration):
-        return "\
-UPDATE test_group_entries SET duration=%i WHERE id=%i AND \
-    (duration IS NULL OR duration < %i)" % (
-    duration, group_entry_id, duration)
+ORDER BY order_position" % (dev_result_table_name, now, now, group_id)
 
     """
     ====================================================================
@@ -206,12 +204,14 @@ UPDATE test_groups SET description='%s' WHERE id=%i" % \
 (db_safe_str(desc), group_id)
 
     def get_test_group_durations(self, group_id, now):
+        dev_result_table_name = self.__class__.dev_result_table_name
         return "\
-SELECT duration FROM test_group_entries WHERE \
-test_group_id=%i AND \
-valid_from<=%i AND \
-(valid_to IS NULL OR valid_to>%i)" % (group_id, now, now)
-
+SELECT test_group_entries.id, MAX(%s.duration) FROM test_group_entries \
+JOIN %s ON %s.group_entry_id=test_group_entries.id \
+WHERE test_group_id=%i AND valid_from<=%i AND \
+(valid_to IS NULL OR valid_to>%i) GROUP BY test_group_entries.id" % (
+dev_result_table_name, dev_result_table_name, dev_result_table_name,
+group_id, now, now)
     """
     ====================================================================
 
