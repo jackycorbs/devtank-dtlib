@@ -1,6 +1,8 @@
 import time
 
 def db_time(py_time):
+    if py_time is None:
+        return None
     return int(1000000 * py_time)
 
 def db2py_time(db_time):
