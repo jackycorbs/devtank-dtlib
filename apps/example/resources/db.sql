@@ -92,7 +92,7 @@ CREATE TABLE "example_dev_test_results" (
 );
 
 
-INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 1);
+INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 2);
 INSERT INTO "values" ("name", "valid_from") VALUES('settings', 0);
 INSERT INTO "values" ("name", "parent_id", "valid_from") VALUES('defaults', 2, 0);
 INSERT INTO "values" ("name", "valid_from") VALUES('tests_properties', 0);

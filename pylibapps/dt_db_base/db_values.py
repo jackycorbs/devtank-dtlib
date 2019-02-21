@@ -22,7 +22,7 @@ def get_db_version(db, sql):
     rows = db.query(sql.get_version())
     if len(rows) != 1:
         raise Exception("Should be one entry for version, got %i" % len(rows))
-    if rows[0][0] != "version" or rows[0][1] != 1:
+    if rows[0][0] != "version" or rows[0][1] != 2:
         raise Exception("Database and code version mismatch.")
     return rows[0][1]
 
