@@ -551,6 +551,8 @@ class base_run_group_manager(object):
     def is_pass(self, dev=None, test=None):
         if dev is None:
             if test is None:
+                if not len(self.session_results):
+                    return False
                 for dev_tests in self.session_results.values():
                     dev_tests = dev_tests['tests']
                     for test_results in dev_tests.values():
