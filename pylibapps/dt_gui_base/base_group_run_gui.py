@@ -8,7 +8,7 @@ from notify_gui import open_notify_gui
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GLib
+from gi.repository import Gtk, Gdk, GLib, Pango
 
 
 
@@ -21,6 +21,8 @@ class base_run_context(object):
 
         self.window = builder.get_object("TestGroupRunner")
         self.run_lab = builder.get_object("run_lab")
+
+        self.run_lab.modify_font(Pango.FontDescription('Mono'))
 
         self.test_list = builder.get_object("RunTestsList")
         self.dev_list = builder.get_object("RunDevList")
