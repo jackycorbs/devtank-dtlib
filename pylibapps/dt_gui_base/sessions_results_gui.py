@@ -151,14 +151,9 @@ class base_session_results_singlton(object):
         self.session_list.set_size_request(h_page_size, total_height - pos)
 
         if self.db_dev:
-            results = self.db_dev.get_results(offset,
+            sessions = self.db_dev.get_sessions(offset,
                       min(lines_to_get,
                           self.results_count - offset))
-            sessions = []
-            for v in results['Pass'] + results['Fail']:
-                sessions += [ v['session_id'] ]
-            if len(sessions):
-                sessions = self.context.db.get_sessions(sessions)
             self.session_lab.set_text(
                 "Results for Device\n\"%s\"" % (self.db_dev.uuid))
         else:
@@ -188,7 +183,7 @@ class base_session_results_singlton(object):
     def _on_show(self):
 
         if self.db_dev:
-            self.results_count = self.db_dev.get_results_count()
+            self.results_count = self.db_dev.get_session_count()
         else:
             tests_group = self.context.tests_group
             self.results_count = tests_group.db_group.get_sessions_count()

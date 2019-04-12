@@ -1,4 +1,4 @@
-from dt_db_base import db_child
+from dt_db_base import db_child, test_group_sessions
 
 
 class db_example_dev(db_child):
@@ -35,22 +35,17 @@ class db_example_dev(db_child):
         dev_id = db.db.insert(cmd)
         return db_example_dev.get_by_id(db, dev_id)
 
-    def get_results_count(self):
-        cmd = self.db.sql.dev_results_count(self.id)
+    def get_session_count(self):
+        cmd = self.db.sql.get_dev_session_count(self.id)
         rows = self.db.db.query(cmd)
         return rows[0][0]
 
-    def get_results(self, offset, count):
-        cmd = self.db.sql.dev_results(self.id, offset, count)
+    def get_sessions(self, offset, count):
+        cmd = self.db.sql.get_dev_sessions(self.id, offset, count)
         rows = self.db.db.query(cmd)
-        r = { "Pass": [], "Fail": [] }
-        for row in rows:
-            pass_fail = "Pass" if row[1] else "Fail"
-            r[pass_fail] += [{'group_id'        : row[2],
-                              'group_name'      : row[3],
-                              'session_id'      : row[4],
-                              'result_id'       : row[0]}]
-        return r
+        return [ test_group_sessions(self.db.get_group_by_id(row[2]),
+                                     self.db, row[0], row[1]) \
+                 for row in rows ]
 
     def update_uuid(self, new_uuid):
         cmd = self.db.sql.get_update_dev_uid(self.id, new_uuid)

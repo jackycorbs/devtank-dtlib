@@ -27,25 +27,22 @@ WHERE uid='%s'" % db_safe_str(uuid)
         return example_sql_common._example_dev_SQL + "\
 WHERE id=%i" % example_dev_id
 
-    def dev_results_count(self, dev_id):
+    def get_dev_session_count(self, dev_id):
         return "\
-SELECT COUNT(example_dev_test_results.id) \
-FROM example_dev_test_results \
-JOIN test_group_entries ON\
-    example_dev_test_results.group_entry_id=test_group_entries.id \
-JOIN test_groups ON test_group_id=test_groups.id \
-WHERE example_dev_test_results.example_dev_id=%i" % dev_id
+SELECT COUNT(DISTINCT test_group_results.id) \
+    FROM example_dev_test_results \
+JOIN test_group_results ON test_group_results.id = group_result_id \
+WHERE example_dev_test_results.example_dev_id=%u" % dev_id
 
-    def dev_results(self, dev_id, offset, count):
+    def get_dev_sessions(self, dev_id, offset, count):
         return "\
-SELECT example_dev_test_results.id, pass_fail, test_group_id, \
-    test_groups.name, group_result_id \
+SELECT DISTINCT test_group_results.id, \
+      test_group_results.time_of_tests, \
+      test_group_results.group_id \
 FROM example_dev_test_results \
-JOIN test_group_entries ON\
-    example_dev_test_results.group_entry_id=test_group_entries.id \
-JOIN test_groups ON test_group_id=test_groups.id \
-WHERE example_dev_test_results.example_dev_id=%i \
-LIMIT %u OFFSET %u" % (dev_id, count, offset)
+JOIN test_group_results ON test_group_results.id = group_result_id \
+WHERE example_dev_test_results.example_dev_id=%u LIMIT %u OFFSET %u" \
+% (dev_id, count, offset)
 
     def create_dev(self, serial_number, uuid):
         return "INSERT INTO example_devs (serial_number, uid) "\
