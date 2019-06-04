@@ -79,7 +79,7 @@ class _start_double_scan(scan_box_base):
 
 def _poweroff(yes_no):
     if yes_no:
-        sys.exit(0)
+        os.system("systemctl poweroff")
 
 
 
