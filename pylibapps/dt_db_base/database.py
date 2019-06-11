@@ -69,6 +69,8 @@ class tester_database(object):
         db = self.db
         sql = self.sql
 
+        self.protocol_transferers[protocol_id].init(host, folder)
+
         c = db.cursor()
         found = False
 

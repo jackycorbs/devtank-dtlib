@@ -23,6 +23,9 @@ class smb_transferer(object):
         self._base_folder = None
         self._cache_con = {}
 
+    def init(self, file_store_host, file_store_folder):
+        pass
+
     def _get_smb_username(self):
         return None
 
@@ -141,6 +144,12 @@ class sftp_transferer(object):
         self._con = None
         self._base_folder = None
         self._cache_con = {}
+
+    def init(self, file_store_host, file_store_folder):
+        if file_store_host.lower() == "localhost":
+            con = local_connection()
+            if not con.exists(file_store_folder):
+                con.mkdir(file_store_folder)
 
     def open(self, file_store_host, file_store_folder):
         cache_key = (file_store_host, file_store_folder)
