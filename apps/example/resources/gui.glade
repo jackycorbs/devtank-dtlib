@@ -99,7 +99,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Please Scan Barcode</property>
+                    <property name="label" translatable="yes">Please Double-Scan Barcode</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

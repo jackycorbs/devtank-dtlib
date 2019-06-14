@@ -98,7 +98,7 @@ class double_scan_view(scan_box_base):
 
         self.scan_parent_type_lab.set_text(parent_type_name)
         self.scan_parent_serial_lab.set_text(parent_serial)
-        self.scan_lab.set_text("Please Scan %s Barcode" % type_name)
+        self.scan_lab.set_markup("Please Double-Scan\n<span font_weight=\"bold\">%s</span> Barcode" % type_name)
         self.scan_status_lab.set_text("")
         self.type_name = type_name
         self.context.push_view()
