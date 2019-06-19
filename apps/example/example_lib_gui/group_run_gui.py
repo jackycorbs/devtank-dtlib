@@ -1,14 +1,13 @@
 import datetime
 
-from example_lib import run_group_manager
-
+from dt_db_base import default_run_group_manager
 from dt_gui_base import base_run_context
 
 
 
 class _RunContext(base_run_context):
     def __init__(self, context):
-        base_run_context.__init__(self, context, run_group_manager)
+        base_run_context.__init__(self, context, default_run_group_manager)
         context.view_objs["RunGroupViewObj"] = self
 
     def set_run_ready(self):

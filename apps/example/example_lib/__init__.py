@@ -1,5 +1,4 @@
 from resources import *
-from run_test_group import run_group_manager
 
 from dt_db_base import base_open_db_backend,  \
                        set_log_file,          \
