@@ -22,6 +22,43 @@ class sql_common(object):
 UPDATE %s SET uid='%s' WHERE id=%i" % \
 (self.devices_table_name, db_safe_str(new_uuid), dev_id)
 
+    def get_dev_by_serial(self, serial_number):
+        return "SELECT serial_number, id, uid FROM %s WHERE \
+serial_number='%s'" % (self.devices_table_name,
+                        db_safe_str(serial_number))
+
+    def get_dev_by_uid(self, uuid):
+        return "SELECT serial_number, id, uid FROM %s WHERE \
+uid='%s'" % (self.devices_table_name, db_safe_str(uuid))
+
+    def get_dev_by_id(self, dev_id):
+        return "SELECT serial_number, id, uid FROM %s WHERE \
+id=%i" % (self.devices_table_name, dev_id)
+
+    def get_dev_session_count(self, dev_id):
+        return "\
+SELECT COUNT(DISTINCT test_group_results.id) \
+    FROM %s \
+JOIN test_group_results ON test_group_results.id = group_result_id \
+WHERE %s.%s=%u" % (self.dev_result_table_name,
+                   self.dev_result_table_name,
+                   self.device_key_name,
+                   dev_id)
+
+    def get_dev_sessions(self, dev_id, offset, count):
+        return "\
+SELECT DISTINCT test_group_results.id, \
+      test_group_results.time_of_tests, \
+      test_group_results.group_id \
+FROM %s \
+JOIN test_group_results ON test_group_results.id = group_result_id \
+WHERE %s.%s=%u LIMIT %u OFFSET %u" \
+% (self.dev_result_table_name,
+   self.dev_result_table_name,
+   self.device_key_name,
+   dev_id, count, offset)
+
+
     """
     ====================================================================
 
