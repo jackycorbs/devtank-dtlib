@@ -600,8 +600,15 @@ class default_group_context(base_run_group_context):
         self.devices = context.devices
 
     def get_ready_devices(self, bus_con):
-        bus_con.ready_devices(self.devices)
-        return bus_con.devices
+        try:
+            bus_con.ready_devices(self.devices)
+            return bus_con.devices
+        except Exception as e:
+            print "Failed to get devices."
+            print "Backtrace:"
+            for line in traceback.format_exc().splitlines():
+                print line
+            return []
 
     def stop_devices(self):
         pass
