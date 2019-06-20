@@ -15,6 +15,7 @@ from db_base_dev import db_base_dev
 from context import base_context_object
 from test_file_extract import *
 from tests_group import *
+from power_control import power_controller_t
 import c_base
 from c_base import set_log_file,          \
                    str_from_c_buffer,     \

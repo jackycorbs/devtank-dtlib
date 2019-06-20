@@ -1,14 +1,20 @@
+ifndef PYLIBAPPS
 
+include $(LIBDEVTANKROOT)/libhw/Makefile.libhw
 
-$(OUTDIR)/build/dt_db_base : $(LIBDEVTANKROOT)/pylibapps/dt_db_base/*.py
+PYLIBAPPS=$(LIBDEVTANKROOT)/pylibapps
+
+$(OUTDIR)/build/dt_db_base : $(PYLIBAPPS)/dt_db_base/*.py $(OUTDIR)/lib/libhw.so
 	mkdir -p $(OUTDIR)/lib/dt_db_base
-	cp -pv $(LIBDEVTANKROOT)/pylibapps/dt_db_base/*.py $(OUTDIR)/lib/dt_db_base/
+	cp -pv $(PYLIBAPPS)/dt_db_base/*.py $(OUTDIR)/lib/dt_db_base/
 	mkdir -p $(OUTDIR)/build
 	touch $(OUTDIR)/build/dt_db_base
 
 
-$(OUTDIR)/build/dt_gui_base : $(LIBDEVTANKROOT)/pylibapps/dt_gui_base/*.py
+$(OUTDIR)/build/dt_gui_base : $(PYLIBAPPS)/dt_gui_base/*.py $(OUTDIR)/lib/libhw.so
 	mkdir -p $(OUTDIR)/lib/dt_gui_base
-	cp -pv $(LIBDEVTANKROOT)/pylibapps/dt_gui_base/*.py $(OUTDIR)/lib/dt_gui_base/
+	cp -pv $(PYLIBAPPS)/dt_gui_base/*.py $(OUTDIR)/lib/dt_gui_base/
 	mkdir -p $(OUTDIR)/build
 	touch $(OUTDIR)/build/dt_gui_base
+
+endif

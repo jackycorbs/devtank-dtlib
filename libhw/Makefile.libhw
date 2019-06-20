@@ -1,0 +1,37 @@
+ifndef LIBDEVTANKHW
+
+LIBDEVTANKHW:= $(LIBDEVTANKROOT)/libhw
+
+include $(LIBDEVTANKROOT)/libbase/Makefile.libbase
+include $(LIBDEVTANKROOT)/libyamlhelper/Makefile.libyamlhelper
+
+LIBDEVTANK_INCLUDES += -I$(LIBDEVTANKHW)/include
+LIBDEVTANK_LDFLAGS += `pkg-config libiio --libs`
+
+LIBDEVTANKHW_CFLAGS := $(LIBDEVTANKCORE_CFLAGS) $(LIBDEVTANK_INCLUDES)
+LIBDEVTANKHW_LDFLAGS := $(LIBDEVTANKCORE_LDFLAGS) `pkg-config libiio --libs`
+
+LIBDEVTANKHW_SRCS := $(shell find $(LIBDEVTANKHW)/src -type f -name '*.c')
+LIBDEVTANKHW_OBJS_STC := $(LIBDEVTANKHW_SRCS:$(LIBDEVTANKHW)/%.c=$(OUTDIR)/build/libhw.a/%.o)
+LIBDEVTANKHW_OBJS_DYN := $(LIBDEVTANKHW_SRCS:$(LIBDEVTANKHW)/%.c=$(OUTDIR)/build/libhw.so/%.o)
+
+$(OUTDIR)/build/libhw.a/%.o : $(LIBDEVTANKHW)/%.c $(LIBDEVTANKHW)/Makefile.libhw
+	mkdir -p `dirname $@`
+	$(CC) $(LIBDEVTANKHW_CFLAGS) -c $< -o $@
+
+$(OUTDIR)/build/libhw.so/%.o : $(LIBDEVTANKHW)/%.c $(LIBDEVTANKHW)/Makefile.libhw
+	mkdir -p `dirname $@`
+	$(CC) $(LIBDEVTANKHW_CFLAGS) -fPIC -c $< -o $@
+
+$(OUTDIR)/lib/libhw.a : $(LIBDEVTANKHW_OBJS_STC) $(LIBDEVTANK_STC)
+	mkdir -p `dirname $@`
+	$(AR) rcs $@ $^
+
+$(OUTDIR)/lib/libhw.so : $(LIBDEVTANKHW_OBJS_DYN) $(LIBDEVTANK_DYN)
+	mkdir -p `dirname $@`
+	$(CC) --shared -o $@ $^ $(LIBDEVTANKHW_LDFLAGS)
+
+LIBDEVTANK_DYN += $(OUTDIR)/lib/libhw.so
+LIBDEVTANK_STC := $(OUTDIR)/lib/libhw.a $(LIBDEVTANK_STC)
+
+endif
