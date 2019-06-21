@@ -9,7 +9,7 @@ LIBDEVTANK_INCLUDES += -I$(LIBDEVTANKHW)/include
 LIBDEVTANK_LDFLAGS += `pkg-config libiio --libs`
 
 LIBDEVTANKHW_CFLAGS := $(LIBDEVTANKCORE_CFLAGS) $(LIBDEVTANK_INCLUDES)
-LIBDEVTANKHW_LDFLAGS := $(LIBDEVTANKCORE_LDFLAGS) `pkg-config libiio --libs`
+LIBDEVTANKHW_LDFLAGS := $(LIBDEVTANKCORE_LDFLAGS) `pkg-config libiio --libs` -lyamlhelper -L$(OUTDIR)/lib
 
 LIBDEVTANKHW_SRCS := $(shell find $(LIBDEVTANKHW)/src -type f -name '*.c')
 LIBDEVTANKHW_OBJS_STC := $(LIBDEVTANKHW_SRCS:$(LIBDEVTANKHW)/%.c=$(OUTDIR)/build/libhw.a/%.o)
@@ -23,11 +23,11 @@ $(OUTDIR)/build/libhw.so/%.o : $(LIBDEVTANKHW)/%.c $(LIBDEVTANKHW)/Makefile.libh
 	mkdir -p `dirname $@`
 	$(CC) $(LIBDEVTANKHW_CFLAGS) -fPIC -c $< -o $@
 
-$(OUTDIR)/lib/libhw.a : $(LIBDEVTANKHW_OBJS_STC) $(LIBDEVTANK_STC)
+$(OUTDIR)/lib/libhw.a : $(LIBDEVTANKHW_OBJS_STC)
 	mkdir -p `dirname $@`
 	$(AR) rcs $@ $^
 
-$(OUTDIR)/lib/libhw.so : $(LIBDEVTANKHW_OBJS_DYN) $(LIBDEVTANK_DYN)
+$(OUTDIR)/lib/libhw.so : $(LIBDEVTANKHW_OBJS_DYN)
 	mkdir -p `dirname $@`
 	$(CC) --shared -o $@ $^ $(LIBDEVTANKHW_LDFLAGS)
 

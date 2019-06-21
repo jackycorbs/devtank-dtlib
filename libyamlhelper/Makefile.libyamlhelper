@@ -8,7 +8,7 @@ LIBDEVTANK_INCLUDES += -I$(LIBDEVTANKYAML)/include
 LIBDEVTANK_LDFLAGS += `pkg-config yaml-0.1 --libs`
 
 LIBDEVTANKYAML_CFLAGS := $(LIBDEVTANKCORE_CFLAGS) $(LIBDEVTANK_INCLUDES)
-LIBDEVTANKYAML_LDFLAGS := $(LIBDEVTANKCORE_LDFLAGS) `pkg-config yaml-0.1 --libs`
+LIBDEVTANKYAML_LDFLAGS := $(LIBDEVTANKCORE_LDFLAGS) `pkg-config yaml-0.1 --libs` -lbase -L$(OUTDIR)/lib
 
 LIBDEVTANKYAML_SRCS := $(shell find $(LIBDEVTANKYAML)/src -type f -name '*.c')
 LIBDEVTANKYAML_OBJS_STC := $(LIBDEVTANKYAML_SRCS:$(LIBDEVTANKYAML)/%.c=$(OUTDIR)/build/libyamlhelper.a/%.o)
@@ -22,11 +22,11 @@ $(OUTDIR)/build/libyamlhelper.so/%.o : $(LIBDEVTANKYAML)/%.c $(LIBDEVTANKYAML)/M
 	mkdir -p `dirname $@`
 	$(CC) $(LIBDEVTANKYAML_CFLAGS) -fPIC -c $< -o $@
 
-$(OUTDIR)/lib/libyamlhelper.a : $(LIBDEVTANKYAML_OBJS_STC) $(LIBDEVTANK_STC)
+$(OUTDIR)/lib/libyamlhelper.a : $(LIBDEVTANKYAML_OBJS_STC)
 	mkdir -p `dirname $@`
 	$(AR) rcs $@ $^
 
-$(OUTDIR)/lib/libyamlhelper.so : $(LIBDEVTANKYAML_OBJS_DYN) $(LIBDEVTANK_DYN)
+$(OUTDIR)/lib/libyamlhelper.so : $(LIBDEVTANKYAML_OBJS_DYN)
 	mkdir -p `dirname $@`
 	$(CC) --shared -o $@ $^ $(LIBDEVTANKYAML_LDFLAGS)
 
