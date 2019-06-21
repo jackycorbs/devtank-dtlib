@@ -19,7 +19,7 @@ def c_libcbase_func(restype, name, argtypes):
 _dt_adj_pwr_get                     = c_libcbase_func(c_void_p, "dt_adj_pwr_get",                     None)
 _dt_adj_pwr_is_setup                = c_libcbase_func(c_bool,   "dt_adj_pwr_is_setup",                (c_void_p,))
 _dt_adj_pwr_load_power_control      = c_libcbase_func(c_bool,   "dt_adj_pwr_load_power_control",      (c_void_p, c_char_p))
-_dt_adj_pwr_shutdown                = c_libcbase_func(None,     "dt_adj_pwr_is_setup",                (c_void_p,))
+_dt_adj_pwr_shutdown                = c_libcbase_func(None,     "dt_adj_pwr_shutdown",                (c_void_p,))
 _dt_adj_pwr_enable_power_supply     = c_libcbase_func(c_bool,   "dt_adj_pwr_enable_power_supply",     (c_void_p, c_bool))
 _dt_adj_pwr_power_supply_is_enabled = c_libcbase_func(c_bool,   "dt_adj_pwr_power_supply_is_enabled", (c_void_p,))
 _dt_adj_pwr_enable_power_out        = c_libcbase_func(c_bool,   "dt_adj_pwr_enable_power_out",        (c_void_p, c_bool))
