@@ -27,7 +27,7 @@ _dt_adj_pwr_get_power_use           = _c_libcbase_func(c_bool,   "dt_adj_pwr_get
 _gpio_obj_create  = _c_libcbase_func(c_void_p, "gpio_obj_create",  None)
 _gpio_obj_destroy = _c_libcbase_func(None,     "gpio_obj_destroy", (c_void_p,))
 _gpio_obj_read    = _c_libcbase_func(c_bool,   "gpio_obj_read",    (c_void_p, POINTER(c_bool)))
-_gpio_obj_read    = _c_libcbase_func(c_bool,   "gpio_obj_write",   (c_void_p, c_bool))
+_gpio_obj_write   = _c_libcbase_func(c_bool,   "gpio_obj_write",   (c_void_p, c_bool))
 
 
 class power_controller_t(object):
