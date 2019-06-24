@@ -108,6 +108,7 @@ class gpio_t(object):
             _gpio_obj_destroy(self._c_ptr)
         path = "/sys/class/gpio/gpio%u" % gpio_number
         self._c_ptr = _gpio_obj_create(path)
+        assert self._c_ptr, "GPIO open failed."
 
     def close(self):
         if self._c_ptr:
