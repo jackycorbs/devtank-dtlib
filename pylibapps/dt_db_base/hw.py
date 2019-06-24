@@ -100,11 +100,16 @@ class power_controller_t(object):
 
 
 class gpio_t(object):
-    def __init__(self, gpio_number):
+    def __init__(self):
+        self._c_ptr = None
+
+    def open(self, gpio_number):
+        if self._c_ptr:
+            _gpio_obj_destroy(self._c_ptr)
         path = "/sys/class/gpio/gpio%u" % gpio_number
         self._c_ptr = _gpio_obj_create(path)
 
-    def __del__(self):
+    def close(self):
         if self._c_ptr:
             _gpio_obj_destroy(self._c_ptr)
         self._c_ptr = None
