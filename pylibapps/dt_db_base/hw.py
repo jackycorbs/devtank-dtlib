@@ -9,7 +9,7 @@ from c_base import output_normal, output_good, output_bad, c_base_func
 _c_libcbase = cdll.LoadLibrary("libhw.so")
 
 def _c_libcbase_func(restype, name, argtypes):
-    return c_base_func(_c_libcbase, restype, name, argtypes):
+    return c_base_func(_c_libcbase, restype, name, argtypes)
 
 
 _dt_adj_pwr_get                     = _c_libcbase_func(c_void_p, "dt_adj_pwr_get",                     None)
@@ -23,6 +23,11 @@ _dt_adj_pwr_power_out_is_enabled    = _c_libcbase_func(c_bool,   "dt_adj_pwr_pow
 _dt_adj_pwr_set_power_out           = _c_libcbase_func(c_bool,   "dt_adj_pwr_set_power_out",           (c_void_p, c_double))
 _dt_adj_pwr_get_power_out           = _c_libcbase_func(c_bool,   "dt_adj_pwr_get_power_out",           (c_void_p, POINTER(c_double)))
 _dt_adj_pwr_get_power_use           = _c_libcbase_func(c_bool,   "dt_adj_pwr_get_power_use",           (c_void_p, POINTER(c_double)))
+
+_gpio_obj_create  = _c_libcbase_func(c_void_p, "gpio_obj_create",  None)
+_gpio_obj_destroy = _c_libcbase_func(None,     "gpio_obj_destroy", (c_void_p,))
+_gpio_obj_read    = _c_libcbase_func(c_bool,   "gpio_obj_read",    (c_void_p, POINTER(c_bool)))
+_gpio_obj_read    = _c_libcbase_func(c_bool,   "gpio_obj_write",   (c_void_p, c_bool))
 
 
 class power_controller_t(object):
@@ -91,4 +96,26 @@ class power_controller_t(object):
                 return
         output_bad("Failed to power to %Gv in %u seconds given" % \
             (v, wait_seconds))
+
+
+
+class gpio_t(object):
+    def __init__(self, gpio_number):
+        path = "/sys/class/gpio/gpio%u" % gpio_number
+        self._c_ptr = _gpio_obj_create(path)
+
+    def __del__(self):
+        if self._c_ptr:
+            _gpio_obj_destroy(self._c_ptr)
+        self._c_ptr = None
+
+    @property
+    def value(self):
+        v = c_bool()
+        assert _gpio_obj_read(self._c_ptr, byref(v)), "GPIO read failed."
+        return v
+
+    @value.setter
+    def value(self, v):
+        assert _gpio_obj_write(self._c_ptr, v), "GPIO write failed."
 
