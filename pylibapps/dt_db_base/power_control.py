@@ -4,29 +4,25 @@ import os
 import time
 from ctypes import *
 
-from c_base import output_normal, output_good, output_bad
+from c_base import output_normal, output_good, output_bad, c_base_func
 
 _c_libcbase = cdll.LoadLibrary("libhw.so")
 
-def c_libcbase_func(restype, name, argtypes):
-    """Export C function from shared C library."""
-    r = getattr(_c_libcbase, name)
-    r.restype = restype
-    r.argtypes = argtypes
-    return r
+def _c_libcbase_func(restype, name, argtypes):
+    return c_base_func(_c_libcbase, restype, name, argtypes):
 
 
-_dt_adj_pwr_get                     = c_libcbase_func(c_void_p, "dt_adj_pwr_get",                     None)
-_dt_adj_pwr_is_setup                = c_libcbase_func(c_bool,   "dt_adj_pwr_is_setup",                (c_void_p,))
-_dt_adj_pwr_load_power_control      = c_libcbase_func(c_bool,   "dt_adj_pwr_load_power_control",      (c_void_p, c_char_p))
-_dt_adj_pwr_shutdown                = c_libcbase_func(None,     "dt_adj_pwr_shutdown",                (c_void_p,))
-_dt_adj_pwr_enable_power_supply     = c_libcbase_func(c_bool,   "dt_adj_pwr_enable_power_supply",     (c_void_p, c_bool))
-_dt_adj_pwr_power_supply_is_enabled = c_libcbase_func(c_bool,   "dt_adj_pwr_power_supply_is_enabled", (c_void_p,))
-_dt_adj_pwr_enable_power_out        = c_libcbase_func(c_bool,   "dt_adj_pwr_enable_power_out",        (c_void_p, c_bool))
-_dt_adj_pwr_power_out_is_enabled    = c_libcbase_func(c_bool,   "dt_adj_pwr_power_out_is_enabled",    (c_void_p,))
-_dt_adj_pwr_set_power_out           = c_libcbase_func(c_bool,   "dt_adj_pwr_set_power_out",           (c_void_p, c_double))
-_dt_adj_pwr_get_power_out           = c_libcbase_func(c_bool,   "dt_adj_pwr_get_power_out",           (c_void_p, POINTER(c_double)))
-_dt_adj_pwr_get_power_use           = c_libcbase_func(c_bool,   "dt_adj_pwr_get_power_use",           (c_void_p, POINTER(c_double)))
+_dt_adj_pwr_get                     = _c_libcbase_func(c_void_p, "dt_adj_pwr_get",                     None)
+_dt_adj_pwr_is_setup                = _c_libcbase_func(c_bool,   "dt_adj_pwr_is_setup",                (c_void_p,))
+_dt_adj_pwr_load_power_control      = _c_libcbase_func(c_bool,   "dt_adj_pwr_load_power_control",      (c_void_p, c_char_p))
+_dt_adj_pwr_shutdown                = _c_libcbase_func(None,     "dt_adj_pwr_shutdown",                (c_void_p,))
+_dt_adj_pwr_enable_power_supply     = _c_libcbase_func(c_bool,   "dt_adj_pwr_enable_power_supply",     (c_void_p, c_bool))
+_dt_adj_pwr_power_supply_is_enabled = _c_libcbase_func(c_bool,   "dt_adj_pwr_power_supply_is_enabled", (c_void_p,))
+_dt_adj_pwr_enable_power_out        = _c_libcbase_func(c_bool,   "dt_adj_pwr_enable_power_out",        (c_void_p, c_bool))
+_dt_adj_pwr_power_out_is_enabled    = _c_libcbase_func(c_bool,   "dt_adj_pwr_power_out_is_enabled",    (c_void_p,))
+_dt_adj_pwr_set_power_out           = _c_libcbase_func(c_bool,   "dt_adj_pwr_set_power_out",           (c_void_p, c_double))
+_dt_adj_pwr_get_power_out           = _c_libcbase_func(c_bool,   "dt_adj_pwr_get_power_out",           (c_void_p, POINTER(c_double)))
+_dt_adj_pwr_get_power_use           = _c_libcbase_func(c_bool,   "dt_adj_pwr_get_power_use",           (c_void_p, POINTER(c_double)))
 
 
 class power_controller_t(object):
