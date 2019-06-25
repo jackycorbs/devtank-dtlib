@@ -20,6 +20,7 @@ parser.add_argument('-v','--verbose', help='Increase log information', action='s
 parser.add_argument('--desktop', help='Running on a desktop', action='store_true')
 parser.add_argument('--production', help='Hide advanced and quit.', action='store_true')
 parser.add_argument('--admin', help='Show Test Groups', action='store_true')
+parser.add_argument('--config', help='DB config file to use', type=str)
 
 
 def get_schema():
@@ -45,7 +46,11 @@ def main():
     builder.add_from_string(example_lib.resources['gui_base.glade'])
     builder.add_from_string(example_lib.resources['gui.glade'])
 
-    db_def_file = "config_sqlite_db.yaml"
+    if args['config']:
+        db_def_file = args['config']
+    else:
+        db_def_file = "config_sqlite_db.yaml"
+
 
     with open(db_def_file) as f:
         db_def = yaml.load(f)
