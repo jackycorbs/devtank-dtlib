@@ -3,11 +3,6 @@
 
 typedef struct dt_adj_pwr_t dt_adj_pwr_t;
 
-/** \brief Get power control object.
- * \returns power control object pointer.
- * */
-extern dt_adj_pwr_t* dt_adj_pwr_get();
-
 /** \brief Query if power control is setup.
   * \param adj_pwr power control interface.
   * \param enable  boolean of it setup or not.
