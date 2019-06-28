@@ -42,3 +42,4 @@ from .c_base import set_log_file,          \
                    enable_warning_msgs,   \
                    enable_info_msgs
 from .timerfd import create_timerfd_of, drain_timerfd
+from py_log import dt_py_log_hook_init
