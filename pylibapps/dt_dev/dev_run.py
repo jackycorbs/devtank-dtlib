@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import sys
 import glob
+import traceback
 
 _ANSI_RED     = "\x1B[31m"
 _ANSI_GREEN   = "\x1B[32m"
@@ -133,8 +134,12 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
                           'threshold_check' : lambda a,b,c,d,e: threshold_check(name, args, results, a, b, c, d, e),
                           'exact_check' : lambda a,b,c: exact_check(name, args, results, a, b, c)}
 
-        exec(open(test_file).read(), test_exec_map)
-
+        try:
+            exec(open(test_file).read(), test_exec_map)
+        except Exception as e:
+            print("Exception : " + str(e))
+            for line in traceback.format_exc().splitlines():
+                print(line)
         if set_dbg_print:
             set_dbg_print(org_debug_print)
 
