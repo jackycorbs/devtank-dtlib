@@ -137,9 +137,9 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
         try:
             exec(open(test_file).read(), test_exec_map)
         except Exception as e:
-            print("Exception : " + str(e))
+            output_bad("Exception : " + str(e))
             for line in traceback.format_exc().splitlines():
-                print(line)
+                output_bad(line)
             results[name] = False
         if set_dbg_print:
             set_dbg_print(org_debug_print)
