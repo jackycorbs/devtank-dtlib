@@ -86,7 +86,11 @@ def _thread_test(test_context):
     exec_map = {'exit': _forced_exit,
                 'output_normal' : lib_inf.output_normal,
                 'output_good' : lib_inf.output_good,
-                'output_bad' : lib_inf.output_bad}
+                'output_bad' : lib_inf.output_bad,
+                'error_msg': lib_inf.error_msg,
+                'warning_msg' : lib_inf.warning_msg,
+                'info_msg' : lib_inf.info_msg,
+                }
 
     with bus as bus_con:
 

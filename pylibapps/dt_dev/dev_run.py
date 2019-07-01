@@ -32,6 +32,20 @@ def output_normal(msg):
     if log_file:
         print("OUTPUT: " + msg, file=log_file)
 
+
+def error_msg(msg):
+    if log_file:
+        print("[ERRO]: " + msg, file=log_file)
+
+def warning_msg(msg):
+    if log_file:
+        print("[WARN]: " + msg, file=log_file)
+
+def info_msg(msg):
+    if log_file:
+        print("[INFO]: " + msg, file=log_file)
+
+
 def test_check(test_name, args, results, result, desc):
     if result:
         output_good("%s - passed" % desc)
@@ -113,6 +127,9 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
                           'output_normal' : output_normal,
                           'output_good' : output_good,
                           'output_bad' : output_bad,
+                          'error_msg': error_msg,
+                          'warning_msg' : warning_msg,
+                          'info_msg' : info_msg,
                           'threshold_check' : lambda a,b,c,d,e: threshold_check(name, args, results, a, b, c, d, e),
                           'exact_check' : lambda a,b,c: exact_check(name, args, results, a, b, c)}
 
