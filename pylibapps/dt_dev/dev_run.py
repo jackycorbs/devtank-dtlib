@@ -2,8 +2,6 @@ from __future__ import print_function
 import os
 import sys
 import glob
-import binding
-
 
 _ANSI_RED     = "\x1B[31m"
 _ANSI_GREEN   = "\x1B[32m"
@@ -11,7 +9,7 @@ _ANSI_DEFAULT = "\x1B[39m"
 
 log_file = None
 output_file = None
-org_debug_print = binding.debug_print
+org_debug_print = None
 
 def output_bad(msg):
     print(_ANSI_RED + msg + _ANSI_DEFAULT)
@@ -51,10 +49,16 @@ def exact_check(test_name, args, results, sbj ,ref, desc):
 
 def debug_print(msg):
     print(msg, file=log_file)
-    org_debug_print(msg)
+    if org_debug_print:
+        org_debug_print(msg)
 
 
-def dev_run_dev_on_file(dev, test_file, used_arg_num):
+def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_num):
+    global org_debug_print
+
+    if get_dbg_print:
+        org_debug_print = get_dbg_print()
+
     args = {}
     name = os.path.basename(test_file)
     results = {}
@@ -93,7 +97,8 @@ def dev_run_dev_on_file(dev, test_file, used_arg_num):
         log_file    = open("/tmp/" + name + ".log", "w")
         output_file = open("/tmp/" + name + ".output", "w")
 
-        binding.debug_print = debug_print
+        if set_dbg_print:
+            set_dbg_print(debug_print)
 
         print("\n===== %s =======\n" % name)
 
@@ -113,7 +118,8 @@ def dev_run_dev_on_file(dev, test_file, used_arg_num):
 
         exec(open(test_file).read(), test_exec_map)
 
-        binding.debug_print = org_debug_print
+        if set_dbg_print:
+            set_dbg_print(org_debug_print)
 
     print("\n===== RESULTS =======\n")
     for name in results:
