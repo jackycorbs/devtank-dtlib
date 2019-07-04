@@ -191,7 +191,6 @@ class sftp_transferer(object):
 
     def upload(self, filepath, file_id):
         remote_filepath = self._get_remote_name(filepath, file_id, True)
-        shutil.copy(filepath, remote_filepath)
         self._con.put(filepath, remote_filepath)
 
     def download(self, filepath, file_id, mod_time):
