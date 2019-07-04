@@ -39,7 +39,12 @@ class mysql_db_backend(object):
 
     def open_raw(self):
         db_def = self.db_def
-        return mysqlconn.connect(database=db_def["dbname"], user=db_def["user"], password=db_def["password"], host=db_def["host"], port=db_def.get("port", 3306))
+        return mysqlconn.connect(database=db_def["dbname"],
+                                 user=db_def["user"],
+                                 password=db_def["password"],
+                                 host=db_def["host"],
+                                 port=db_def.get("port", 3306),
+                                 sql_mode='ANSI_QUOTES')
 
     def open(self, work_folder):
         db = self.open_raw()
