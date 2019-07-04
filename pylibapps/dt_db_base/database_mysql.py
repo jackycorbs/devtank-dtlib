@@ -25,9 +25,9 @@ class mysql_db_inf(db_inf):
         return mysql_db_cursor(self)
 
 class mysql_tester_database(tester_database):
-    def __init__(self, db, sql, work_folder):
+    def __init__(self, db, sql, work_folder, db_def):
         tester_database.__init__(self, db, sql, work_folder)
-        self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer() }
+        self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer(db_def) }
 
     def get_db_now():
         row = self.db.query_one("SELECT NOW()")
@@ -48,7 +48,7 @@ class mysql_db_backend(object):
 
     def open(self, work_folder):
         db = self.open_raw()
-        return mysql_tester_database(mysql_db_inf(db), self.db_def['sql'], work_folder)
+        return mysql_tester_database(mysql_db_inf(db), self.db_def['sql'], work_folder, self.db_def)
 
     def is_empty(self):
         db = self.open_raw()

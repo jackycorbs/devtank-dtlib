@@ -99,10 +99,12 @@ class smb_transferer(object):
 
 
 class sftp_connection(object):
-    def __init__(self, file_store_host):
+    def __init__(self, file_store_host, db_def):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(file_store_host)
+        ssh.connect(file_store_host,
+                    username=db_def.get("sftp_user",None),
+                    password=db_def.get("sftp_password",None))
         self.ssh = ssh
         self.sftp_con = ssh.open_sftp()
 
@@ -140,7 +142,8 @@ class local_connection(object):
 
 class sftp_transferer(object):
     protocol_id=1
-    def __init__(self):
+    def __init__(self, db_def={}):
+        self._db_def = db_def
         self._con = None
         self._base_folder = None
         self._cache_con = {}
@@ -170,7 +173,7 @@ class sftp_transferer(object):
         if file_store_host.lower() == "localhost":
             self._con = local_connection()
         else:
-            self._con = sftp_connection(file_store_host)
+            self._con = sftp_connection(file_store_host, self._db_def)
         self._cache_con[cache_key] = [self._con, time.time()]
 
     def _get_remote_name(self, filepath, file_id, upload=False):
