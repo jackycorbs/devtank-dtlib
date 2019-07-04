@@ -485,4 +485,4 @@ class tester_database(object):
                                    sftp_transferer.protocol_id)
 
     def get_dev(self, dev_uuid):
-        raise Exception("Not implimented")
+        raise Exception("Not implemented")
