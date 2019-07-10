@@ -54,6 +54,9 @@ class scan_box_base(object):
             self.scan_barcodeB_entry.disconnect(self._scan_B_id)
             self._scan_B_id = None
 
+    def set_enable(self, enable):
+        self.scan_barcodeA_entry.set_sensitive(enable)
+
     def reset_scan(self):
         self.scan_barcodeA_entry.set_text("")
         self.scan_barcodeB_entry.set_text("")
