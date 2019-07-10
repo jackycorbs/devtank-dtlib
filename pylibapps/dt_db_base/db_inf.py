@@ -114,10 +114,6 @@ class db_inf(object):
         except Exception as e:
             self.fail_catch(e)
 
-    @property
-    def last_used(self):
-        return self._last_used
-
     def clean(self):
         if not bool(self._current):
             delta = time.time() - self.last_used
