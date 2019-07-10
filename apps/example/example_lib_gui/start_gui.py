@@ -110,7 +110,12 @@ class _start_singleton(object):
         if self.context.db:
             self.scan_view.set_status("Database connected")
 
-        self.scan_view.set_enable(bool(self.context.db))
+        has_db = bool(self.context.db)
+
+        self.scan_view.set_enable(has_db)
+
+        if has_db:
+            self.context.db.clean()
 
         return True
 

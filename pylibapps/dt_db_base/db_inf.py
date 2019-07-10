@@ -20,7 +20,7 @@ class db_cursor(object):
             _db_debug_print("SQL : '%s'" % cmd)
         except Exception as e:
             print 'SQL "%s" failed' % cmd
-            raise e
+            self._parent.fail_catch(e)
 
     def query(self, cmd):
         self._execute(cmd)
@@ -39,11 +39,14 @@ class db_cursor(object):
 
 
 class db_inf(object):
-    def __init__(self, db):
-        self._db = db
+    def __init__(self, db_def, connect_fn, disconnect_time=5 * 60):
+        self.db_def = db_def
+        self._db = None
         self._current = None
         self._cur_count = 0
         self._last_used = time.time()
+        self._disconnect_time = disconnect_time
+        self._connect_fn = connect_fn
 
     def _get_db(self):
         if not self._db:
@@ -95,14 +98,23 @@ class db_inf(object):
             self._last_used = time.time()
 
     def fail_catch(self, e):
-        pass
+        self._db = None
 
     def wake(self):
-        pass
+        try:
+            self._db = self._connect_fn(self.db_def)
+            self._last_used = time.time()
+        except Exception as e:
+            self.fail_catch(e)
 
     @property
     def last_used(self):
         return self._last_used
 
     def clean(self):
-        return not bool(self._current)
+        if not bool(self._current):
+            delta = time.time() - self.last_used
+            if delta > self._disconnect_time:
+                if self._db:
+                    self._db.close()
+                    self._db = None

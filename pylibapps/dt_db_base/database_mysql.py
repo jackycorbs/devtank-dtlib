@@ -6,7 +6,8 @@ from database import tester_database
 from db_filestore_protocol import sftp_transferer
 from db_inf import db_inf, db_cursor
 
-_db_debug_print = lambda msg : None
+_MYSQL_AUTO_DISCONNECT = 60 * 5
+
 
 class mysql_db_cursor(db_cursor):
     def __init__(self, parent):
@@ -17,12 +18,28 @@ class mysql_db_cursor(db_cursor):
         ret = self._c.lastrowid
         return ret
 
+
+def _do_raw_connect(db_def):
+    return mysqlconn.connect(database=db_def["dbname"],
+                             user=db_def["user"],
+                             password=db_def["password"],
+                             host=db_def["host"],
+                             port=db_def.get("port", 3306),
+                             sql_mode='ANSI_QUOTES')
+
+
 class mysql_db_inf(db_inf):
-    def __init__(self, db):
-        db_inf.__init__(self, db)
+    def __init__(self, db_def):
+        db_inf.__init__(self,
+                        db_def,
+                        _do_raw_connect,
+                        _MYSQL_AUTO_DISCONNECT)
 
     def cursor(self):
         return mysql_db_cursor(self)
+
+    
+
 
 class mysql_tester_database(tester_database):
     def __init__(self, db, sql, work_folder, db_def):
@@ -33,25 +50,19 @@ class mysql_tester_database(tester_database):
         row = self.db.query_one("SELECT NOW()")
         return row[0].astimezone(pytz.utc)
 
+
 class mysql_db_backend(object):
     def __init__(self, db_def):
         self.db_def = db_def
 
-    def open_raw(self):
-        db_def = self.db_def
-        return mysqlconn.connect(database=db_def["dbname"],
-                                 user=db_def["user"],
-                                 password=db_def["password"],
-                                 host=db_def["host"],
-                                 port=db_def.get("port", 3306),
-                                 sql_mode='ANSI_QUOTES')
-
     def open(self, work_folder):
-        db = self.open_raw()
-        return mysql_tester_database(mysql_db_inf(db), self.db_def['sql'], work_folder, self.db_def)
+        return mysql_tester_database(mysql_db_inf(self.db_def),
+                                     self.db_def['sql'],
+                                     work_folder,
+                                     self.db_def)
 
     def is_empty(self):
-        db = self.open_raw()
+        db = _do_raw_connect(self.db_def)
         c = db.cursor()
         cmd = "SELECT table_name FROM information_schema.tables WHERE table_schema = '" + self.db_def["dbname"] + "'"
         c.execute(cmd)
@@ -59,7 +70,7 @@ class mysql_db_backend(object):
         return not len(rows)
 
     def load(self, schema):
-        db = self.open_raw()
+        db = _do_raw_connect(self.db_def)
 
         c = db.cursor()
 
