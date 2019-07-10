@@ -45,7 +45,7 @@ class db_inf(object):
         self._current = None
         self._cur_count = 0
         self._last_used = time.time()
-        self._disconnect_time = disconnect_time
+        self._disconnect_time = db_def.get("disconnect_time", disconnect_time)
         self._connect_fn = connect_fn
 
     def _get_db(self):
@@ -98,12 +98,19 @@ class db_inf(object):
             self._last_used = time.time()
 
     def fail_catch(self, e):
+        if self._db:
+            try:
+                self._db.close()
+            except:
+                pass
         self._db = None
+        print "Bad DB : " + self.db_def['type']
 
     def wake(self):
         try:
             self._db = self._connect_fn(self.db_def)
             self._last_used = time.time()
+            print "Connected DB : " + self.db_def['type']
         except Exception as e:
             self.fail_catch(e)
 
@@ -116,5 +123,6 @@ class db_inf(object):
             delta = time.time() - self.last_used
             if delta > self._disconnect_time:
                 if self._db:
+                    print "Auto disconnect DB"
                     self._db.close()
                     self._db = None
