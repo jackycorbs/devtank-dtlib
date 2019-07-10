@@ -41,13 +41,14 @@ class base_context_object(object):
             self.db = db
             self.tests_group.db = db
             self.tests_group.update_defaults()
+            get_dev = self.db_def["fn_get_dev"]
             from types import MethodType
 
             db.db.fail_catch = MethodType(lambda e: \
                     self._db_fail(self, e), db.db, db.db.__class__)
 
             db.get_dev = MethodType(lambda db, uuid: \
-                    self.db_def["fn_get_dev"](db, uuid), db, db.__class__)
+                    get_dev(db, uuid), db, db.__class__)
         return True
 
     def lock_bus(self):
