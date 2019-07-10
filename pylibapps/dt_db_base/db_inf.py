@@ -47,6 +47,7 @@ class db_inf(object):
         self._last_used = time.time()
         self._disconnect_time = db_def.get("disconnect_time", disconnect_time)
         self._connect_fn = connect_fn
+        self.error_handler = None
 
     def _get_db(self):
         if not self._db:
@@ -105,6 +106,8 @@ class db_inf(object):
                 pass
         self._db = None
         print "Bad DB : " + self.db_def['type']
+        if self.error_handler:
+            self.error_handler(e)
 
     def wake(self):
         try:
