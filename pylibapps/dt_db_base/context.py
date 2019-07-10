@@ -1,3 +1,4 @@
+import os
 import subprocess
 from tests_group import tests_group_creator
 
