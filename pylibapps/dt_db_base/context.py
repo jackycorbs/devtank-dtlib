@@ -35,6 +35,7 @@ class base_context_object(object):
         except Exception as e:
             print "ERROR database connection fail : %s" % str(e)
             db = None
+            self._db_fail(e)
 
         if db:
             self.db = db
@@ -42,8 +43,8 @@ class base_context_object(object):
             self.tests_group.update_defaults()
             from types import MethodType
 
-            db.db.fail_catch = MethodType(lambda db, e: \
-                    self._db_fail(self, db, e), db.db, db.db.__class__)
+            db.db.fail_catch = MethodType(lambda e: \
+                    self._db_fail(self, e), db.db, db.db.__class__)
 
             db.get_dev = MethodType(lambda db, uuid: \
                     self.db_def["fn_get_dev"](db, uuid), db, db.__class__)
@@ -55,5 +56,5 @@ class base_context_object(object):
     def release_bus(self):
         raise Exception("Context release_bus not implimented.");
 
-    def _db_fail(self, db, e):
+    def _db_fail(self, e):
         print "Failed to reconnect to database, %s" % str(e)
