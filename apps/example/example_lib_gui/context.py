@@ -4,8 +4,8 @@ from dt_gui_base import gui_context_object as base_gui_context_object
 
 
 class gui_context_object(base_gui_context_object):
-    def __init__(self, args, db, builder):
-        base_gui_context_object.__init__(self, args, db, builder)
+    def __init__(self, args, db_def, builder):
+        base_gui_context_object.__init__(self, args, db_def, builder)
         self.__bus = example_lib.example_bus()
         self.locked = False
         self.db_dev = None

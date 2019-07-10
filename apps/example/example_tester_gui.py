@@ -33,6 +33,14 @@ def get_schema():
     return schema[1:-2]
 
 
+def db_load_extra(db):
+    tests = db.get_all_tests()
+    if not len(tests):
+        print "Import tests"
+        db.add_tests_folder(os.path.abspath("tests"))
+        db.load_groups(os.path.abspath("tests/groups.yaml"))
+
+
 def main():
 
     print "Running Example Tester GUI", datetime.datetime.utcnow()
@@ -51,25 +59,17 @@ def main():
     else:
         db_def_file = "config_sqlite_db.yaml"
 
-
     with open(db_def_file) as f:
         db_def = yaml.load(f)
 
-    work_folder = os.path.abspath("files_cache")
-
     db_def['sql'] = example_lib.example_sql_common()
+    db_def["fn_get_dev"] = example_lib.db_example_dev.get_by_uuid
+    db_def["work_folder"] = os.path.abspath("files_cache")
+    db_def["open_db_backend"] = example_lib.base_open_db_backend
+    db_def["fn_get_schema"] = get_schema
+    db_def["fn_extra_load"] = db_load_extra
 
-    db = example_lib.base_open_db_backend(db_def, get_schema, work_folder)
-
-    tests = db.get_all_tests()
-    if not len(tests):
-        print "Import tests"
-        db.add_tests_folder(os.path.abspath("tests"))
-        db.load_groups(os.path.abspath("tests/groups.yaml"))
-
-    db.get_dev = types.MethodType(lambda db, uuid: example_lib.db_example_dev.get_by_uuid(db, uuid), db, db.__class__)
-
-    context = example_lib_gui.gui_context_object(args, db, builder)
+    context = example_lib_gui.gui_context_object(args, db_def, builder)
 
     example_lib_gui.init(context)
 
