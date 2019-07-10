@@ -58,7 +58,7 @@ class mssql_db_inf(db_inf):
                                         database=db_def['database'])
             self._last_used = time.time()
         except Exception as e:
-            self.wake_fail_catch(e)
+            self.fail_catch(e)
 
     def clean(self):
         if db_inf.clean(self):

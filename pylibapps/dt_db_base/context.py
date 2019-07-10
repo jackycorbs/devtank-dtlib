@@ -42,7 +42,7 @@ class base_context_object(object):
             self.tests_group.update_defaults()
             from types import MethodType
 
-            db.db.wake_fail_catch = MethodType(lambda db, e: \
+            db.db.fail_catch = MethodType(lambda db, e: \
                     self._db_fail(self, db, e), db.db, db.db.__class__)
 
             db.get_dev = MethodType(lambda db, uuid: \

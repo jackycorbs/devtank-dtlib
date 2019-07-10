@@ -94,7 +94,7 @@ class db_inf(object):
             self._current = None
             self._last_used = time.time()
 
-    def wake_fail_catch(self, e):
+    def fail_catch(self, e):
         pass
 
     def wake(self):
