@@ -60,6 +60,6 @@ class gui_context_object(base_context_object):
     def drop_view(self):
         self.prev_view.pop()
 
-    def clear_view_stack():
+    def clear_view_stack(self):
         self.prev_view = []
 
