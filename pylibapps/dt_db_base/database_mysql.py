@@ -25,7 +25,8 @@ def _do_raw_connect(db_def):
                              password=db_def["password"],
                              host=db_def["host"],
                              port=db_def.get("port", 3306),
-                             sql_mode='ANSI_QUOTES')
+                             sql_mode='ANSI_QUOTES',
+                             connection_timeout=10)
 
 
 class mysql_db_inf(db_inf):
