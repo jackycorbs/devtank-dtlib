@@ -6,6 +6,7 @@ class base_context_object(object):
     def __init__(self, args, db_def):
         self.db_def = db_def
         self.db = None
+        self.db_error = False
         self.args = args
         self.devices = []
         self.on_exit_cbs = []
@@ -29,7 +30,8 @@ class base_context_object(object):
                                             shell=True, stdout=FNULL,
                                             stderr=subprocess.STDOUT)
                 if has_error:
-                    return True
+                    print "Unable to ping host."
+                    return False
 
         try:
             db = self.db_def["open_db_backend"](self.db_def)
@@ -38,18 +40,20 @@ class base_context_object(object):
             db = None
             self._db_fail(e)
 
-        if db:
-            self.db = db
-            self.tests_group.db = db
-            self.tests_group.update_defaults()
-            get_dev = self.db_def["fn_get_dev"]
-            from types import MethodType
+        if not db:
+            return False
 
-            db.db.fail_catch = MethodType(lambda e: \
-                    self._db_fail(self, e), db.db, db.db.__class__)
+        self.db = db
+        self.db_error = False
+        self.tests_group.db = db
+        self.tests_group.update_defaults()
+        get_dev = self.db_def["fn_get_dev"]
+        from types import MethodType
 
-            db.get_dev = MethodType(lambda db, uuid: \
-                    get_dev(db, uuid), db, db.__class__)
+        db.db.error_handler = lambda e: self._db_fail(e)
+
+        db.get_dev = MethodType(lambda db, uuid: \
+                get_dev(db, uuid), db, db.__class__)
         return True
 
     def lock_bus(self):
@@ -60,3 +64,5 @@ class base_context_object(object):
 
     def _db_fail(self, e):
         print "Failed to reconnect to database, %s" % str(e)
+        self.db = None
+        self.db_error = True

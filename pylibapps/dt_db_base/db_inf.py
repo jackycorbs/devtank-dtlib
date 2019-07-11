@@ -11,7 +11,10 @@ def set_debug_print(cb):
 class db_cursor(object):
     def __init__(self, parent):
         self._parent = parent
-        self._c      = parent._get_db().cursor()
+        try:
+            self._c      = parent._get_db().cursor()
+        except Exception as e:
+            self._parent.fail_catch(e)
 
     def _execute(self, cmd):
         self._parent._last_used = time.time()
@@ -24,11 +27,17 @@ class db_cursor(object):
 
     def query(self, cmd):
         self._execute(cmd)
-        return self._c.fetchall()
+        try:
+            return self._c.fetchall()
+        except Exception as e:
+            self._parent.fail_catch(e)
 
     def query_one(self, cmd):
         self._execute(cmd)
-        return self._c.fetchone()
+        try:
+            return self._c.fetchone()
+        except Exception as e:
+            self._parent.fail_catch(e)
 
     def update(self, cmd):
         self._execute(cmd)
@@ -61,10 +70,16 @@ class db_inf(object):
 
     def commit(self):
         if not self._current:
-            self._get_db().commit()
+            try:
+                self._get_db().commit()
+            except Exception as e:
+                self._parent.fail_catch(e)
 
     def rollback(self):
-        self._get_db().rollback()
+        try:
+            self._get_db().rollback()
+        except Exception as e:
+            self._parent.fail_catch(e)
 
     def query(self, cmd):
         return self.cursor().query(cmd)
@@ -119,7 +134,7 @@ class db_inf(object):
 
     def clean(self):
         if not bool(self._current):
-            delta = time.time() - self.last_used
+            delta = time.time() - self._last_used
             if delta > self._disconnect_time:
                 if self._db:
                     print "Auto disconnect DB"

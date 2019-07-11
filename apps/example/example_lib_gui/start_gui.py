@@ -62,6 +62,11 @@ class _start_double_scan(scan_box_base):
     def barcode_do(self, serial_number):
         context = self.context
 
+        if not context.db:
+            if not context.db_init():
+                self.set_status("Unable to connect to DB.")
+                return
+
         if context.args['production']:
             db_test_group = context.db.get_group("Example Group")
             context.tests_group.populate_from(db_test_group)
@@ -103,18 +108,15 @@ class _start_singleton(object):
                                                lambda : self._refresh())
 
     def _refresh(self):
-        if not self.context.db:
-            self.scan_view.set_status("No database")
-            self.context.db_init()
+        if self.context.db_error:
+            self.scan_view.set_status("Bad Database connection")
+            if self.context.db_init():
+                self.scan_view.set_status("Database connected")
+                self.scan_view.set_enable(True)
+            else:
+                self.scan_view.set_enable(False)
 
         if self.context.db:
-            self.scan_view.set_status("Database connected")
-
-        has_db = bool(self.context.db)
-
-        self.scan_view.set_enable(has_db)
-
-        if has_db:
             self.context.db.clean()
 
         return True
