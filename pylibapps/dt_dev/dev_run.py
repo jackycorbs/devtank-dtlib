@@ -103,9 +103,6 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
     for test in tests:
         test_file = test
 
-        if os.path.islink(test_file):
-            test_file = os.readlink(test_file)
-
         name = os.path.basename(test_file)
 
         global log_file, output_file
