@@ -92,6 +92,7 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
                 except:
                     pass
                 args[name] = value
+                print("Argument '%s' :" % name, value)
 
     if test_file.find("*") != -1:
         tests = glob.glob(test_file)
