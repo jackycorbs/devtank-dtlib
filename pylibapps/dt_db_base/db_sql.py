@@ -59,6 +59,19 @@ WHERE %s.%s=%u LIMIT %u OFFSET %u" \
    dev_id, count, offset)
 
 
+    def get_dev_last_result(self, dev_id, group_name):
+        return "SELECT test_group_results.time_of_tests, MIN(%s.pass_fail) FROM %s \
+JOIN test_group_results on test_group_results.id = %s.group_result_id \
+JOIN test_groups ON test_groups.id = test_group_results.group_id \
+WHERE %s.%s = %u AND test_groups.name = '%s' \
+GROUP BY test_group_results.time_of_tests \
+ORDER BY test_group_results.time_of_tests DESC LIMIT 1" \
+% (self.dev_result_table_name,
+   self.dev_result_table_name,
+   self.dev_result_table_name,
+   self.dev_result_table_name,
+   self.device_key_name, dev_id, db_safe_str(group_name))
+
     """
     ====================================================================
 

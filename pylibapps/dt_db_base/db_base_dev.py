@@ -46,3 +46,10 @@ class db_base_dev(db_child):
         cmd = self.db.sql.get_update_dev_uid(self.id, new_uuid)
         self.db.db.update(cmd)
         self.uuid = new_uuid
+
+    def get_last_result(self, group_name):
+        cmd = self.db.sql.get_dev_last_result(self.id, group_name)
+        row = self.db.db.query_one(cmd)
+        if row is None:
+            return False
+        return bool(row[1])
