@@ -6,8 +6,8 @@ from gi.repository import Gtk
 from dt_db_base import base_context_object
 
 class gui_context_object(base_context_object):
-    def __init__(self, args, db, builder):
-        base_context_object.__init__(self, args, db)
+    def __init__(self, args, db_def, builder):
+        base_context_object.__init__(self, args, db_def)
         self.current_view = None
         self.builder = builder
         self.prev_view = []
@@ -59,3 +59,7 @@ class gui_context_object(base_context_object):
 
     def drop_view(self):
         self.prev_view.pop()
+
+    def clear_view_stack(self):
+        self.prev_view = []
+

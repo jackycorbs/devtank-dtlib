@@ -5,6 +5,16 @@ from database import tester_database
 from db_filestore_protocol import sftp_transferer
 from db_inf import db_inf, db_cursor
 
+_PG_AUTO_DISCONNECT = 60 * 5
+
+def _do_raw_connect(db_def):
+    return psycopg2.connect( "dbname=%s "\
+                             "user=%s "\
+                             "password=%s "\
+                             "host=%s" % (db_def["dbname"],
+                                          db_def["user"],
+                                          db_def["password"],
+                                          db_def["host"]))
 
 
 class pg_db_cursor(db_cursor):
@@ -17,12 +27,14 @@ class pg_db_cursor(db_cursor):
 
 
 class pg_db_inf(db_inf):
-    def __init__(self, db):
-        db_inf.__init__(self, db)
+    def __init__(self, db_def):
+        db_inf.__init__(self,
+                        db_def,
+                        _do_raw_connect,
+                        _PG_AUTO_DISCONNECT)
 
     def cursor(self):
         return pg_db_cursor(self)
-
 
 
 class pg_tester_database(tester_database):
@@ -40,23 +52,11 @@ class pg_db_backend(object):
         self.db_def = db_def
 
 
-    def open_raw(self):
-        db_def = self.db_def
-        return psycopg2.connect( "dbname=%s "\
-                                 "user=%s "\
-                                 "password=%s "\
-                                 "host=%s" % (db_def["dbname"],
-                                              db_def["user"],
-                                              db_def["password"],
-                                              db_def["host"]))
-
     def open(self, work_folder):
-        db = self.open_raw()
-        return pg_tester_database(pg_db_inf(db), self.db_def['sql'], work_folder)
-
+        return pg_tester_database(pg_db_inf(db_def), self.db_def['sql'], work_folder)
 
     def is_empty(self):
-        db = self.open_raw()
+        db = _do_raw_connect(self.db_def)
         c = db.cursor()
         cmd = "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
         c.execute(cmd)
@@ -66,7 +66,7 @@ class pg_db_backend(object):
 
 
     def load(self, schema):
-        db = self.open_raw()
+        db = _do_raw_connect(self.db_def)
 
         c = db.cursor()
 

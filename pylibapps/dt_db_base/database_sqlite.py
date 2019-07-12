@@ -15,14 +15,25 @@ class sqlite_tester_database(tester_database):
 
 
 
+def _do_raw_connect(db_def):
+    return sqlite3.connect(db_def["filename"])
+
+
+class sqlite_db_inf(db_inf):
+    def __init__(self, db_def):
+        db_inf.__init__(self, db_def, _do_raw_connect)
+
+    def clean(self):
+        pass
+
+
+
 class sqlite_db_backend(object):
     def __init__(self, db_def):
         self.db_def = db_def
 
-
     def open(self, work_folder):
-        filename = self.db_def["filename"]
-        return sqlite_tester_database(db_inf(sqlite3.connect(filename)),
+        return sqlite_tester_database(sqlite_db_inf(self.db_def),
                                       self.db_def["sql"],
                                       work_folder)
 
@@ -32,16 +43,12 @@ class sqlite_db_backend(object):
 
 
     def load(self, schema):
-        filename = self.db_def["filename"]
-        if os.path.exists(filename):
-            os.remove(filename)
-
         filestore_dir = os.path.abspath(self.db_def['db_files']);
 
         if not os.path.exists(filestore_dir):
             os.mkdir(filestore_dir)
 
-        db = sqlite3.connect(filename)
+        db = _do_raw_connect(self.db_def)
 
         for s in schema:
             s = s.strip()

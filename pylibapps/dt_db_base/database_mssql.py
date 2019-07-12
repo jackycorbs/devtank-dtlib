@@ -39,34 +39,23 @@ class mssql_tester_database(tester_database):
         return row[0]
 
 
+def _do_raw_connect(db_def):
+    return pymssql.connect( host=db_def['host'],
+                            port=db_def['port'],
+                            user=db_def['user'],
+                            login_timeout=4,
+                            password=db_def['password'],
+                            appname=db_def['appname'],
+                            tds_version=db_def['tds_version'],
+                            database=db_def['database'])
+
+
 class mssql_db_inf(db_inf):
     def __init__(self, db_def):
-        db_inf.__init__(self, None)
-        self.db_def = db_def
-        self.wake()
-
-    def wake(self):
-        try:
-            db_def = self.db_def
-            self._db = pymssql.connect( host=db_def['host'],
-                                        port=db_def['port'],
-                                        user=db_def['user'],
-                                        login_timeout=4,
-                                        password=db_def['password'],
-                                        appname=db_def['appname'],
-                                        tds_version=db_def['tds_version'],
-                                        database=db_def['database'])
-            self._last_used = time.time()
-        except Exception as e:
-            self.wake_fail_catch(e)
-
-    def clean(self):
-        if db_inf.clean(self):
-            delta = time.time() - self.last_used
-            if delta > _MSSQL_AUTO_DISCONNECT:
-                if self._db:
-                    self._db.close()
-                    self._db = None
+        db_inf.__init__(self,
+                        db_def,
+                        _do_raw_connect,
+                        _MSSQL_AUTO_DISCONNECT)
 
 
 class mssql_db_backend(object):

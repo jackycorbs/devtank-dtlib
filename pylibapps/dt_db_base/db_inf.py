@@ -11,7 +11,10 @@ def set_debug_print(cb):
 class db_cursor(object):
     def __init__(self, parent):
         self._parent = parent
-        self._c      = parent._get_db().cursor()
+        try:
+            self._c      = parent._get_db().cursor()
+        except Exception as e:
+            self._parent.fail_catch(e)
 
     def _execute(self, cmd):
         self._parent._last_used = time.time()
@@ -20,15 +23,21 @@ class db_cursor(object):
             _db_debug_print("SQL : '%s'" % cmd)
         except Exception as e:
             print 'SQL "%s" failed' % cmd
-            raise e
+            self._parent.fail_catch(e)
 
     def query(self, cmd):
         self._execute(cmd)
-        return self._c.fetchall()
+        try:
+            return self._c.fetchall()
+        except Exception as e:
+            self._parent.fail_catch(e)
 
     def query_one(self, cmd):
         self._execute(cmd)
-        return self._c.fetchone()
+        try:
+            return self._c.fetchone()
+        except Exception as e:
+            self._parent.fail_catch(e)
 
     def update(self, cmd):
         self._execute(cmd)
@@ -39,11 +48,15 @@ class db_cursor(object):
 
 
 class db_inf(object):
-    def __init__(self, db):
-        self._db = db
+    def __init__(self, db_def, connect_fn, disconnect_time=5 * 60):
+        self.db_def = db_def
+        self._db = None
         self._current = None
         self._cur_count = 0
         self._last_used = time.time()
+        self._disconnect_time = db_def.get("disconnect_time", disconnect_time)
+        self._connect_fn = connect_fn
+        self.error_handler = None
 
     def _get_db(self):
         if not self._db:
@@ -57,10 +70,16 @@ class db_inf(object):
 
     def commit(self):
         if not self._current:
-            self._get_db().commit()
+            try:
+                self._get_db().commit()
+            except Exception as e:
+                self._parent.fail_catch(e)
 
     def rollback(self):
-        self._get_db().rollback()
+        try:
+            self._get_db().rollback()
+        except Exception as e:
+            self._parent.fail_catch(e)
 
     def query(self, cmd):
         return self.cursor().query(cmd)
@@ -94,15 +113,30 @@ class db_inf(object):
             self._current = None
             self._last_used = time.time()
 
-    def wake_fail_catch(self, e):
-        pass
+    def fail_catch(self, e):
+        if self._db:
+            try:
+                self._db.close()
+            except:
+                pass
+        self._db = None
+        print "Bad DB : " + self.db_def['type']
+        if self.error_handler:
+            self.error_handler(e)
 
     def wake(self):
-        pass
-
-    @property
-    def last_used(self):
-        return self._last_used
+        try:
+            self._db = self._connect_fn(self.db_def)
+            self._last_used = time.time()
+            print "Connected DB : " + self.db_def['type']
+        except Exception as e:
+            self.fail_catch(e)
 
     def clean(self):
-        return not bool(self._current)
+        if not bool(self._current):
+            delta = time.time() - self._last_used
+            if delta > self._disconnect_time:
+                if self._db:
+                    print "Auto disconnect DB"
+                    self._db.close()
+                    self._db = None

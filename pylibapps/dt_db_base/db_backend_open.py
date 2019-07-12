@@ -15,7 +15,7 @@ def _open_pg_db(db_def):
     from database_pg import pg_db_backend
     return pg_db_backend(db_def)
 
-def base_open_db_backend(db_def, get_schema, work_folder, extra_load=None):
+def base_open_db_backend(db_def):
 
     db_backends = {'sqlite' : _open_sqlite_db,
                    'mssql'  : _open_mssql_db,
@@ -23,10 +23,14 @@ def base_open_db_backend(db_def, get_schema, work_folder, extra_load=None):
                    'pg'     : _open_pg_db}
 
     db_backend = db_backends[db_def['type']](db_def)
+    work_folder = db_def['work_folder']
+    get_schema = db_def.get('fn_get_schema', None)
+    extra_load = db_def.get('fn_extra_load', None)
 
     if not db_backend.is_empty():
         return db_backend.open(work_folder)
 
+    assert get_schema, "Empty database and no schema to fill it."
     db_backend.load(get_schema())
     r = db_backend.open(work_folder)
     r.load_filestores(db_def)
