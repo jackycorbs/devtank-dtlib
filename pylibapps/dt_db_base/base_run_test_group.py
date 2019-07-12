@@ -68,7 +68,7 @@ def _threshold_check(lib_inf, test_name, args, results, sbj, ref, margin, unit, 
     _test_check(lib_inf, test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s == %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
 def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
-    _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%u == %u) check" % (desc, sbj, ref))
+    _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
 
 
