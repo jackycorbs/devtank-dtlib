@@ -37,6 +37,8 @@ class base_context_object(object):
             db = self.db_def["open_db_backend"](self.db_def)
         except Exception as e:
             print "ERROR database connection fail : %s" % str(e)
+            import traceback
+            traceback.print_exc()
             db = None
             self._db_fail(e)
 
