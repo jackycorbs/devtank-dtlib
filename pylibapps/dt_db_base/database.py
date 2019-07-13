@@ -282,7 +282,7 @@ class tester_database(object):
             db.commit()
         return self._new_test_obj( test_id, test_name, file_id)
 
-    def _update_groups_with_new_test(self, groups, old_test, new_test):
+    def _update_groups_with_new_test(self, groups, old_test, new_test, db_cursor=None, now=None):
         for group in groups:
             for n in range(0, len(group.tests)):
                 test = group.tests[n]
@@ -290,7 +290,7 @@ class tester_database(object):
                     group.tests[n] = new_test
                     new_test.pending_properties = \
                         test.pending_properties
-            group.updated_db()
+            group.updated_db(db_cursor, now)
 
 
     def update_tests_in_folder(self, local_folder, db_cursor=None, now=None):
@@ -332,7 +332,7 @@ class tester_database(object):
                                                  now)
                         self._update_groups_with_new_test(groups,
                                                           test,
-                                                          new_test)
+                                                          new_test, c, now)
                 else:
                     args = _extract_defaults(new_test_file,
                                              default_args)
@@ -397,10 +397,14 @@ class tester_database(object):
 
         return r
 
-    def load_groups(self, filename):
+    def load_groups(self, filename, db_cursor=None, now=None):
         db = self.db
-        c = db.cursor()
-        now = db_ms_now()
+        if db_cursor:
+            c = db_cursor
+        else:
+            c = db.cursor()
+        if not now:
+            now = db_ms_now()
         r = []
         folder = os.path.dirname(filename)
         with open(filename) as f:
@@ -431,7 +435,8 @@ class tester_database(object):
 
                 r += [self.group_from_dict(group_data, folder, c, now)]
 
-            db.commit()
+            if not db_cursor:
+                db.commit()
         return r
 
     def get_db_now():

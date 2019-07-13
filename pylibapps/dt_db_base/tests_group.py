@@ -55,12 +55,13 @@ class tests_group_creator:
         self.passed = False
 
 
-    def updated_db(self):
+    def updated_db(self, db_cursor=None, now=None):
         if self.db_group:
             self.db_group.update(self.name, self.description,
-                                 self.tests)
+                                 self.tests, db_cursor, now)
         else:
-            self.db.add_group(self.name, self.description, self.tests)
+            self.db.add_group(self.name, self.description, self.tests,
+                              db_cursor, now)
 
 
     def add_tests_results(self, results):

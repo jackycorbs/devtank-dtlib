@@ -133,9 +133,12 @@ class test_group_obj:
         if db_cursor is None:
             db.commit()
 
-    def update(self, name, desc, tests):
+    def update(self, name, desc, tests, db_cursor=None, now=None):
         db = self.db.db
-        c = db.cursor()
+        if db_cursor:
+            c = db_cursor
+        else:
+            c = db.cursor()
         group_id = self.id
 
         sql = self.db.sql
@@ -146,7 +149,8 @@ class test_group_obj:
         if (desc != self.desc):
             c.update(sql.set_test_group_desc(group_id, desc))
 
-        now = db_ms_now()
+        if not now:
+            now = db_ms_now()
 
         old_tests = self.get_tests()
 
@@ -166,16 +170,29 @@ class test_group_obj:
                     self.remove_test(old_test, c, now)
                 self.add_test(new_test, c, n, now)
 
-        db.commit()
+        if not db_cursor:
+            db.commit()
 
-    def delete(self):
+    def delete(self, db_cursor=None, now=None):
         db = self.db.db
-        db.update(self.db.sql.remove_test_group(self.id, db_ms_now()))
+        if db_cursor:
+            c = db_cursor
+        else:
+            c = db.cursor()
+        if not now:
+            now = db_ms_now()
+        c.update(self.db.sql.remove_test_group(self.id, now))
+        if not db_cursor:
+            db.commit()
 
-    def add_tests_results(self, results, tests):
+    def add_tests_results(self, results, tests, db_cursor=None, now=None):
         db = self.db.db
-        c = db.cursor()
-        now = db_ms_now()
+        if db_cursor:
+            c = db_cursor
+        else:
+            c = db.cursor()
+        if not now:
+            now = db_ms_now()
 
         cmd = self.db.sql.add_test_group_results(self.id, now)
         results_id = c.insert(cmd)
@@ -226,7 +243,8 @@ class test_group_obj:
                                                   db_time(duration)))
                 else:
                     print "Unknown UUID %s, can't store results." % dev_uuid
-        db.commit()
+        if not db_cursor:
+            db.commit()
 
     def get_sessions_count(self):
         cmd = self.db.sql.get_test_group_results_count(self.id)
