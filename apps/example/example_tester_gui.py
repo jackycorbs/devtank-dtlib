@@ -86,7 +86,7 @@ def main():
 
     main_window.show()
 
-    if args['production']:
+    if args['production'] and not args['desktop']:
         cursor = Gdk.Cursor(Gdk.CursorType.BLANK_CURSOR)
         main_window.get_window().set_cursor(cursor)
 
