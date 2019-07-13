@@ -28,12 +28,13 @@ def base_open_db_backend(db_def):
     extra_load = db_def.get('fn_extra_load', None)
 
     if not db_backend.is_empty():
-        return db_backend.open(work_folder)
-
-    assert get_schema, "Empty database and no schema to fill it."
-    db_backend.load(get_schema())
-    r = db_backend.open(work_folder)
-    r.load_filestores(db_def)
-    if extra_load:
+        r = db_backend.open(work_folder)
+    else:
+        assert get_schema, "Empty database and no schema to fill it."
+        db_backend.load(get_schema())
+        r = db_backend.open(work_folder)
+        if r:
+            r.load_filestores(db_def)
+    if extra_load and r:
         extra_load(r)
     return r
