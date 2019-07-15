@@ -102,9 +102,17 @@ class sftp_connection(object):
     def __init__(self, file_store_host, db_def):
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+        port = 22
+        split_pos = file_store_host.find(':')
+        if split_pos != -1:
+            port = int(file_store_host[split_pos+1:])
+            file_store_host = file_store_host[:split_pos]
+
         ssh.connect(file_store_host,
                     username=db_def.get("sftp_user",None),
-                    password=db_def.get("sftp_password",None))
+                    password=db_def.get("sftp_password",None),
+                    port=port)
         self.ssh = ssh
         self.sftp_con = ssh.open_sftp()
 
