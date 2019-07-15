@@ -51,5 +51,5 @@ class db_base_dev(db_child):
         cmd = self.db.sql.get_dev_last_result(self.id, group_name)
         row = self.db.db.query_one(cmd)
         if row is None:
-            return False
+            return None
         return bool(row[1])
