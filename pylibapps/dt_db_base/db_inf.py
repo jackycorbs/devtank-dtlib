@@ -118,7 +118,8 @@ class db_inf(object):
             try:
                 self._db.close()
             except:
-                pass
+                import traceback
+                traceback.print_exc()
         self._db = None
         print "Bad DB : " + self.db_def['type']
         if self.error_handler:
