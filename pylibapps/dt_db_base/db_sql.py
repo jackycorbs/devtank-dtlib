@@ -52,7 +52,7 @@ SELECT DISTINCT test_group_results.id, \
       test_group_results.group_id \
 FROM %s \
 JOIN test_group_results ON test_group_results.id = group_result_id \
-WHERE %s.%s=%u LIMIT %u OFFSET %u" \
+WHERE %s.%s=%u ORDER BY test_group_results.time_of_tests DESC LIMIT %u OFFSET %u" \
 % (self.dev_result_table_name,
    self.dev_result_table_name,
    self.device_key_name,
