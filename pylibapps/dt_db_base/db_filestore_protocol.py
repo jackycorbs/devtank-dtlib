@@ -17,7 +17,6 @@ def get_hash_folders(filename):
 class smb_transferer(object):
     protocol_id=2
     def __init__(self):
-        print "Using smbc for smb transfer"
         self._ctx = None
         self._host = None
         self._base_folder = None
