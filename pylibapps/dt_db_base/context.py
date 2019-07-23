@@ -59,10 +59,10 @@ class base_context_object(object):
         return True
 
     def lock_bus(self):
-        raise Exception("Context lock_bus not implimented.");
+        raise Exception("Context lock_bus not implemented.");
 
     def release_bus(self):
-        raise Exception("Context release_bus not implimented.");
+        raise Exception("Context release_bus not implemented.");
 
     def _db_fail(self, e):
         print "Failed to reconnect to database, %s" % str(e)
