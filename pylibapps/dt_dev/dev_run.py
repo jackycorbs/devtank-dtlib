@@ -143,7 +143,7 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
             set_dbg_print(org_debug_print)
 
     print("\n===== RESULTS =======\n")
-    for name in results:
+    for name in sorted(results.keys()):
         if results[name]:
             print(_ANSI_GREEN + ("* - '%s' - passed" % name) + _ANSI_DEFAULT)
         else:
