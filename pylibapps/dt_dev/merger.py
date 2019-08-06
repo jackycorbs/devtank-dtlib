@@ -3,8 +3,15 @@ import hashlib
 import copy
 import time
 import yaml
+import sys
 import os
-from db_process import test_group_t, group_entry_t, test_t, arg_t, db_process_t, obj_valid_at, as_human_time
+if sys.version_info[0] < 3:
+    from db_process import test_group_t, group_entry_t, test_t, arg_t, db_process_t, obj_valid_at, as_human_time
+else:
+    from . import db_process
+    as_human_time = db_process.as_human_time
+    db_process_t = db_process.db_process_t
+    obj_valid_at = db_process.obj_valid_at
 import logging
 
 
