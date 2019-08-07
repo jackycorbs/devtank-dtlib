@@ -167,10 +167,9 @@ def _thread_test(test_context):
                     lib_inf.output_bad("Exception:")
                     for line in str(e).splitlines():
                         lib_inf.output_bad(line)
-                    if not test_context.is_production:
-                        lib_inf.output_bad("Backtrace:")
-                        for line in traceback.format_exc().splitlines():
-                            lib_inf.output_bad(line)
+                    lib_inf.output_bad("Backtrace:")
+                    for line in traceback.format_exc().splitlines():
+                        lib_inf.output_bad(line)
                     lib_inf.enable_info_msgs(False)
 
                 test_pass = results.get(name, False)

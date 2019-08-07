@@ -2,6 +2,7 @@
 class _user_query_singleton(object):
     def __init__(self, context):
         self.return_cb = None
+        self.msg = None
         self.context = context
         builder = context.builder
         self.query_lab = builder.get_object("query_lab")
@@ -12,6 +13,7 @@ class _user_query_singleton(object):
         query_no_btn.connect("clicked",  lambda x: self.response_click(False))
 
     def do(self, msg, return_cb):
+        self.msg = msg
         self.query_lab.set_text(msg)
         self.return_cb = return_cb
         self.context.push_view()

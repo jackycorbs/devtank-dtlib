@@ -1,4 +1,5 @@
 
+
 def _get_scan_widget(context, box):
     if isinstance(box, str) or isinstance(box, unicode):
         return context.builder.get_object(box)
