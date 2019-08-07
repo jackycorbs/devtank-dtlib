@@ -68,7 +68,7 @@ def debug_print(msg):
         org_debug_print(msg)
 
 
-def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_num):
+def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_num, logs_dir="/tmp"):
     global org_debug_print
 
     if get_dbg_print:
@@ -107,8 +107,8 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
 
         global log_file, output_file
 
-        log_file    = open("/tmp/" + name + ".log", "w")
-        output_file = open("/tmp/" + name + ".output", "w")
+        log_file    = open(os.path.join(logs_dir, name + ".log"), "w")
+        output_file = open(os.path.join(logs_dir, name + ".output"), "w")
 
         if set_dbg_print:
             set_dbg_print(debug_print)
@@ -143,8 +143,10 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
             set_dbg_print(org_debug_print)
 
     print("\n===== RESULTS =======\n")
+    resultsfile  = open(os.path.join(logs_dir, "results"), "w")
     for name in sorted(results.keys()):
         if results[name]:
             print(_ANSI_GREEN + ("* - '%s' - passed" % name) + _ANSI_DEFAULT)
         else:
             print(_ANSI_RED + ("* - '%s' - FAILED" % name) + _ANSI_DEFAULT)
+        resultsfile.write("* - '%s' - %s\n" % (name, "passed" if results[name] else "FAILED"))
