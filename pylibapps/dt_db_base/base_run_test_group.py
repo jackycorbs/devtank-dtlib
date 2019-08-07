@@ -49,10 +49,13 @@ class base_run_group_context(object):
         return self.bus
 
 
+class ForceExitException(Exception):
+    """Raise an exception exit is forced."""
+    pass
 
 
 def _forced_exit():
-    raise Exception("Forced Exit")
+    raise ForceExitException
 
 
 def _test_check(lib_inf, test_name, args, results, result, desc):
@@ -162,6 +165,10 @@ def _thread_test(test_context):
                         test_context.send_cmd("SET_UUID %s" % post_dev_uuid)
                         dev_uuid = post_dev_uuid
                     bus_con.poll_devices()
+                except ForceExitException as e:
+                    results[name] = False
+                    lib_inf.output_bad("Forced Exit")
+                    lib_inf.enable_info_msgs(False)
                 except Exception as e:
                     results[name] = False
                     lib_inf.output_bad("Exception:")
