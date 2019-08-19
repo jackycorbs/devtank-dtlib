@@ -116,6 +116,10 @@ class gpio_t(object):
         self._c_ptr = None
 
     @property
+    def is_open(self):
+        return bool(self._c_ptr)
+
+    @property
     def value(self):
         v = c_bool()
         assert _gpio_obj_read(self._c_ptr, byref(v)), "GPIO read failed."
