@@ -22,8 +22,17 @@ CREATE TABLE "example_dev_test_results" (
 	FOREIGN KEY("group_result_id") REFERENCES "test_group_results" ("id")
 );
 
-INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_table',             2, 0, "example_devs");
-INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_table',     2, 0, "example_dev_test_results");
-INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_table_key', 2, 0, "example_dev_id");
+CREATE TABLE "example_dev_test_results_values" (
+	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
+	"test_result_id"	INTEGER NOT NULL,
+	"value_id"	INTEGER NOT NULL,
+	FOREIGN KEY("test_result_id") REFERENCES "example_dev_test_results" ("id"),
+	FOREIGN KEY("value_id") REFERENCES "values" ("id")
+);
+
+INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_table',                2, 0, "example_devs");
+INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_table',        2, 0, "example_dev_test_results");
+INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_table_key',    2, 0, "example_dev_id");
+INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_values_table', 2, 0, "example_dev_test_results_values");
 
 COMMIT;

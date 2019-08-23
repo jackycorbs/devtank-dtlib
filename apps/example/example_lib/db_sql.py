@@ -9,6 +9,7 @@ class example_sql_common(sql_common):
 
     """
     dev_result_table_name = "example_dev_test_results"
+    dev_result_values_table_name = "example_dev_test_results_values"
     devices_table_name = "example_devs"
     device_key_name = "example_dev_id"
 

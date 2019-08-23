@@ -8,6 +8,7 @@ _int_null = lambda x: ("%i" % x) if x is not None else "NULL"
 class sql_common(object):
 
     dev_result_table_name = "dev_result_table"
+    dev_result_values_table_name = None
     devices_table_name = "devs"
     device_key_name = "dev_id"
 
@@ -338,6 +339,15 @@ VALUES (%i, %i, %i, %i, %s, %s, %s)" % \
  (dev_result_table_name, device_key_name, session_id, dev_id,
   group_entry_id, int(pass_fail), _id_null(output_file_id),\
   _id_null(log_file_id), _int_null(duration))
+
+    def add_test_value(self, result_id, value_id):
+        dev_result_values_table_name = \
+        self.__class__.dev_result_values_table_name
+        if not dev_result_values_table_name:
+            return None
+        return "\
+INSERT INTO %s (test_result_id, value_id) VALUES (%i, %i)" % \
+(dev_result_values_table_name, result_id, value_id)
     """
     ====================================================================
 

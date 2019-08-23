@@ -73,6 +73,8 @@ def _threshold_check(lib_inf, test_name, args, results, sbj, ref, margin, unit, 
 def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
+def _store_value(test_context, n, v):
+    test_context.send_cmd("STORE_VALUE %s %s" % (n.replace(" ","_"), str(v).replace(" ","_")))
 
 
 
@@ -156,6 +158,7 @@ def _thread_test(test_context):
                                           'threshold_check' : lambda a,b,c,d,e: _threshold_check(lib_inf, name, args, results, a, b, c, d, e),
                                           'exact_check' : lambda a,b,c: _exact_check(lib_inf, name, args, results, a, b, c),
                                           'results': results,
+                                          'store_value' : lambda n, v : _store_value(test_context, n, v),
                                           '__file__' : os.path.abspath(test_file)})
                     execfile(test_file, test_exec_map)
                     lib_inf.enable_info_msgs(False)
@@ -256,7 +259,9 @@ class base_run_group_manager(object):
                      "START_LOGFILE": lambda logfile:  self._start_logfile(logfile),
                      "STATUS_TEST":   lambda args:     self._test_status(args),
                      "STATUS_DEV":    lambda passfail: self._dev_status(passfail == "True"),
-                     "SET_UUID":      lambda new_uuid: self._dev_set_uuid(new_uuid)}
+                     "SET_UUID":      lambda new_uuid: self._dev_set_uuid(new_uuid),
+                     "STORE_VALUE":   lambda n_v_pair: self._store_value(n_v_pair),
+                     }
 
         GLib.io_add_watch(self.stdout_in,
                           GLib.IO_IN | GLib.IO_HUP | GLib.IO_ERR,
@@ -345,6 +350,11 @@ class base_run_group_manager(object):
                 dev.uuid = new_uuid
         self.current_device = new_uuid
 
+    def _store_value(self, n_v_pair):
+        name, value = n_v_pair.split(" ")
+        test_dict = self.session_results[self.current_device]['tests'][self.current_test]
+        test_dict.setdefault("stored_values", {})
+        test_dict["stored_values"][name] = value
 
     def process_line(self, line):
         if not self.live:
