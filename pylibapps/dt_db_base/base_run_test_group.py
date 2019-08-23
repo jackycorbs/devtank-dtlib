@@ -467,32 +467,6 @@ class base_run_group_manager(object):
         self.last_end_time = time.time()
         self.readonly = True
 
-    def get_results(self):
-        r ={}
-        for uuid, uuid_results in self.session_results.iteritems():
-            results = {}
-            outfiles = {}
-            logfiles = {}
-            durations = {}
-            old_uuid = uuid_results.get('old_uuid', None)
-            uuid_results = uuid_results['tests']
-            for test_result in uuid_results:
-                test_data = uuid_results[test_result]
-                if 'passfail' in test_data and \
-                  'outfile' in test_data and \
-                  'logfile' in test_data and \
-                  'duration' in test_data :
-                    results[test_result] = test_data['passfail']
-                    outfiles[test_result] = test_data['outfile']
-                    logfiles[test_result] = test_data['logfile']
-                    durations[test_result] = test_data['duration']
-            if len(results) and \
-              len(outfiles) and \
-              len(logfiles) and \
-              len(durations):
-                r[uuid] = (results, outfiles, logfiles, durations, old_uuid)
-        return r
-
     def _complete_stop(self):
         self.process.join(4)
         self.test_context.stop_devices()
@@ -594,8 +568,7 @@ class base_run_group_manager(object):
 
     def submit(self):
         if self.has_new:
-            results = self.get_results()
-            self.context.tests_group.add_tests_results(results)
+            self.context.tests_group.add_tests_results(self.session_results)
             self.has_new = False
 
 

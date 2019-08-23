@@ -65,14 +65,16 @@ class tests_group_creator:
 
 
     def add_tests_results(self, results):
+        to_reduce = {}
 
-        to_reduce = [ pass_fail for pass_fail in \
-                      [ result[0].values() \
-                          for result in \
-                             results.values() ] ]
+        for uuid, uuid_results in results.items():
+            uuid_test_results = uuid_results['tests']
+            for test in self.tests:
+                test_data = uuid_test_results.get(test.name, None)
+                if test_data:
+                    to_reduce["%s_%s" % (uuid, test.name)] = test_data.get('passfail', False)
 
-        self.passed = bool(min(reduce(lambda a, b: a + b, to_reduce))) \
-                      if len(to_reduce) else False
+        self.passed = min(to_reduce.values()) if len(to_reduce) else False
 
         self.db_group.add_tests_results(results, self.tests)
 

@@ -197,16 +197,17 @@ class test_group_obj:
         cmd = self.db.sql.add_test_group_results(self.id, now)
         results_id = c.insert(cmd)
 
-        for dev_uuid in results:
-            pass_fails, outputs, logs, durations, old_uuid = results[dev_uuid]
+        for dev_uuid, uuid_results in results.items():
+            uuid_test_results = uuid_results['tests']
+            old_uuid = uuid_results.get('old_uuid', None)
 
             for test in tests:
-                testname = test.name
-                if testname in pass_fails:
-                    pass_fail = pass_fails[testname]
-                    output = outputs[testname]
-                    log = logs[testname]
-                    duration = durations[testname]
+                test_data = uuid_test_results.get(test.name, None)
+                if test_data:
+                    pass_fail = test_data.get('passfail', None)
+                    output = test_data.get('outfile', None)
+                    log = test_data.get('logfile', None)
+                    duration = test_data.get('duration', None)
                 else:
                     pass_fail = False
                     output = None
