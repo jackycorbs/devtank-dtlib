@@ -74,6 +74,15 @@ def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
+    if not isinstance(v, str):
+        if isinstance(v, int):
+            v = str(v)
+        elif isinstance(v, float):
+            v = "%G" % v
+            if v.find(".") == -1:
+                v += ".0"
+        else:
+            raise Exception("Unsupported value type to store.")
     test_context.send_cmd("STORE_VALUE %u %u '%s' '%s'" % (len(n), len(v), n, v))
 
 
