@@ -45,6 +45,8 @@ class tester_database(object):
         self.db = db
         self.sql = sql
         self.version = db_values.get_db_version(db, sql)
+        sql.result_props_id = db_values.get_result_props_id(db, sql)
+
         self.work_folder = work_folder
         self._known_objs = {}
         self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer(),

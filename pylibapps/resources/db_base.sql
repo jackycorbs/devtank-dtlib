@@ -76,6 +76,7 @@ INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 3)
 INSERT INTO "values" ("name", "valid_from") VALUES('settings', 0);
 INSERT INTO "values" ("name", "parent_id", "valid_from") VALUES('defaults', 2, 0);
 INSERT INTO "values" ("name", "valid_from") VALUES('tests_properties', 0);
+INSERT INTO "values" ("name", "valid_from") VALUES('results_values', 0);
 
 INSERT INTO "file_store_protocols" ("name") VALUES('SFTP');
 INSERT INTO "file_store_protocols" ("name") VALUES('SMB');

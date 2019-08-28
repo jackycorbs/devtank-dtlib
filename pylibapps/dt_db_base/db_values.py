@@ -36,6 +36,15 @@ def get_db_version(db, sql):
     return rows[0][1]
 
 
+def get_result_props_id(db, sql):
+    rows = db.query(sql.get_result_values_parent_id())
+    if not len(rows):
+        return None
+    if len(rows) != 1:
+        raise Exception("Should be one entry for results values parent.")
+    return int(rows[0][0])
+
+
 def _get_value_tree(c, sql, parent_id, now):
     r = {}
     value_entries = c.query(sql.get_value(parent_id, now))
@@ -56,11 +65,11 @@ def _get_value_tree(c, sql, parent_id, now):
 
 
 def get_settings_tree(db, sql, now):
-    return _get_value_tree(db.cursor(), sql, sql.__class__.settings_id, db_ms_now())
+    return _get_value_tree(db.cursor(), sql, sql.settings_id, db_ms_now())
 
 
 def _get_default_by_name(c, sql, prop_name, now):
-    cmd = sql.get_value_by_name(sql.__class__.defaults_id, prop_name, now)
+    cmd = sql.get_value_by_name(sql.defaults_id, prop_name, now)
     return c.query(cmd)
 
 
