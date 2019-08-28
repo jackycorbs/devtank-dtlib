@@ -74,7 +74,7 @@ def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
-    test_context.send_cmd("STORE_VALUE '%s' '%s'" % (n, v))
+    test_context.send_cmd("STORE_VALUE %u %u '%s' '%s'" % (len(n), len(v), n, v))
 
 
 
@@ -350,10 +350,13 @@ class base_run_group_manager(object):
                 dev.uuid = new_uuid
         self.current_device = new_uuid
 
-    def _store_value(self, n_v_pair):
-        name, value = n_v_pair.split("' '")
-        name = name[1:]
-        value = value[:-1]
+    def _store_value(self, n_v_line):
+        txt_start = n_v_line.find("'")
+        n_len, v_len = [int(s) for s in n_v_line[0:txt_start].split() ]
+        pos = txt_start + 1
+        name = n_v_line[ pos : pos + n_len]
+        pos += n_len + 3 #"' '"
+        value = n_v_line[ pos : pos + v_len]
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
         test_dict.setdefault("stored_values", {})
         test_dict["stored_values"][name] = value
