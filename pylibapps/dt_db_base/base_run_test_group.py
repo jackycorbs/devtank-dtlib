@@ -11,6 +11,7 @@ from gi.repository import GLib
 from multiprocessing import Process
 
 import c_base
+import db_values
 
 _IPC_CMD = "IPC_CMD:"
 
@@ -365,7 +366,11 @@ class base_run_group_manager(object):
         pos = txt_start + 1
         name = n_v_line[ pos : pos + n_len]
         pos += n_len + 3 #"' '"
-        value = n_v_line[ pos : pos + v_len]
+        s_value = n_v_line[ pos : pos + v_len]
+        value = db_values.to_type_from_str(s_value)
+        if isinstance(value, str):
+            s_value = "'%s'" % value
+        self.info_line("Storing %s as '%s'" % (s_value, name))
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
         test_dict.setdefault("stored_values", {})
         test_dict["stored_values"][name] = value
