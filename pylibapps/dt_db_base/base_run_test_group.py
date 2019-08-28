@@ -74,7 +74,7 @@ def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
-    test_context.send_cmd("STORE_VALUE %s %s" % (n.replace(" ","_"), str(v).replace(" ","_")))
+    test_context.send_cmd("STORE_VALUE '%s' '%s'" % (n, v))
 
 
 
@@ -260,7 +260,7 @@ class base_run_group_manager(object):
                      "STATUS_TEST":   lambda args:     self._test_status(args),
                      "STATUS_DEV":    lambda passfail: self._dev_status(passfail == "True"),
                      "SET_UUID":      lambda new_uuid: self._dev_set_uuid(new_uuid),
-                     "STORE_VALUE":   lambda n_v_pair: self._store_value(n_v_pair),
+                     "STORE_VALUE":   lambda n_v_line: self._store_value(n_v_line),
                      }
 
         GLib.io_add_watch(self.stdout_in,
@@ -351,7 +351,9 @@ class base_run_group_manager(object):
         self.current_device = new_uuid
 
     def _store_value(self, n_v_pair):
-        name, value = n_v_pair.split(" ")
+        name, value = n_v_pair.split("' '")
+        name = name[1:]
+        value = value[:-1]
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
         test_dict.setdefault("stored_values", {})
         test_dict["stored_values"][name] = value
