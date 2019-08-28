@@ -246,11 +246,14 @@ class test_group_obj:
                                                   pass_fail,
                                                   output, log,
                                                   db_time(duration)))
-                    if values and sql.dev_result_values_table_name:
-                        for test_value_name, test_value_data in values.items():
-                            value_id = db_values.add_value(self.db._add_files, c, sql,
-                                                           test_value_name, test_value_data, now)
-                            c.insert(sql.add_test_value(result_id, value_id))
+                    if values:
+                        if sql.dev_result_values_table_name:
+                            for test_value_name, test_value_data in values.items():
+                                value_id = db_values.add_value(self.db._add_files, c, sql,
+                                                               test_value_name, test_value_data, now)
+                                c.insert(sql.add_test_value(result_id, value_id))
+                        else:
+                            print "Stored value but no table to put it."
                 else:
                     print "Unknown UUID %s, can't store results." % dev_uuid
         if not db_cursor:

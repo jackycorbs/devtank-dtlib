@@ -370,7 +370,6 @@ class base_run_group_manager(object):
         value = db_values.to_type_from_str(s_value)
         if isinstance(value, str):
             s_value = "'%s'" % value
-        self.info_line("Storing %s as '%s'" % (s_value, name))
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
         test_dict.setdefault("stored_values", {})
         test_dict["stored_values"][name] = value
