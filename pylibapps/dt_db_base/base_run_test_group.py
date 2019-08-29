@@ -278,7 +278,18 @@ class base_run_group_manager(object):
         while not line.endswith("\n") and tries:
             line += self.stdout_in.readline()
             tries -= 1
-        return self.process_line(line)
+        if not line.endswith("\n"):
+            print "INCOMPLETE LINE."
+        try:
+            return self.process_line(line)
+        except Exception as e:
+            import traceback
+            print "LINE PROCESS FAILED"
+            traceback.print_exc()
+            self.stop()
+        ext_cmd = self.external_cmds.get("FINISHED",None)
+        if ext_cmd:
+            ext_cmd("")
 
     def _process_die_catch(self):
         if not self.process:
