@@ -206,7 +206,7 @@ class test_group_obj:
             for test in tests:
                 test_data = uuid_test_results.get(test.name, None)
                 if test_data:
-                    pass_fail = test_data.get('passfail', None)
+                    pass_fail = test_data.get('passfail', False)
                     output = test_data.get('outfile', None)
                     log = test_data.get('logfile', None)
                     duration = test_data.get('duration', None)
