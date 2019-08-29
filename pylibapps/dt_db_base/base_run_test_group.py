@@ -4,7 +4,6 @@ import time
 import datetime
 import traceback
 import cPickle as pickle
-import base64
 
 import gi
 gi.require_version('GLib', '2.0')
@@ -77,8 +76,8 @@ def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
-    data = base64.encodestring(pickle.dumps((n, v)))
-    test_context.send_cmd("STORE_VALUE " + data[0:-1]) # Base64 includes a newline
+    data = pickle.dumps((n, v)).replace("\n","<NL>")
+    test_context.send_cmd("STORE_VALUE " + data) # Base64 includes a newline
 
 
 
@@ -370,7 +369,7 @@ class base_run_group_manager(object):
         self.current_device = new_uuid
 
     def _store_value(self, data):
-        data = pickle.loads(base64.decodestring(data))
+        data = pickle.loads(data.replace("<NL>","\n"))
         name = data[0]
         value = data[1]
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
