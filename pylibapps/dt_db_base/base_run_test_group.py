@@ -274,6 +274,10 @@ class base_run_group_manager(object):
 
     def _stdout_in_event(self, src, cond):
         line = self.stdout_in.readline()
+        tries = 3
+        while not line.endswith("\n") and tries:
+            line += self.stdout_in.readline()
+            tries -= 1
         return self.process_line(line)
 
     def _process_die_catch(self):
