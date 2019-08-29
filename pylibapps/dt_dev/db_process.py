@@ -186,7 +186,7 @@ class db_process_t(object):
             for hashdir in folders:
                 path = os.path.join(path, hashdir)
                 if not os.path.exists(path):
-                    os.mkdir(path)
+                    os.makedirs(path)
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
             shutil.copyfile(filepath, new_path)
@@ -203,6 +203,16 @@ class db_process_t(object):
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
             sftp.put(new_path, remote_file)
+
+    def add_file(self, c, filepath, now):
+        cmd = "SELECT MAX(id), base_folder FROM file_stores WHERE is_writable=1"
+        c.execute(cmd)
+        fs_id, fs_frd  = c.fetchone()
+        cmd = "INSERT INTO files (file_store_id, filename, size, modified_date, insert_time) VALUES(%u, '%s', %u, %u, %u)" % (fs_id, os.path.basename(filepath), os.path.getsize(filepath), os.path.getmtime(filepath), now)
+        c.execute(cmd) 
+        file_id = c.lastrowid
+        self.copy_file(fs_frd, filepath, os.path.basename(filepath), file_id)
+        return file_id
 
     def get_line(self, filepath, key):
         with open(filepath, "rb") as f:
