@@ -3,6 +3,8 @@ import sys
 import time
 import datetime
 import traceback
+import cPickle as pickle
+import base64
 
 import gi
 gi.require_version('GLib', '2.0')
@@ -11,6 +13,7 @@ from gi.repository import GLib
 from multiprocessing import Process
 
 import c_base
+import db_values
 
 _IPC_CMD = "IPC_CMD:"
 
@@ -73,6 +76,9 @@ def _threshold_check(lib_inf, test_name, args, results, sbj, ref, margin, unit, 
 def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
+def _store_value(test_context, n, v):
+    data = base64.encodestring(pickle.dumps((n, v)))
+    test_context.send_cmd("STORE_VALUE " + data[0:-1]) # Base64 includes a newline
 
 
 
@@ -156,6 +162,7 @@ def _thread_test(test_context):
                                           'threshold_check' : lambda a,b,c,d,e: _threshold_check(lib_inf, name, args, results, a, b, c, d, e),
                                           'exact_check' : lambda a,b,c: _exact_check(lib_inf, name, args, results, a, b, c),
                                           'results': results,
+                                          'store_value' : lambda n, v : _store_value(test_context, n, v),
                                           '__file__' : os.path.abspath(test_file)})
                     execfile(test_file, test_exec_map)
                     lib_inf.enable_info_msgs(False)
@@ -256,7 +263,9 @@ class base_run_group_manager(object):
                      "START_LOGFILE": lambda logfile:  self._start_logfile(logfile),
                      "STATUS_TEST":   lambda args:     self._test_status(args),
                      "STATUS_DEV":    lambda passfail: self._dev_status(passfail == "True"),
-                     "SET_UUID":      lambda new_uuid: self._dev_set_uuid(new_uuid)}
+                     "SET_UUID":      lambda new_uuid: self._dev_set_uuid(new_uuid),
+                     "STORE_VALUE":   lambda data: self._store_value(data),
+                     }
 
         GLib.io_add_watch(self.stdout_in,
                           GLib.IO_IN | GLib.IO_HUP | GLib.IO_ERR,
@@ -345,6 +354,13 @@ class base_run_group_manager(object):
                 dev.uuid = new_uuid
         self.current_device = new_uuid
 
+    def _store_value(self, data):
+        data = pickle.loads(base64.decodestring(data))
+        name = data[0]
+        value = data[1]
+        test_dict = self.session_results[self.current_device]['tests'][self.current_test]
+        test_dict.setdefault("stored_values", {})
+        test_dict["stored_values"][name] = value
 
     def process_line(self, line):
         if not self.live:
@@ -467,32 +483,6 @@ class base_run_group_manager(object):
         self.last_end_time = time.time()
         self.readonly = True
 
-    def get_results(self):
-        r ={}
-        for uuid, uuid_results in self.session_results.iteritems():
-            results = {}
-            outfiles = {}
-            logfiles = {}
-            durations = {}
-            old_uuid = uuid_results.get('old_uuid', None)
-            uuid_results = uuid_results['tests']
-            for test_result in uuid_results:
-                test_data = uuid_results[test_result]
-                if 'passfail' in test_data and \
-                  'outfile' in test_data and \
-                  'logfile' in test_data and \
-                  'duration' in test_data :
-                    results[test_result] = test_data['passfail']
-                    outfiles[test_result] = test_data['outfile']
-                    logfiles[test_result] = test_data['logfile']
-                    durations[test_result] = test_data['duration']
-            if len(results) and \
-              len(outfiles) and \
-              len(logfiles) and \
-              len(durations):
-                r[uuid] = (results, outfiles, logfiles, durations, old_uuid)
-        return r
-
     def _complete_stop(self):
         self.process.join(4)
         self.test_context.stop_devices()
@@ -594,8 +584,7 @@ class base_run_group_manager(object):
 
     def submit(self):
         if self.has_new:
-            results = self.get_results()
-            self.context.tests_group.add_tests_results(results)
+            self.context.tests_group.add_tests_results(self.session_results)
             self.has_new = False
 
 

@@ -8,9 +8,12 @@ class example_sql_common(sql_common):
     Overrides to example tables instead of dev
 
     """
-    dev_result_table_name = "example_dev_test_results"
-    devices_table_name = "example_devs"
-    device_key_name = "example_dev_id"
+    def __init__(self):
+        sql_common.__init__(self)
+        self.dev_result_table_name = "example_dev_test_results"
+        self.dev_result_values_table_name = "example_dev_test_results_values"
+        self.devices_table_name = "example_devs"
+        self.device_key_name = "example_dev_id"
 
     def create_dev(self, serial_number, uuid):
         return "INSERT INTO example_devs (serial_number, uid) "\

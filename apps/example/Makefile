@@ -21,12 +21,12 @@ $(OUTDIR)/bin/example_tester_gui.py: example_tester_gui.py $(EXAMPLE_TESTER_PY_M
 
 $(OUTDIR)/build/example_lib : example_lib/*.py Makefile $(OUTDIR)/lib/libbase.so
 	mkdir -p $(OUTDIR)/lib/example_lib
-	cp -vp example_lib/*.py $(OUTDIR)/lib/example_lib/
+	cp -v example_lib/*.py $(OUTDIR)/lib/example_lib/
 	touch $(OUTDIR)/build/example_lib
 
 $(OUTDIR)/build/example_lib_gui : example_lib_gui/*.py Makefile
 	mkdir -p $(OUTDIR)/lib/example_lib_gui
-	cp -vrp example_lib_gui/*.py $(OUTDIR)/lib/example_lib_gui/
+	cp -v example_lib_gui/*.py $(OUTDIR)/lib/example_lib_gui/
 	touch $(OUTDIR)/build/example_lib_gui
 
 $(OUTDIR)/lib/example_lib/resources.py: $(LIBDEVTANKROOT)/pylibapps/resource_builder.py resources/* $(LIBDEVTANKROOT)/pylibapps/resources/* Makefile

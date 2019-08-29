@@ -194,24 +194,29 @@ class test_group_obj:
         if not now:
             now = db_ms_now()
 
-        cmd = self.db.sql.add_test_group_results(self.id, now)
+        sql = self.db.sql
+
+        cmd = sql.add_test_group_results(self.id, now)
         results_id = c.insert(cmd)
 
-        for dev_uuid in results:
-            pass_fails, outputs, logs, durations, old_uuid = results[dev_uuid]
+        for dev_uuid, uuid_results in results.items():
+            uuid_test_results = uuid_results['tests']
+            old_uuid = uuid_results.get('old_uuid', None)
 
             for test in tests:
-                testname = test.name
-                if testname in pass_fails:
-                    pass_fail = pass_fails[testname]
-                    output = outputs[testname]
-                    log = logs[testname]
-                    duration = durations[testname]
+                test_data = uuid_test_results.get(test.name, None)
+                if test_data:
+                    pass_fail = test_data.get('passfail', None)
+                    output = test_data.get('outfile', None)
+                    log = test_data.get('logfile', None)
+                    duration = test_data.get('duration', None)
+                    values = test_data.get('stored_values', None)
                 else:
                     pass_fail = False
                     output = None
                     log = None
                     duration = None
+                    values = None
 
                 if test.duration is None and duration is not None:
                     test.duration = duration
@@ -235,12 +240,20 @@ class test_group_obj:
                     if dev:
                         dev.update_uuid(dev_uuid)
                 if dev:
-                    c.insert(self.db.sql.add_dev_result(results_id,
+                    result_id = c.insert(sql.add_dev_result(results_id,
                                                   dev.id,
                                                   group_entry_id,
                                                   pass_fail,
                                                   output, log,
                                                   db_time(duration)))
+                    if values:
+                        if sql.dev_result_values_table_name:
+                            for test_value_name, test_value_data in values.items():
+                                value_id = db_values.add_value(self.db._add_files, c, sql,
+                                                               test_value_name, test_value_data, now)
+                                c.insert(sql.add_test_value(result_id, value_id))
+                        else:
+                            print "Stored value but no table to put it."
                 else:
                     print "Unknown UUID %s, can't store results." % dev_uuid
         if not db_cursor:

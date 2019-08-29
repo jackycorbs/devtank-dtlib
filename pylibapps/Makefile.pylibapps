@@ -6,14 +6,14 @@ PYLIBAPPS=$(LIBDEVTANKROOT)/pylibapps
 
 $(OUTDIR)/build/dt_db_base : $(PYLIBAPPS)/dt_db_base/*.py $(LIBDEVTANK_DYN)
 	mkdir -p $(OUTDIR)/lib/dt_db_base
-	cp -pv $(PYLIBAPPS)/dt_db_base/*.py $(OUTDIR)/lib/dt_db_base/
+	cp -v $(PYLIBAPPS)/dt_db_base/*.py $(OUTDIR)/lib/dt_db_base/
 	mkdir -p $(OUTDIR)/build
 	touch $(OUTDIR)/build/dt_db_base
 
 
 $(OUTDIR)/build/dt_gui_base : $(PYLIBAPPS)/dt_gui_base/*.py
 	mkdir -p $(OUTDIR)/lib/dt_gui_base
-	cp -pv $(PYLIBAPPS)/dt_gui_base/*.py $(OUTDIR)/lib/dt_gui_base/
+	cp -v $(PYLIBAPPS)/dt_gui_base/*.py $(OUTDIR)/lib/dt_gui_base/
 	mkdir -p $(OUTDIR)/build
 	touch $(OUTDIR)/build/dt_gui_base
 

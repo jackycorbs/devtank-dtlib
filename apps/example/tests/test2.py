@@ -23,3 +23,6 @@ output_normal("I'm ok")
 
 output_normal("Arg : %s" % args["my_test_str"])
 
+store_value("Test String", "hello there")
+store_value("Test Int", 4)
+store_value("Test Float", 3.5)

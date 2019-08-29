@@ -7,10 +7,16 @@ _int_null = lambda x: ("%i" % x) if x is not None else "NULL"
 
 class sql_common(object):
 
-    dev_result_table_name = "dev_result_table"
-    devices_table_name = "devs"
-    device_key_name = "dev_id"
+    def __init__(self):
+        self.dev_result_table_name = "dev_result_table"
+        self.dev_result_values_table_name = None
+        self.devices_table_name = "devs"
+        self.device_key_name = "dev_id"
 
+        self.defaults_id = 3
+        self.settings_id = 2
+        self.test_props_id = 4
+        self.result_props_id = None
     """
     ====================================================================
 
@@ -109,7 +115,7 @@ is_writable FROM file_stores"
 file_stores WHERE is_writable=1 LIMIT 1"
 
     def get_resource_files(self):
-        dev_result_table_name = self.__class__.dev_result_table_name
+        dev_result_table_name = self.dev_result_table_name
         return "\
 SELECT files.id, files.filename FROM files \
 JOIN \"values\" ON value_file_id = files.id"
@@ -179,7 +185,7 @@ WHERE tests.valid_from<=%i AND \
 UPDATE tests SET valid_to=%i WHERE id=%i" % (now, test_id)
 
     def get_tests(self, group_id, now):
-        dev_result_table_name = self.__class__.dev_result_table_name
+        dev_result_table_name = self.dev_result_table_name
         return "\
 SELECT tests.id, filename, file_id, test_group_entries.name, \
        test_group_entries.id AS entry_id, order_position, \
@@ -227,17 +233,17 @@ UPDATE test_group_entries SET valid_to=%i WHERE id=%i" % \
     _GROUP_SQL="SELECT id, name, description FROM test_groups "
 
     def get_groups(self, now):
-        return sql_common._GROUP_SQL + "\
+        return self._GROUP_SQL + "\
 WHERE valid_from<=%i AND (valid_to IS NULL OR valid_to>%i)" % \
 (now, now)
 
     def get_group_by_name(self, name, now):
-        return sql_common._GROUP_SQL + "\
+        return self._GROUP_SQL + "\
 WHERE valid_from<=%i AND (valid_to IS NULL OR valid_to>%i) \
 AND name='%s'" % (now, now, db_safe_str(name))
 
     def get_group_by_id(self, group_id):
-        return sql_common._GROUP_SQL + " WHERE id=%i" % group_id
+        return self._GROUP_SQL + " WHERE id=%i" % group_id
 
     def remove_test_group(self, group_id, now):
         return "\
@@ -254,7 +260,7 @@ UPDATE test_groups SET description='%s' WHERE id=%i" % \
 (db_safe_str(desc), group_id)
 
     def get_test_group_durations(self, group_id, now):
-        dev_result_table_name = self.__class__.dev_result_table_name
+        dev_result_table_name = self.dev_result_table_name
         return "\
 SELECT test_group_entries.id, MAX(%s.duration) FROM test_group_entries \
 JOIN %s ON %s.group_entry_id=test_group_entries.id \
@@ -292,9 +298,9 @@ WHERE test_group_results.id IN (%s) ORDER BY Time_Of_tests DESC" % \
 ",".join([str(session_id) for session_id in session_ids])
 
     def get_dev_results(self, session_id):
-        dev_result_table_name = self.__class__.dev_result_table_name
-        devices_table_name = self.__class__.devices_table_name
-        device_key_name = self.__class__.device_key_name
+        dev_result_table_name = self.dev_result_table_name
+        devices_table_name = self.devices_table_name
+        device_key_name = self.device_key_name
         return "\
 SELECT %s.id, %s.uid, pass_fail, output_file_id,\
       log_file_id, Test_id, name, filename, order_position \
@@ -328,8 +334,8 @@ test_group_entries.valid_from<=%i AND \
     def add_dev_result(self, session_id, dev_id, group_entry_id,
                        pass_fail, output_file_id, log_file_id,
                        duration):
-        dev_result_table_name = self.__class__.dev_result_table_name
-        device_key_name = self.__class__.device_key_name
+        dev_result_table_name = self.dev_result_table_name
+        device_key_name = self.device_key_name
         return "\
 INSERT INTO %s \
 (group_result_id, %s, group_entry_id, pass_fail, output_file_id,\
@@ -338,15 +344,21 @@ VALUES (%i, %i, %i, %i, %s, %s, %s)" % \
  (dev_result_table_name, device_key_name, session_id, dev_id,
   group_entry_id, int(pass_fail), _id_null(output_file_id),\
   _id_null(log_file_id), _int_null(duration))
+
+    def add_test_value(self, result_id, value_id):
+        dev_result_values_table_name = \
+        self.dev_result_values_table_name
+        if not dev_result_values_table_name:
+            return None
+        return "\
+INSERT INTO %s (test_result_id, value_id) VALUES (%i, %i)" % \
+(dev_result_values_table_name, result_id, value_id)
     """
     ====================================================================
 
      Values related SQL
 
     """
-    defaults_id = 3
-    settings_id = 2
-    test_props_id = 4
 
     def get_version(self):
         return "SELECT name, value_int FROM \"values\" WHERE id=1"
@@ -355,7 +367,7 @@ VALUES (%i, %i, %i, %i, %s, %s, %s)" % \
         return "\
 INSERT INTO \"values\" (name, parent_id, valid_from) \
 VALUES('%s', %i, %i)" % \
-(db_safe_str(name), sql_common.defaults_id, valid_from)
+(db_safe_str(name), self.defaults_id, valid_from)
 
     def add_default_value_str_param(self, name, parent_id, value,
                                     valid_from):
@@ -404,14 +416,20 @@ name='%s'" % (parent_id, now, now, db_safe_str(name))
         return "\
 INSERT INTO \"values\" (name, parent_id, valid_from) \
 VALUES('%s', %i, %i)" % \
-(db_safe_str(name), sql_common.test_props_id, valid_from)
+(db_safe_str(name), self.test_props_id, valid_from)
 
-    def add_value(self, name, value_column, value, valid_from):
+    def add_value(self, name, value_column, value, valid_from,
+                  is_result=False):
         return "\
 INSERT INTO \"values\" (name, %s, parent_id, valid_from) \
 VALUES('%s',%s, %i, %i)" % \
 (db_safe_name(value_column), db_safe_str(name), value,
-sql_common.test_props_id, valid_from)
+self.result_props_id if is_result else self.test_props_id,
+valid_from)
+
+    def get_result_values_parent_id(self):
+        return "SELECT id FROM \"values\" WHERE parent_id ISNULL AND \
+name='results_values'"
 
     def disable_value_by_name(self, parent_id, name, now):
         return "\
