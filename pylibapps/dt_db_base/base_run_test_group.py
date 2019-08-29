@@ -78,7 +78,7 @@ def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
 
 def _store_value(test_context, n, v):
     data = base64.encodestring(pickle.dumps((n, v)))
-    test_context.send_cmd("STORE_VALUE " + data) # Base64 includes a newline
+    test_context.send_cmd("STORE_VALUE " + data[0:-1]) # Base64 includes a newline
 
 
 
