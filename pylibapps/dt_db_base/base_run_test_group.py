@@ -3,6 +3,8 @@ import sys
 import time
 import datetime
 import traceback
+import cPickle as pickle
+import base64
 
 import gi
 gi.require_version('GLib', '2.0')
@@ -75,16 +77,8 @@ def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
-    if not isinstance(v, str):
-        if isinstance(v, int):
-            v = str(v)
-        elif isinstance(v, float):
-            v = "%G" % v
-            if v.find(".") == -1:
-                v += ".0"
-        else:
-            raise Exception("Unsupported value type to store.")
-    test_context.send_cmd("STORE_VALUE %u %u '%s' '%s'" % (len(n), len(v), n, v))
+    data = base64.encodestring(pickle.dumps((n, v)))
+    test_context.send_cmd("STORE_VALUE " + data) # Base64 includes a newline
 
 
 
@@ -270,7 +264,7 @@ class base_run_group_manager(object):
                      "STATUS_TEST":   lambda args:     self._test_status(args),
                      "STATUS_DEV":    lambda passfail: self._dev_status(passfail == "True"),
                      "SET_UUID":      lambda new_uuid: self._dev_set_uuid(new_uuid),
-                     "STORE_VALUE":   lambda n_v_line: self._store_value(n_v_line),
+                     "STORE_VALUE":   lambda data: self._store_value(data),
                      }
 
         GLib.io_add_watch(self.stdout_in,
@@ -360,16 +354,10 @@ class base_run_group_manager(object):
                 dev.uuid = new_uuid
         self.current_device = new_uuid
 
-    def _store_value(self, n_v_line):
-        txt_start = n_v_line.find("'")
-        n_len, v_len = [int(s) for s in n_v_line[0:txt_start].split() ]
-        pos = txt_start + 1
-        name = n_v_line[ pos : pos + n_len]
-        pos += n_len + 3 #"' '"
-        s_value = n_v_line[ pos : pos + v_len]
-        value = db_values.to_type_from_str(s_value)
-        if isinstance(value, str):
-            s_value = "'%s'" % value
+    def _store_value(self, data):
+        data = pickle.loads(base64.decodestring(data))
+        name = data[0]
+        value = data[1]
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
         test_dict.setdefault("stored_values", {})
         test_dict["stored_values"][name] = value
