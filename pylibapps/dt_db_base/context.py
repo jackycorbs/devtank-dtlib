@@ -11,6 +11,7 @@ class base_context_object(object):
         self.devices = []
         self.on_exit_cbs = []
         self.tests_group = tests_group_creator(None)
+        self._in_db_init = False
         assert "open_db_backend" in db_def
         assert "work_folder" in db_def
         assert "fn_get_dev" in db_def
@@ -19,7 +20,7 @@ class base_context_object(object):
         for cb in self.on_exit_cbs:
             cb()
 
-    def db_init(self):
+    def _db_init(self):
         if self.db:
             return True
 
@@ -57,6 +58,14 @@ class base_context_object(object):
         db.get_dev = MethodType(lambda db, uuid: \
                 get_dev(db, uuid), db, db.__class__)
         return True
+
+    def db_init(self):
+        if self._in_db_init:
+            return None
+        self._in_db_init = True
+        r = self._db_init()
+        self._in_db_init = False
+        return r
 
     def lock_bus(self):
         raise Exception("Context lock_bus not implemented.");
