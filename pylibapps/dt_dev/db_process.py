@@ -211,7 +211,7 @@ class db_process_t(object):
         cmd = "INSERT INTO files (file_store_id, filename, size, modified_date, insert_time) VALUES(%u, '%s', %u, %u, %u)" % (fs_id, os.path.basename(filepath), os.path.getsize(filepath), os.path.getmtime(filepath), now)
         c.execute(cmd) 
         file_id = c.lastrowid
-        self.copy_file(fs_frd, filepath, os.path.basename(filepath), file_id)
+        self.copy_file(str(fs_frd), filepath, os.path.basename(filepath), file_id)
         return file_id
 
     def get_line(self, filepath, key):
