@@ -205,7 +205,7 @@ class db_process_t(object):
             sftp.put(new_path, remote_file)
 
     def add_file(self, c, filepath, now):
-        cmd = "SELECT MAX(id), base_folder FROM file_stores WHERE is_writable=1"
+        cmd = "SELECT id, base_folder FROM file_stores WHERE is_writable=1 ORDER BY id DESC"
         c.execute(cmd)
         fs_id, fs_frd  = c.fetchone()
         cmd = "INSERT INTO files (file_store_id, filename, size, modified_date, insert_time) VALUES(%u, '%s', %u, %u, %u)" % (fs_id, os.path.basename(filepath), os.path.getsize(filepath), os.path.getmtime(filepath), now)
