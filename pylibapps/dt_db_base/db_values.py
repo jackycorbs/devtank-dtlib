@@ -73,7 +73,7 @@ def _get_default_by_name(c, sql, prop_name, now):
     return c.query(cmd)
 
 
-def add_value(add_files, c, sql, prop_name, prop_value, valid_from):
+def add_value(add_files, c, sql, prop_name, prop_value, valid_from, is_result):
     prop_type = ""
     if isinstance(prop_value, str) or isinstance(prop_value, unicode):
         prop_type="Value_Text"
@@ -93,10 +93,10 @@ def add_value(add_files, c, sql, prop_name, prop_value, valid_from):
             prop_value[2] = r[0]
         prop_value = prop_value[2]
     elif prop_value is None:
-        return c.insert(sql.add_null_value(prop_name, valid_from))
+        return c.insert(sql.add_null_value(prop_name, valid_from, is_result))
     else:
         raise Exception("Unknown property type %s" % str(type(prop_value)))
-    return c.insert(sql.add_value(prop_name, prop_type, prop_value, valid_from))
+    return c.insert(sql.add_value(prop_name, prop_type, prop_value, valid_from, is_result))
 
 
 def get_test_properties(group_entry_id, db, sql, get_file_to_local):

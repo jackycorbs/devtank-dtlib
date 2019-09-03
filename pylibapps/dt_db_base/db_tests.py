@@ -250,7 +250,7 @@ class test_group_obj:
                         if sql.dev_result_values_table_name:
                             for test_value_name, test_value_data in values.items():
                                 value_id = db_values.add_value(self.db._add_files, c, sql,
-                                                               test_value_name, test_value_data, now)
+                                                               test_value_name, test_value_data, now, True)
                                 c.insert(sql.add_test_value(result_id, value_id))
                         else:
                             print "Stored value but no table to put it."

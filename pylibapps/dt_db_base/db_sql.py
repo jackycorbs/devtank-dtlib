@@ -412,11 +412,12 @@ WHERE parent_id=%i AND valid_from<=%i AND \
 (valid_to IS NULL OR valid_to>%i) AND \
 name='%s'" % (parent_id, now, now, db_safe_str(name))
 
-    def add_null_value(self, name, valid_from):
+    def add_null_value(self, name, valid_from, is_result=False):
         return "\
 INSERT INTO \"values\" (name, parent_id, valid_from) \
 VALUES('%s', %i, %i)" % \
-(db_safe_str(name), self.test_props_id, valid_from)
+(db_safe_str(name),
+self.result_props_id if is_result else self.test_props_id, valid_from)
 
     def add_value(self, name, value_column, value, valid_from,
                   is_result=False):
