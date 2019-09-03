@@ -130,6 +130,7 @@ def dev_run_dev_on_file(dev, get_dbg_print, set_dbg_print, test_file, used_arg_n
                           'warning_msg' : warning_msg,
                           'info_msg' : info_msg,
                           'threshold_check' : lambda a,b,c,d,e: threshold_check(name, args, results, a, b, c, d, e),
+                          'store_value' : lambda n, v : None,
                           'exact_check' : lambda a,b,c: exact_check(name, args, results, a, b, c)}
 
         try:
