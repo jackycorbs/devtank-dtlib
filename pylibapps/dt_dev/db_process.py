@@ -272,16 +272,16 @@ class db_process_t(object):
         return tests_id_map, tests_name_map
 
     def get_groups(self, c, group_ids=None):
-        cmd = "SELECT test_groups.id, test_groups.name, test_groups.description, test_groups.valid_from, test_groups.valid_to,\
+        cmd = 'SELECT test_groups.id, test_groups.name, test_groups.description, test_groups.valid_from, test_groups.valid_to,\
            test_group_entries.id, test_group_entries.name, test_group_entries.order_position, test_group_entries.valid_from, test_group_entries.valid_to,\
            tests.id, files.filename, tests.file_id, tests.valid_from, tests.valid_to,\
-          'values'.id, 'values'.name, 'values'.value_text, 'values'.value_int, 'values'.value_real, 'values'.value_file_id, 'values'.valid_from, 'values'.valid_to \
+          "values".id, "values".name, "values".value_text, "values".value_int, "values".value_real, "values".value_file_id, "values".valid_from, "values".valid_to \
     FROM test_groups \
     LEFT JOIN test_group_entries ON test_group_entries.test_group_id=test_groups.id \
     LEFT JOIN test_group_entry_properties ON test_group_entry_properties.group_entry_id = test_group_entries.id \
-    LEFT JOIN 'values' ON 'values'.id = value_id \
+    LEFT JOIN "values" ON "values".id = value_id \
     LEFT JOIN tests ON tests.id = test_group_entries.test_id \
-    LEFT JOIN files ON files.id = tests.file_id "
+    LEFT JOIN files ON files.id = tests.file_id '
 
         if group_ids:
             cmd += "WHERE test_groups.id IN (" + ",".join([str(group_id) for group_id in group_ids]) + ") "

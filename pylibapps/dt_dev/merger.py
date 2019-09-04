@@ -445,7 +445,7 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
         self.file_dedupe = {}
         self.old_entry_id_map = {}
 
-        cmd = 'SELECT value_int FROM "values" WHERE id=1'
+        cmd = "SELECT value_int FROM 'values' WHERE id=1"
 
         self.new_c.execute(cmd)
         new_db_version = self.new_c.fetchone()[0]
