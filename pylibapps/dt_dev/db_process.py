@@ -175,7 +175,7 @@ class db_process_t(object):
 
             remote_path = os.path.join(folder, *folders)
             remote_path = os.path.join(remote_path, remote_filename)
-            local_path = os.path.join("tmp", remote_filename)
+            local_path = os.path.join("/tmp", remote_filename)
 
             sftp.get(remote_path, local_path)
             return local_path
