@@ -9,9 +9,13 @@ if sys.version_info[0] < 3:
     from db_process import test_group_t, group_entry_t, test_t, arg_t, db_process_t, obj_valid_at, as_human_time
 else:
     from . import db_process
+    test_group_t  = db_process.test_group_t
+    group_entry_t = db_process.group_entry_t
+    test_t        = db_process.test_t
+    arg_t         = db_process.arg_t
+    db_process_t  = db_process.db_process_t
+    obj_valid_at  = db_process.obj_valid_at
     as_human_time = db_process.as_human_time
-    db_process_t = db_process.db_process_t
-    obj_valid_at = db_process.obj_valid_at
 import logging
 
 
@@ -315,7 +319,7 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
                                 cmd = "UPDATE \"test_group_entries\" SET valid_to=%u WHERE id=%u" % (group.valid_from, entry.id)
                                 self.new_c.execute(cmd)
 
-        print("Creating new")
+        print("Creating new group of '%s'" % group.name)
 
         cmd = "INSERT INTO \"test_groups\" (name, description, valid_from, valid_to) VALUES \
         ('%s','%s',%u,%s)" % (group.name, group.desc,
@@ -452,7 +456,7 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
         self.old_c.execute(cmd)
         old_db_version = self.old_c.fetchone()[0]
 
-        if new_db_version != 2:
+        if new_db_version != 2 and new_db_version != 3:
             print("Unable to merge into v%u database." % new_db_version)
             return -1
 

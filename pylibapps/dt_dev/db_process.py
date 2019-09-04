@@ -39,6 +39,7 @@ class db_process_t(object):
 
         self.db_paths = {}
         self.dbrefs = {}
+        self.ssh_connections = {}
 
     def debug_print(self, level, msg):
         log_level = int(os.environ.get("DEBUG", 0))
@@ -57,7 +58,7 @@ class db_process_t(object):
             db.sql_mode = 'ANSI'
             c = db.cursor(buffered=True)
             self.dbrefs[c] = db
-            self.db_paths[c] = None
+            self.db_paths[c] = db_def
             return c
         else:
             sqlite_path=db_url
@@ -111,9 +112,10 @@ class db_process_t(object):
             if hostname in self.ssh_connections:
                 sftp, ssh = self.ssh_connections[hostname]
             else:
+                db_def = db_path
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname)
+                ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
                 sftp=ssh.open_sftp()
                 self.ssh_connections[hostname]=(sftp, ssh)
             return (sftp, row[2])
@@ -164,15 +166,16 @@ class db_process_t(object):
             if hostname in self.ssh_connections:
                 sftp, ssh = self.ssh_connections[hostname]
             else:
+                db_def = db_path
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname)
+                ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
                 sftp=ssh.open_sftp()
                 self.ssh_connections[hostname]=(sftp, ssh)
 
             remote_path = os.path.join(folder, *folders)
             remote_path = os.path.join(remote_path, remote_filename)
-            local_path = os.path.join("tmp", remote_filename)
+            local_path = os.path.join("/tmp", remote_filename)
 
             sftp.get(remote_path, local_path)
             return local_path
@@ -203,7 +206,7 @@ class db_process_t(object):
 
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
-            sftp.put(new_path, remote_file)
+            sftp.put(filepath, new_path)
 
     def add_file(self, c, filepath, now):
         cmd = "SELECT id, base_folder FROM file_stores WHERE is_writable=1 ORDER BY id DESC"
@@ -271,16 +274,16 @@ class db_process_t(object):
         return tests_id_map, tests_name_map
 
     def get_groups(self, c, group_ids=None):
-        cmd = "SELECT test_groups.id, test_groups.name, test_groups.description, test_groups.valid_from, test_groups.valid_to,\
+        cmd = 'SELECT test_groups.id, test_groups.name, test_groups.description, test_groups.valid_from, test_groups.valid_to,\
            test_group_entries.id, test_group_entries.name, test_group_entries.order_position, test_group_entries.valid_from, test_group_entries.valid_to,\
            tests.id, files.filename, tests.file_id, tests.valid_from, tests.valid_to,\
-          'values'.id, 'values'.name, 'values'.value_text, 'values'.value_int, 'values'.value_real, 'values'.value_file_id, 'values'.valid_from, 'values'.valid_to \
+          "values".id, "values".name, "values".value_text, "values".value_int, "values".value_real, "values".value_file_id, "values".valid_from, "values".valid_to \
     FROM test_groups \
     LEFT JOIN test_group_entries ON test_group_entries.test_group_id=test_groups.id \
     LEFT JOIN test_group_entry_properties ON test_group_entry_properties.group_entry_id = test_group_entries.id \
-    LEFT JOIN 'values' ON 'values'.id = value_id \
+    LEFT JOIN "values" ON "values".id = value_id \
     LEFT JOIN tests ON tests.id = test_group_entries.test_id \
-    LEFT JOIN files ON files.id = tests.file_id "
+    LEFT JOIN files ON files.id = tests.file_id '
 
         if group_ids:
             cmd += "WHERE test_groups.id IN (" + ",".join([str(group_id) for group_id in group_ids]) + ") "
