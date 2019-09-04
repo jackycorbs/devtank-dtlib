@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import sys
 import time
 from ctypes import *
 
@@ -33,6 +34,7 @@ _gpio_obj_write   = _c_libcbase_func(c_bool,   "gpio_obj_write",   (c_void_p, c_
 class power_controller_t(object):
     def __init__(self):
         self._c_ptr = _dt_adj_pwr_get()
+        self.use_stderr = False
 
     @property
     def is_setup(self):
@@ -79,6 +81,16 @@ class power_controller_t(object):
             raise Exception("Failed to get power use value.")
         return v.value
 
+    def _do_msg(self, msg_type, msg):
+        if self.use_stderr:
+            print(msg, file=sys.stderr)
+        elif msg_type == "good":
+            output_good(msg)
+        elif msg_type == "bad":
+            output_bad(msg)
+        else:
+            output_normal(msg)
+
     def set_voltage_and_wait(self, v, wait_seconds=3):
         self.voltages_out = v
         if not wait_seconds:
@@ -88,13 +100,13 @@ class power_controller_t(object):
         for n in range(0, wait_seconds):
             v_cur = self.voltages_out
             if abs(v_cur - v) / ref > 0.1:
-                output_normal("Powering up to %Gv at %Gv" % \
+                self._do_msg(None, "Powering up to %Gv at %Gv" % \
                               (v, v_cur))
                 time.sleep(1)
             else:
-                output_good("Powered to %Gv" % v_cur)
+                self._do_msg("good", "Powered to %Gv" % v_cur)
                 return
-        output_bad("Failed to power to %Gv in %u seconds given" % \
+        self._do_msg("bad", "Failed to power to %Gv in %u seconds given" % \
             (v, wait_seconds))
 
 
