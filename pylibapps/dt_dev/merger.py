@@ -319,7 +319,7 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
                                 cmd = "UPDATE \"test_group_entries\" SET valid_to=%u WHERE id=%u" % (group.valid_from, entry.id)
                                 self.new_c.execute(cmd)
 
-        print("Creating new")
+        print("Creating new group of '%s'" % group.name)
 
         cmd = "INSERT INTO \"test_groups\" (name, description, valid_from, valid_to) VALUES \
         ('%s','%s',%u,%s)" % (group.name, group.desc,
