@@ -73,7 +73,7 @@ def _get_default_by_name(c, sql, prop_name, now):
     return c.query(cmd)
 
 
-def add_value(add_files, c, sql, prop_name, prop_value, valid_from, is_result):
+def add_value(add_files, c, sql, prop_name, prop_value, valid_from, is_result=False):
     prop_type = ""
     if isinstance(prop_value, str) or isinstance(prop_value, unicode):
         prop_type="Value_Text"
