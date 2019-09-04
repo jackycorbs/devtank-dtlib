@@ -63,7 +63,8 @@ class db_process_t(object):
             sqlite_path=db_url
             print ("Opening :", sqlite_path, file=sys.stderr)
             db = sqlite3.connect(sqlite_path)
-            db.set_trace_callback(lambda msg: self.debug_print(2, msg))
+            if sys.version_info[0] > 2:
+                db.set_trace_callback(lambda msg: self.debug_print(2, msg))
             folder_path = os.path.dirname(sqlite_path)
             c = db.cursor()
             self.dbrefs[c] = db
