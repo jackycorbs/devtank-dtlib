@@ -115,7 +115,7 @@ class db_process_t(object):
                 db_def = db_path
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname, user=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
+                ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
                 sftp=ssh.open_sftp()
                 self.ssh_connections[hostname]=(sftp, ssh)
             return (sftp, row[2])
