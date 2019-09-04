@@ -452,7 +452,7 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
         self.old_c.execute(cmd)
         old_db_version = self.old_c.fetchone()[0]
 
-        if new_db_version != 2:
+        if new_db_version != 2 and new_db_version != 3:
             print("Unable to merge into v%u database." % new_db_version)
             return -1
 
