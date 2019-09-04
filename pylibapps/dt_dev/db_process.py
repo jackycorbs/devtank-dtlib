@@ -39,6 +39,7 @@ class db_process_t(object):
 
         self.db_paths = {}
         self.dbrefs = {}
+        self.ssh_connections = {}
 
     def debug_print(self, level, msg):
         log_level = int(os.environ.get("DEBUG", 0))
