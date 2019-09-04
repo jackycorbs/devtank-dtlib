@@ -63,7 +63,8 @@ class db_process_t(object):
             sqlite_path=db_url
             print ("Opening :", sqlite_path, file=sys.stderr)
             db = sqlite3.connect(sqlite_path)
-            db.set_trace_callback(lambda msg: self.debug_print(2, msg))
+            if sys.version_info[0] > 2:
+                db.set_trace_callback(lambda msg: self.debug_print(2, msg))
             folder_path = os.path.dirname(sqlite_path)
             c = db.cursor()
             self.dbrefs[c] = db
@@ -186,7 +187,7 @@ class db_process_t(object):
             for hashdir in folders:
                 path = os.path.join(path, hashdir)
                 if not os.path.exists(path):
-                    os.mkdir(path)
+                    os.makedirs(path)
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
             shutil.copyfile(filepath, new_path)
@@ -203,6 +204,16 @@ class db_process_t(object):
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
             sftp.put(new_path, remote_file)
+
+    def add_file(self, c, filepath, now):
+        cmd = "SELECT id, base_folder FROM file_stores WHERE is_writable=1 ORDER BY id DESC"
+        c.execute(cmd)
+        fs_id, fs_frd  = c.fetchone()
+        cmd = "INSERT INTO files (file_store_id, filename, size, modified_date, insert_time) VALUES(%u, '%s', %u, %u, %u)" % (fs_id, os.path.basename(filepath), os.path.getsize(filepath), os.path.getmtime(filepath), now)
+        c.execute(cmd) 
+        file_id = c.lastrowid
+        self.copy_file(str(fs_frd), filepath, os.path.basename(filepath), file_id)
+        return file_id
 
     def get_line(self, filepath, key):
         with open(filepath, "rb") as f:
