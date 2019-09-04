@@ -9,9 +9,13 @@ if sys.version_info[0] < 3:
     from db_process import test_group_t, group_entry_t, test_t, arg_t, db_process_t, obj_valid_at, as_human_time
 else:
     from . import db_process
+    test_group_t  = db_process.test_group_t
+    group_entry_t = db_process.group_entry_t
+    test_t        = db_process.test_t
+    arg_t         = db_process.arg_t
+    db_process_t  = db_process.db_process_t
+    obj_valid_at  = db_process.obj_valid_at
     as_human_time = db_process.as_human_time
-    db_process_t = db_process.db_process_t
-    obj_valid_at = db_process.obj_valid_at
 import logging
 
 
