@@ -57,7 +57,7 @@ class db_process_t(object):
             db.sql_mode = 'ANSI'
             c = db.cursor(buffered=True)
             self.dbrefs[c] = db
-            self.db_paths[c] = None
+            self.db_paths[c] = db_def
             return c
         else:
             sqlite_path=db_url
@@ -111,9 +111,10 @@ class db_process_t(object):
             if hostname in self.ssh_connections:
                 sftp, ssh = self.ssh_connections[hostname]
             else:
+                db_def = db_path
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname)
+                ssh.connect(hostname, user=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
                 sftp=ssh.open_sftp()
                 self.ssh_connections[hostname]=(sftp, ssh)
             return (sftp, row[2])
