@@ -205,7 +205,7 @@ class db_process_t(object):
 
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
-            sftp.put(new_path, remote_file)
+            sftp.put(filepath, new_path)
 
     def add_file(self, c, filepath, now):
         cmd = "SELECT id, base_folder FROM file_stores WHERE is_writable=1 ORDER BY id DESC"
