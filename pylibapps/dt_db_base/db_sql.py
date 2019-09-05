@@ -429,7 +429,7 @@ self.result_props_id if is_result else self.test_props_id,
 valid_from)
 
     def get_result_values_parent_id(self):
-        return "SELECT id FROM \"values\" WHERE parent_id ISNULL AND \
+        return "SELECT id FROM \"values\" WHERE parent_id IS NULL AND \
 name='results_values'"
 
     def disable_value_by_name(self, parent_id, name, now):
