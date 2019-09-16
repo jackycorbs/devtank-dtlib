@@ -31,7 +31,14 @@ def base_open_db_backend(db_def):
         r = db_backend.open(work_folder)
     else:
         assert get_schema, "Empty database and no schema to fill it."
-        db_backend.load(get_schema())
+        schema = get_schema()
+        if isinstance(schema, str):
+            schema = schema.split(";")
+            schema = [ line.strip() for line in schema ]
+            schema = [ "" if line.lower() == "begin transaction" or \
+                line.lower() == "commit" else line for line in schema ]
+            schema = list(filter(lambda line: len(line), schema))
+        db_backend.load(schema)
         r = db_backend.open(work_folder)
         if r:
             r.load_filestores(db_def)
