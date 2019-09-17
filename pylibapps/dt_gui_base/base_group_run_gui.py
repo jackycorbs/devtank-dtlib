@@ -45,6 +45,10 @@ class base_run_context(object):
         self.out_text = builder.get_object("test_output_text")
         self.log_text = builder.get_object("test_log_text")
 
+        is_desktop = True if context.args['desktop'] else False
+        self.out_text.set_sensitive(is_desktop)
+        self.log_text.set_sensitive(is_desktop)
+
         self.out_text.connect("size-allocate", self._scroll_to_end)
         self.log_text.connect("size-allocate", self._scroll_to_end)
 
