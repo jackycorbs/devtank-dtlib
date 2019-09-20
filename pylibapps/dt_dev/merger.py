@@ -39,6 +39,10 @@ class merger_t(db_process_t):
         self.old_arg_content_map = {}
         self.old_tests_name_map = {}
         self.old_tests_id_map = {}
+        self.old_session_id_map = {}
+        self.old_result_id_map = {}
+
+        self.importing_session_ids = []
 
         self.new_groups_id_map = {}
         self.new_groups_name_map = {}
@@ -119,16 +123,17 @@ class merger_t(db_process_t):
 
 
     def get_result_row(self):
-        return "%s, group_entry_id, pass_fail, \
-output_file_id, log_file_id, group_result_id, duration" % self.results_table_dev
+        return "%s.id, %s, group_entry_id, pass_fail, \
+output_file_id, log_file_id, group_result_id, duration" % \
+(self.results_table, self.results_table_dev)
 
-    def add_result(self, old_result_id_map, row):
+    def add_result(self, row):
         row = list(row)
         row[0] = self.old_dev_id_map[row[0]]
         row[1] = self.old_entry_id_map[row[1]]
         row[3] = "%u" % self.old_file_id_map[row[3]] if row[3] else "NULL"
         row[4] = "%u" % self.old_file_id_map[row[4]] if row[4] else "NULL"
-        row[5] = old_result_id_map[row[5]]
+        row[5] = self.old_session_id_map[row[5]]
         row[6] = "%u" % row[6] if row[6] else "NULL"
         return "INSERT INTO %s (%s, \
     group_entry_id, pass_fail, output_file_id, log_file_id, \
@@ -137,7 +142,8 @@ output_file_id, log_file_id, group_result_id, duration" % self.results_table_dev
 
     def copy_results(self):
         print("Copy over Session Results")
-        old_result_id_map = {}
+        self.old_session_id_map = {}
+        self.old_result_id_map = {}
         cmd = "SELECT test_group_results.id, test_groups.name, time_of_tests, test_groups.id \
             FROM test_group_results \
             JOIN test_groups ON test_groups.id = test_group_results.group_id"
@@ -155,7 +161,7 @@ output_file_id, log_file_id, group_result_id, duration" % self.results_table_dev
             key = (row[1], row[2])
             old_results_map.pop(key, None)
 
-        importing_session_ids = []
+        self.importing_session_ids = []
 
         for key in old_results_map:
             time_of_tests = key[1]
@@ -165,8 +171,8 @@ output_file_id, log_file_id, group_result_id, duration" % self.results_table_dev
             cmd = "INSERT INTO test_group_results (group_id, time_of_tests)\
      VALUES(%u, %u)" % (group_id, time_of_tests)
             self.new_c.execute(cmd)
-            old_result_id_map[old_session_id] = self.new_c.lastrowid
-            importing_session_ids += [old_session_id]
+            self.old_session_id_map[old_session_id] = self.new_c.lastrowid
+            self.importing_session_ids += [old_session_id]
 
         print("Copy Results")
 
@@ -174,30 +180,106 @@ output_file_id, log_file_id, group_result_id, duration" % self.results_table_dev
 WHERE group_result_id in (%s)" % (self.get_result_row(),
                                   self.results_table,
                                   self.results_table,
-                                  ",".join([str(session_id) for session_id in importing_session_ids]))
+                                  ",".join([str(session_id) for session_id in self.importing_session_ids]))
         c = self.old_c.execute(cmd)
         rows = self.old_c.fetchall()
         for row in rows:
-            cmd = self.add_result(old_result_id_map, row)
+            cmd = self.add_result(row[1:])
             self.new_c.execute(cmd)
-        self.commit(self.new_c)
+            self.old_result_id_map[row[0]] = self.new_c.lastrowid
+
+    def copy_results_values(self):
+        cmd = 'SELECT id FROM "values" WHERE name = \'results_values\''
+        c = self.new_c.execute(cmd)
+        row = self.new_c.fetchone()
+        result_values_parent = row[0]
+
+        cmd = 'SELECT test_result_id,\
+  "values".name,\
+  value_text,\
+  value_int,\
+  value_real,\
+  value_file_id,\
+  valid_from, valid_to\
+         FROM %s \
+JOIN %s ON %s.id = test_result_id \
+JOIN test_group_results ON test_group_results.id = %s.group_result_id \
+JOIN "values" ON "values".id = value_id \
+WHERE group_result_id in (%s)' % \
+(self.results_values_table,
+self.results_table, self.results_table, self.results_table,
+",".join([str(session_id) for session_id in self.importing_session_ids]))
+        c = self.old_c.execute(cmd)
+        rows = self.old_c.fetchall()
+        for row in rows:
+            old_test_result_id = row[0]
+            inserts = list(row[1:])
+            file_id = inserts[4]
+            if file_id:
+                inserts[4] = self.get_remapped_file_id(None, file_id)
+
+            inserts[0] = "'%s'" % inserts[0]
+            if inserts[1]:
+                inserts[1] = "'%s'" % inserts[1]
+
+            inserts = [ "NULL" if i is None else i for i in inserts ]
+            inserts.insert(5, result_values_parent)
+
+            cmd = "INSERT INTO \"values\" \
+        (name, value_text, value_int, value_real,\
+        value_file_id, parent_id, valid_from, valid_to) VALUES \
+        (%s, %s, %s, %s, %s, %s, %s, %s)" % tuple(inserts)
+            self.new_c.execute(cmd)
+            value_id = self.new_c.lastrowid
+
+            cmd = "INSERT INTO %s (test_result_id, value_id) VALUES \
+            (%u, %u)" % (self.results_values_table,
+            self.old_result_id_map[old_test_result_id], value_id)
+            self.new_c.execute(cmd)
 
     def get_group_state_at_time(self, group, current_time):
         entries = []
+        bad_data = 0
 
-        assert obj_valid_at(group, current_time), "Can't be the group you mean."
+        if not obj_valid_at(group, current_time):
+            if current_time < group.valid_from:
+                print("Warning, time request (%u) before group valid!" % current_time)
+                group.valid_from = current_time
+                bad_data = -1
+            elif group.valid_to and current_time > group.valid_to:
+                print("Warning, time request (%u) after group valid!" % current_time)
+                group.valid_to = current_time + 1
+                bad_data = 1
+            else:
+                print("Group %u not valid at time given %u." % (group.id, current_time))
+                sys.exit(-1)
+
+        if bad_data < 0:
+            check_time = group.valid_from
+        elif bad_data > 1:
+            check_time = group.valid_to - 1
+        else:
+            check_time = current_time
 
         for entry in group.entries:
-            if obj_valid_at(entry, current_time):
+            if obj_valid_at(entry, check_time):
+                if bad_data < 0:
+                    entry.valid_from = current_time
+                elif bad_data > 1:
+                    entry.valid_to = current_time + 1
                 args = []
                 for arg in entry.args:
-                    if obj_valid_at(arg, current_time):
+                    if obj_valid_at(arg, check_time):
+                        if bad_data < 0:
+                            arg.valid_from = current_time
+                        elif bad_data > 1:
+                            arg.valid_to = current_time + 1
                         args += [ arg ]
-                d = dict(entry._asdict())
+                d = entry._asdict()
                 d['args'] = args
                 entries += [ group_entry_t(**d) ]
 
-        d = dict(group._asdict())
+        d = group._asdict()
         d['entries'] = entries
         return test_group_t(**d)
 
@@ -229,8 +311,8 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
 
     def get_remapped_file_id(self, file_key, file_id):
         new_file_id = self.old_file_id_map.get(file_id, None)
-        if file_key and not new_file_id:
-            new_file_id = self.file_dedupe.get(file_key, None)
+        if  not new_file_id:
+            new_file_id = self.file_dedupe.get(file_key, None) if file_key else None
             if not new_file_id:
                 filepath = self.get_file(self.old_c, file_id)
                 cmd = "SELECT filename, size, modified_date, insert_time FROM files WHERE id=%u" % file_id
@@ -243,7 +325,8 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
                 self.new_c.execute(cmd)
                 new_file_id = self.new_c.lastrowid
                 copy_file(folder, filepath, row[0], new_file_id)
-                self.file_dedupe[file_key] = new_file_id
+                if file_key:
+                    self.file_dedupe[file_key] = new_file_id
             file_id_map[file_id] = new_file_id
         return new_file_id
 
@@ -418,7 +501,9 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
         self.new_groups_name_map.setdefault(group_at_time.name, [])
         self.new_groups_name_map[group_at_time.name] += [new_group]
         new_group_id = self.get_mapped_match_group_at_time(group_at_time, time_of_tests)
-        assert new_group_id, "Should have should been created."
+        if not new_group_id:
+            print("Should have should been created for old ID %u at time %u" % (group.id, time_of_tests))
+            sys.exit(-1)
         return new_group_id
 
     def decuplicate_live_tests(self):
@@ -460,9 +545,11 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
             print("Unable to merge into v%u database." % new_db_version)
             return -1
 
-        if old_db_version != 2:
+        if old_db_version != 3:
             print("Unable to merge from v%u database." % old_db_version)
             return -1
+
+        self.load_custom_table_names(self.new_c)
 
         self.new_tests_id_map, self.new_tests_name_map = self.get_tests(self.new_c)
         self.old_tests_id_map, self.old_tests_name_map = self.get_tests(self.old_c)
@@ -475,6 +562,7 @@ WHERE group_result_id in (%s)" % (self.get_result_row(),
         self.copy_devices()
         self.copy_files()
         self.copy_results()
+        self.copy_results_values()
         self.decuplicate_live_tests()
 
         self.commit(self.new_c)

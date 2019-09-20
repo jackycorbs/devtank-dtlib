@@ -1,5 +1,4 @@
 from __future__ import print_function
-from collections import namedtuple
 import mysql.connector as mysqlconn
 import paramiko
 import sqlite3
@@ -12,17 +11,61 @@ import sys
 import os
 
 
-test_group_t = namedtuple('test_group', ['id', 'name', 'desc', 'valid_from', 'valid_to', 'entries'])
-group_entry_t = namedtuple('group_entry', ['id', 'name', 'pos', 'valid_from', 'valid_to', 'args', 'test'])
-test_t = namedtuple('test', ['id', 'name', 'file_key', 'file_id', 'valid_from', 'valid_to'])
-arg_t = namedtuple('arg', ['id', 'name', 'text', 'int', 'real', 'file_key', 'file_id', 'valid_from', 'valid_to'])
+class db_obj_t(object):
+    def __init__(self, id, name, valid_from, valid_to):
+        self.id = id
+        self.name = name
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+
+    def is_valid_at(self, timestamp):
+        if timestamp is None:
+            return self.valid_to is None
+        return self.valid_from <= timestamp and \
+            (not self.valid_to or timestamp < self.valid_to)
+
+    def _asdict(self):
+        d = dir(self)
+        r = {}
+        for k in d:
+            if not k.startswith("_") and k != "is_valid_at":
+                r[k] = getattr(self, k)
+        return r
+
+
+class test_group_t(db_obj_t):
+    def __init__(self, id, name, desc, valid_from, valid_to, entries):
+        db_obj_t.__init__(self, id, name, valid_from, valid_to)
+        self.desc = desc
+        self.entries = entries
+
+
+class group_entry_t(db_obj_t):
+    def __init__(self, id, name, pos, valid_from, valid_to, args, test):
+        db_obj_t.__init__(self, id, name, valid_from, valid_to)
+        self.pos = pos
+        self.args = args
+        self.test = test
+
+class test_t(db_obj_t):
+    def __init__(self, id, name, file_key, file_id, valid_from, valid_to):
+        db_obj_t.__init__(self, id, name, valid_from, valid_to)
+        self.file_key = file_key
+        self.file_id = file_id
+
+
+class arg_t(db_obj_t):
+    def __init__(self, id, name, text, int, real, file_key, file_id, valid_from, valid_to):
+        db_obj_t.__init__(self, id, name, valid_from, valid_to)
+        self.text = text
+        self.int = int
+        self.real = real
+        self.file_key = file_key
+        self.file_id = file_id
 
 
 def obj_valid_at(obj, timestamp):
-    if timestamp is None:
-        return obj.valid_to is None
-    return obj.valid_from <= timestamp and \
-        (not obj.valid_to or timestamp < obj.valid_to)
+    return obj.is_valid_at(timestamp)
 
 def as_human_time(unix_usec):
     if not unix_usec or unix_usec == float("inf") or unix_usec == float("-inf"):
@@ -36,10 +79,28 @@ class db_process_t(object):
         self.dev_table = "example_devs"
         self.results_table = "example_dev_test_results"
         self.results_table_dev = "example_dev_id"
-
+        self.results_values_table = "example_dev_results_values_table"
         self.db_paths = {}
         self.dbrefs = {}
         self.ssh_connections = {}
+
+    def load_custom_table_names(self, c):
+        cmd = 'SELECT value_text FROM "values" WHERE name=\'dev_table\' AND parent_id=2'
+        c.execute(cmd)
+        row = c.fetchone()
+        self.dev_table = row[0]
+        cmd = 'SELECT value_text FROM "values" WHERE name=\'dev_results_table\' AND parent_id=2'
+        c.execute(cmd)
+        row = c.fetchone()
+        self.results_table = row[0]
+        cmd = 'SELECT value_text FROM "values" WHERE name=\'dev_results_table_key\' AND parent_id=2'
+        c.execute(cmd)
+        row = c.fetchone()
+        self.results_table_dev = row[0]
+        cmd = 'SELECT value_text FROM "values" WHERE name=\'dev_results_values_table\' AND parent_id=2'
+        c.execute(cmd)
+        row = c.fetchone()
+        self.results_values_table = row[0]
 
     def debug_print(self, level, msg):
         log_level = int(os.environ.get("DEBUG", 0))
@@ -157,7 +218,7 @@ class db_process_t(object):
                 return old_path
 
             if not os.path.exists(new_path):
-                print("db path '%s'" % db_paths[db])
+                print("db path '%s'" % self.db_paths[c])
                 print("file '%s' does not exist" % new_path)
             assert os.path.exists(new_path)
             return new_path
