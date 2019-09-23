@@ -11,7 +11,7 @@ def update_tests(context, cmd_args):
     groups_file = os.path.abspath(cmd_args[0])
 
     with open(groups_file) as f:
-        groups_defs = yaml.load(f)
+        groups_defs = yaml.load(f, Loader=yaml.FullLoader)
 
     db = context.db
     c = db.db.cursor()

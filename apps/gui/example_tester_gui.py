@@ -57,7 +57,7 @@ def main():
         db_def_file = "config_sqlite_db.yaml"
 
     with open(db_def_file) as f:
-        db_def = yaml.load(f)
+        db_def = yaml.load(f, Loader=yaml.FullLoader)
 
     db_def['sql'] = example_lib.example_sql_common()
     db_def["fn_get_dev"] = example_lib.db_example_dev.get_by_uuid
