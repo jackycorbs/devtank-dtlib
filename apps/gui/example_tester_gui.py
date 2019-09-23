@@ -24,21 +24,10 @@ parser.add_argument('--config', help='DB config file to use', type=str)
 
 
 def get_schema():
-    import re
-
     schema_base = example_lib_gui.resources["db_base.sql"]
     schema = example_lib_gui.resources["db.sql"]
 
-    # Drop transaction begin/end
-
-    itran_clear_re = re.compile("(begin;|commit;)", re.IGNORECASE)
-
-    schema = itran_clear_re.sub("", schema_base) + itran_clear_re.sub("", schema)
-
-    # Break into statements
-    schema = schema.split(';')
-
-    return schema
+    return schema_base + ";" + schema
 
 
 def db_load_extra(db):
