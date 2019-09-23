@@ -1,4 +1,3 @@
-from resources import *
 
 from dt_db_base import base_open_db_backend,  \
                        set_log_file,          \

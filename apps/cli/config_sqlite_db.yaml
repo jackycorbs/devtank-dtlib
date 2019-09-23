@@ -1,0 +1,5 @@
+{
+    type: sqlite,
+    filename: ../gui/test.db,
+    db_files: ../gui/db_files
+}

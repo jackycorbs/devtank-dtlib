@@ -1,3 +1,5 @@
+from resources import *
+
 from context import gui_context_object
 
 from start_gui import open_start_page, init_start_page
