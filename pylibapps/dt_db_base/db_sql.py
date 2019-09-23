@@ -442,3 +442,17 @@ UPDATE \"values\" SET valid_to=%i WHERE name='%s' AND parent_id=%i" % \
 SELECT name, Value_text, value_int, value_real, value_file_id FROM \
 test_group_entry_properties JOIN \"values\" ON \"values\".id = Value_id \
 WHERE test_group_entry_properties.group_entry_id=%i" % group_entry_id
+
+    def get_dynamic_table_info(self):
+        return '\
+SELECT (SELECT value_text FROM "values" WHERE name=\'dev_table\' AND parent_id=2) as dev_table,\
+(SELECT value_text FROM "values" WHERE name=\'dev_results_table\' AND parent_id=2) as dev_results_table,\
+(SELECT value_text FROM "values" WHERE name=\'dev_results_table_key\' AND parent_id=2) as dev_results_table_key,\
+(SELECT value_text FROM "values" WHERE name=\'dev_results_values_table\' AND parent_id=2) as dev_results_values_table'
+
+    def use_dynamic_table_info(self, row):
+        self.devices_table_name           = row[0]
+        self.dev_result_table_name        = row[1]
+        self.device_key_name              = row[2]
+        self.dev_result_values_table_name = row[3]
+
