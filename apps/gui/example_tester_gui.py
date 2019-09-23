@@ -26,8 +26,8 @@ parser.add_argument('--config', help='DB config file to use', type=str)
 def get_schema():
     import re
 
-    schema_base = example_lib.resources["db_base.sql"]
-    schema = example_lib.resources["db.sql"]
+    schema_base = example_lib_gui.resources["db_base.sql"]
+    schema = example_lib_gui.resources["db.sql"]
 
     # Drop transaction begin/end
 
@@ -59,8 +59,8 @@ def main():
         example_lib.enable_info_msgs(True)
 
     builder = Gtk.Builder()
-    builder.add_from_string(example_lib.resources['gui_base.glade'])
-    builder.add_from_string(example_lib.resources['gui.glade'])
+    builder.add_from_string(example_lib_gui.resources['gui_base.glade'])
+    builder.add_from_string(example_lib_gui.resources['gui.glade'])
 
     if args['config']:
         db_def_file = args['config']

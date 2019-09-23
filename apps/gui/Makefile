@@ -30,7 +30,7 @@ $(OUTDIR)/build/example_lib_gui : example_lib_gui/*.py Makefile
 	touch $(OUTDIR)/build/example_lib_gui
 
 $(OUTDIR)/lib/example_lib/resources.py: $(LIBDEVTANKROOT)/pylibapps/resource_builder.py resources/* $(LIBDEVTANKROOT)/pylibapps/resources/* Makefile
-	$(LIBDEVTANKROOT)/pylibapps/resource_builder.py $(OUTDIR)/lib/example_lib/resources.py resources/* $(LIBDEVTANKROOT)/pylibapps/resources/*
+	$(LIBDEVTANKROOT)/pylibapps/resource_builder.py $(OUTDIR)/lib/example_lib_gui/resources.py resources/* $(LIBDEVTANKROOT)/pylibapps/resources/*
 
 local_db_push:
 	DB_OLD=`ls -1d old_db.* | wc -l`; \
