@@ -53,6 +53,13 @@ class tester_database(object):
                                      smb_transferer.protocol_id  : smb_transferer() }
         if not os.path.exists(work_folder):
             os.mkdir(work_folder)
+        self.init_dynamic_tables()
+
+    def init_dynamic_tables(self):
+        cmd = self.sql.get_dynamic_table_info()
+        row = self.db.query_one(cmd)
+        assert row, "Nothing returned for dynamic table names."
+        self.sql.use_dynamic_table_info(row)
 
     def clean(self):
         for protocol_transferer in self.protocol_transferers.values():
