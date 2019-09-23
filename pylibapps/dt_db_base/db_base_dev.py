@@ -1,3 +1,4 @@
+from db_common import db_time
 from db_obj import db_child
 from db_tests import test_group_sessions
 
@@ -29,6 +30,17 @@ class db_base_dev(db_child):
                                     "uuid",
                                     db.sql.get_dev_by_uid,
                                     uuid)
+
+    @staticmethod
+    def get_dev_status_since(db, timestamp):
+        cmd = db.sql.get_dev_status_since(db_time(timestamp))
+        rows = db.db.query(cmd)
+        r = {}
+        for row in rows:
+            dev_uid, group_name, test_time, pass_fail = row
+            r.setdefault(dev_uid, {})
+            r[dev_uid][group_name] = (test_time, pass_fail)
+        return r
 
     def get_session_count(self):
         cmd = self.db.sql.get_dev_session_count(self.id)

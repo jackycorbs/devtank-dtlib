@@ -41,6 +41,18 @@ uid='%s'" % (self.devices_table_name, db_safe_str(uuid))
         return "SELECT serial_number, id, uid FROM %s WHERE \
 id=%i" % (self.devices_table_name, dev_id)
 
+    def get_dev_status_since(self, timestamp):
+        return "\
+SELECT {0}.uid, test_groups.name, MAX(test_group_results.time_of_tests), MIN(pass_fail) FROM test_group_results \
+JOIN test_groups ON test_groups.id = test_group_results.group_id \
+JOIN {1} ON {1}.group_result_id = test_group_results.id \
+JOIN {0} ON {0}.id = {1}.{3} \
+WHERE time_of_tests > {2} GROUP BY {0}.id, test_groups.name\
+".format(self.devices_table_name,
+         self.dev_result_table_name,
+         timestamp,
+         self.device_key_name)
+
     def get_dev_session_count(self, dev_id):
         return "\
 SELECT COUNT(DISTINCT test_group_results.id) \

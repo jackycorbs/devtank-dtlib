@@ -73,12 +73,26 @@ def get_file(context, cmd_args):
     print "Got file ID %u at %s" % (file_id, local_path)
 
 
+def dev_status(context, cmd_args):
+    assert len(cmd_args) == 1, "Wrong argument count."
+    timestamp = int(cmd_args[0])
+    from dt_db_base import db_base_dev
+    r = db_base_dev.get_dev_status_since(context.db, timestamp)
+    for dev_uuid in r:
+        dev = context.db.get_dev(dev_uuid)
+        results = r[dev_uuid]
+        for group in results:
+            result = results[group]
+            print '%s : "%s" : %s' % (dev.serial_number, group, "passed" if result[1] else "FAILED")
+
+
 generic_cmds = {
     "update_tests" : (update_tests, "Update <groups yaml> in database."),
     "list_groups"  : (list_groups,  "List active groups."),
     "group_results": (group_results,"Get results for a <named> group."),
     "group_result" : (group_result, "Get result of a <named> group of <index>"),
     "get_file"     : (get_file,     "Get a file by id."),
+    "dev_status"   : (dev_status,   "Get status of devices after given unix time."),
     }
 
 
