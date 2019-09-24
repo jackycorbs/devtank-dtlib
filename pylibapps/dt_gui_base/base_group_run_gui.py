@@ -237,16 +237,18 @@ class base_run_context(object):
             self.test_list.set_sensitive(True)
             self.dev_list.set_sensitive(True)
             self.run_group_man.readonly = True
+            self.run_group_man.clean_files()
         else:
-            # Submit results, which will only happen if tests finished.
-            self.run_group_man.submit()
-            self.go_back()
+            # If test finished, cancel is same as ok.
+            self.on_ok()
 
 
     def on_redo(self):
         self.force_stop()
         # Submit results, which will only happen if tests finished.
         self.run_group_man.submit()
+        # Clean files would happen in submit, but only if tests finished.
+        self.run_group_man.clean_files()
         self.start_test_group()
         self.run_lab.set_text(self.context.tests_group.name)
 
@@ -403,3 +405,45 @@ class base_run_context(object):
             selector.select_iter(dev_uuid.iter)
             break
         self.progress_bar.set_fraction(1)
+
+    def set_run_ready(self):
+        self.run_group_man.readonly = False
+
+
+
+
+def open_run_group(context):
+
+    global _run_context
+
+    _run_context.set_run_ready()
+
+    context.push_view()
+    context.change_view("RunGroupViewObj")
+
+    _run_context.run_lab.set_text(context.tests_group.name)
+
+
+def open_ran_group(context, session):
+
+    global _run_context
+
+    _run_context.load_session(session)
+
+    context.push_view()
+    context.change_view("RunGroupViewObj")
+
+    stamp = datetime.datetime.fromtimestamp(session.time_of_tests)
+
+    _run_context.run_lab.set_text('"%s"\n@ %s' % \
+                                  (context.tests_group.name, str(stamp)))
+
+
+def base_init_run_group(context, run_context):
+
+    builder = context.builder
+
+    global _run_context
+
+    _run_context = run_context(context)
+

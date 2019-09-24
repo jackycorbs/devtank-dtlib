@@ -593,7 +593,7 @@ class base_run_group_manager(object):
     def submit(self):
         if self.has_new:
             self.context.tests_group.add_tests_results(self.session_results)
-            self.has_new = False
+            self.clean_files()
 
 
 
