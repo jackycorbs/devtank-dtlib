@@ -22,7 +22,7 @@ def _get_defaults(local_folder):
     defaults_file = os.path.join(local_folder, "args.yaml")
     if os.path.exists(defaults_file):
         with open(defaults_file) as f:
-            return yaml.load(f)
+            return yaml.load(f, Loader=yaml.FullLoader)
     return {}
 
 def _extract_defaults(test_file, default_args):
@@ -53,6 +53,13 @@ class tester_database(object):
                                      smb_transferer.protocol_id  : smb_transferer() }
         if not os.path.exists(work_folder):
             os.mkdir(work_folder)
+        self.init_dynamic_tables()
+
+    def init_dynamic_tables(self):
+        cmd = self.sql.get_dynamic_table_info()
+        row = self.db.query_one(cmd)
+        assert row, "Nothing returned for dynamic table names."
+        self.sql.use_dynamic_table_info(row)
 
     def clean(self):
         for protocol_transferer in self.protocol_transferers.values():
@@ -410,7 +417,7 @@ class tester_database(object):
         r = []
         folder = os.path.dirname(filename)
         with open(filename) as f:
-            root_def = yaml.load(f)
+            root_def = yaml.load(f, Loader=yaml.FullLoader)
 
             templates = root_def.get('templates', {})
             groups_list = root_def['groups']

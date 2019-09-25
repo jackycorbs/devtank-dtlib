@@ -56,7 +56,7 @@ what device with what arguments and what the results were.
 
 A device object is expected to have a database version of itself.
 
-Please look at the example in apps and the source for specifics.
+Please look in apps for example GUI and CLI.
 
 This code has grown sometimes under very rapid timelines and is used in
 anger on multiple projects. There is much Devtank would like to do to

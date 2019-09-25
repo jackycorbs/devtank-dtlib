@@ -41,6 +41,18 @@ uid='%s'" % (self.devices_table_name, db_safe_str(uuid))
         return "SELECT serial_number, id, uid FROM %s WHERE \
 id=%i" % (self.devices_table_name, dev_id)
 
+    def get_dev_status_since(self, timestamp):
+        return "\
+SELECT {0}.uid, test_groups.name, MAX(test_group_results.time_of_tests), MIN(pass_fail) FROM test_group_results \
+JOIN test_groups ON test_groups.id = test_group_results.group_id \
+JOIN {1} ON {1}.group_result_id = test_group_results.id \
+JOIN {0} ON {0}.id = {1}.{3} \
+WHERE time_of_tests > {2} GROUP BY {0}.id, test_groups.name\
+".format(self.devices_table_name,
+         self.dev_result_table_name,
+         timestamp,
+         self.device_key_name)
+
     def get_dev_session_count(self, dev_id):
         return "\
 SELECT COUNT(DISTINCT test_group_results.id) \
@@ -442,3 +454,17 @@ UPDATE \"values\" SET valid_to=%i WHERE name='%s' AND parent_id=%i" % \
 SELECT name, Value_text, value_int, value_real, value_file_id FROM \
 test_group_entry_properties JOIN \"values\" ON \"values\".id = Value_id \
 WHERE test_group_entry_properties.group_entry_id=%i" % group_entry_id
+
+    def get_dynamic_table_info(self):
+        return '\
+SELECT (SELECT value_text FROM "values" WHERE name=\'dev_table\' AND parent_id=2) as dev_table,\
+(SELECT value_text FROM "values" WHERE name=\'dev_results_table\' AND parent_id=2) as dev_results_table,\
+(SELECT value_text FROM "values" WHERE name=\'dev_results_table_key\' AND parent_id=2) as dev_results_table_key,\
+(SELECT value_text FROM "values" WHERE name=\'dev_results_values_table\' AND parent_id=2) as dev_results_values_table'
+
+    def use_dynamic_table_info(self, row):
+        self.devices_table_name           = row[0]
+        self.dev_result_table_name        = row[1]
+        self.device_key_name              = row[2]
+        self.dev_result_values_table_name = row[3]
+

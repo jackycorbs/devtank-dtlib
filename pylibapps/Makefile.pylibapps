@@ -10,6 +10,12 @@ $(OUTDIR)/build/dt_db_base : $(PYLIBAPPS)/dt_db_base/*.py $(LIBDEVTANK_DYN)
 	mkdir -p $(OUTDIR)/build
 	touch $(OUTDIR)/build/dt_db_base
 
+$(OUTDIR)/build/dt_cli_base : $(PYLIBAPPS)/dt_cli_base/*.py $(LIBDEVTANK_DYN)
+	mkdir -p $(OUTDIR)/lib/dt_cli_base
+	cp -v $(PYLIBAPPS)/dt_cli_base/*.py $(OUTDIR)/lib/dt_cli_base/
+	mkdir -p $(OUTDIR)/build
+	touch $(OUTDIR)/build/dt_cli_base
+
 $(OUTDIR)/build/dt_gui_base : $(PYLIBAPPS)/dt_gui_base/*.py
 	mkdir -p $(OUTDIR)/lib/dt_gui_base
 	cp -v $(PYLIBAPPS)/dt_gui_base/*.py $(OUTDIR)/lib/dt_gui_base/
