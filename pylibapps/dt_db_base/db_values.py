@@ -183,7 +183,7 @@ def set_defaults(add_files, args, c, sql, now):
                         else:
                             new_value = new_value[2]
                 else:
-                    sql_cmd = _add_default_value_str_param_sql
+                    sql_cmd = sql.add_default_value_str_param
                 cmd = sql_cmd(new_prop,
                               default_value_id,
                               new_value,
