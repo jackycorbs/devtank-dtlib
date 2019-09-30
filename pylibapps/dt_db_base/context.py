@@ -5,7 +5,7 @@ from tests_group import tests_group_creator
 class base_context_object(object):
     def __init__(self, args, db_def):
         self.db_def = db_def
-        self.db = None
+        self._db = None
         self.db_error = False
         self.args = args
         self.devices = []
@@ -20,8 +20,16 @@ class base_context_object(object):
         for cb in self.on_exit_cbs:
             cb()
 
+    @property
+    def db(self):
+        if self._db:
+            return self._db
+        else:
+            self._db_init()
+            return self._db
+
     def _db_init(self):
-        if self.db:
+        if self._db:
             return True
 
         host = self.db_def.get("host", None)
@@ -46,7 +54,7 @@ class base_context_object(object):
         if not db:
             return False
 
-        self.db = db
+        self._db = db
         self.db_error = False
         self.tests_group.db = db
         self.tests_group.update_defaults()
@@ -75,5 +83,5 @@ class base_context_object(object):
 
     def _db_fail(self, e):
         print "Failed to reconnect to database, %s" % str(e)
-        self.db = None
+        self._db = None
         self.db_error = True
