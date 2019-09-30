@@ -12,8 +12,9 @@ def db_ms_now():
     return db_time(time.time())
 
 def db_safe_str(s):
-    r = s.replace("'", '"')
-    return r.rstrip('\0')
+    s = s.replace("'", '')
+    s = s.replace('"', '')
+    return s.rstrip('\0')
 
 def db_safe_name(s):
     r = s.replace("'", '"')

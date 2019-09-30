@@ -385,8 +385,8 @@ VALUES('%s', %i, %i)" % \
                                     valid_from):
         return "\
 INSERT INTO \"values\" (name, parent_id, value_text, valid_from) \
-VALUES('%s', %i, '%s', %i)" % (db_safe_str(name), parent_id, value,\
-                               valid_from)
+VALUES('%s', %i, '%s', %i)" % (db_safe_str(name), parent_id, \
+                               db_safe_str(value), valid_from)
 
     def add_default_value_int_param(self, name, parent_id, value,
                                     valid_from):
