@@ -123,6 +123,12 @@ class base_groups_list_gui(object):
             btn = builder.get_object(advanced_only)
             btn.set_visible(is_advanced)
 
+        if not self.context.db:
+            self.context.db_init()
+            if not self.context.db:
+                self._on_back_btn()
+                return
+
         groups = self.context.db.get_groups()
 
         groups_store = self.groups_list.get_model()
