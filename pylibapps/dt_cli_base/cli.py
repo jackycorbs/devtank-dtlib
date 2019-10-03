@@ -91,6 +91,23 @@ def dev_status(context, cmd_args):
             print '%s : "%s" : %s' % (dev.serial_number, group, "passed" if result[1] else "FAILED")
 
 
+def add_fail(context, cmd_args):
+    assert len(cmd_args) >= 2, "Wrong argument count."
+    uid = cmd_args[0]
+    group_name = " ".join(cmd_args[1:])
+    db_group = context.db.get_group(group_name)
+    if not db_group:
+        print 'No group of name "%s" found.' % group_name
+        sys.exit(-1)
+
+    tests = db_group.get_tests()
+
+    results = {uid : {'tests': {tests[0].name : {'passfail' : False } } } }
+
+    db_group.add_tests_results(results, tests)
+
+
+
 generic_cmds = {
     "update_tests" : (update_tests, "Update <groups yaml> in database."),
     "list_groups"  : (list_groups,  "List active groups."),
@@ -98,6 +115,7 @@ generic_cmds = {
     "group_result" : (group_result, "Get result of a <named> group of <index>"),
     "get_file"     : (get_file,     "Get a file by id."),
     "dev_status"   : (dev_status,   "Get status of devices after given unix time."),
+    "add_fail"     : (add_fail,     "Get <device> a fail for <named> group."),
     }
 
 
