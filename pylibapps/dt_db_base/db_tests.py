@@ -186,6 +186,9 @@ class test_group_obj:
             db.commit()
 
     def add_tests_results(self, results, tests, db_cursor=None, now=None):
+        if not results:
+            return
+
         db = self.db.db
         if db_cursor:
             c = db_cursor
