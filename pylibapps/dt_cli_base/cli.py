@@ -69,7 +69,11 @@ def group_result(context, cmd_args):
     for dev, dev_results in session.devices.items():
         print "Device :", dev
         for result in dev_results.results:
-            print 'Test : "%s" (Output File:%u, Log File:%u) - %s' % (result[1], result[2], result[3], "passed" if result[0] else "FAILED")
+            print 'Test : "%s" (Output File:%s, Log File:%s) - %s' % (
+                    result[1],
+                    "%u" % result[2] if result[2] else "NONE",
+                    "%u" % result[3] if result[3] else "NONE",
+                    "passed" if result[0] else "FAILED")
 
 
 def get_file(context, cmd_args):
