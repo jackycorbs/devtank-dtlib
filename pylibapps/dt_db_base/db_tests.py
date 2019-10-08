@@ -273,6 +273,28 @@ class test_group_obj:
         return [ test_group_sessions(self, self.db, *row) \
                  for row in rows ]
 
+    def get_all_sessions_count(self):
+        cmd = self.db.sql.get_test_group_results_count_by_name(self.name)
+        rows = self.db.db.query(cmd)
+        return rows[0][0]
+
+    def get_all_sessions(self, offset, count):
+        cmd = self.db.sql.get_test_group_results_by_name(self.name, offset, count)
+        rows = self.db.db.query(cmd)
+        r = []
+        other_groups = {}
+        for row in rows:
+            session_id, session_time, group_id = row
+            if self.id == group_id:
+                group = self
+            else:
+                group = other_groups.get(group_id, None)
+                if not group:
+                    group = self.db.get_group_by_id(group_id)
+                    other_groups[group_id] = group
+            r += [ test_group_sessions(group, self.db, session_id, session_time) ]
+        return r
+
     def get_dev_last_pass_fail(self, dev_id):
         cmd = self.db.sql.dev_last_group_pass_fail(dev_id, self.id)
         r = self.db.db.query_one(cmd)

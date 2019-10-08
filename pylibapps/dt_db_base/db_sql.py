@@ -296,10 +296,24 @@ VALUES (%i, %i)" % (group_id, now)
 SELECT COUNT(id) FROM test_group_results WHERE group_id=%i" % \
 group_id
 
+    def get_test_group_results_count_by_name(self, group_name):
+        return "\
+SELECT COUNT(test_group_results.id) FROM test_group_results \
+JOIN test_groups ON test_groups.id = test_group_results.group_id \
+WHERE test_groups.name='%s'" % \
+db_safe_str(group_name)
+
     def get_test_group_results(self, group_id, offset, count):
         return "\
 SELECT id, Time_Of_tests FROM test_group_results WHERE group_id=%i \
 ORDER BY Time_Of_tests DESC LIMIT %u OFFSET %u" % (group_id, count, offset)
+
+    def get_test_group_results_by_name(self, group_name, offset, count):
+        return "\
+SELECT test_group_results.id, Time_Of_tests, group_id FROM test_group_results \
+JOIN test_groups ON test_groups.id = test_group_results.group_id \
+WHERE test_groups.name='%s' \
+ORDER BY Time_Of_tests DESC LIMIT %u OFFSET %u" % (db_safe_str(group_name), count, offset)
 
     def get_sessions(self, session_ids):
         return "\
