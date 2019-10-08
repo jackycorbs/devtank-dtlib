@@ -26,6 +26,7 @@ def _do_raw_connect(db_def):
                              host=db_def["host"],
                              port=db_def.get("port", 3306),
                              sql_mode='ANSI_QUOTES',
+                             buffered=True,
                              connection_timeout=10)
 
 
