@@ -142,22 +142,12 @@ def dev_results(context, cmd_args):
         print "Failed to find dev '%s'" % dev_uuid
         sys.exit(-1)
 
-    print "Device has %u result sessions." % dev.get_session_count()
+    count = dev.get_session_count()
 
-
-def dev_result(context, cmd_args):
-    assert len(cmd_args) >= 2, "Wrong argument count."
-    dev_uuid = cmd_args[0]
-    index = int(cmd_args[1])
-    count = int(cmd_args[2]) if len(cmd_args) > 2 else 1
-    dev = context.db.get_dev(dev_uuid)
-    if not dev:
-        print "Failed to find dev '%s'" % dev_uuid
-        sys.exit(-1)
-    sessions = dev.get_sessions(index, count)
-    for session in sessions:
-        print_session(session)
-
+    for n in range(0, count, 10):
+        sessions = dev.get_sessions(n, 10)
+        for session in sessions:
+            print_session(session)
 
 
 generic_cmds = {
@@ -170,7 +160,6 @@ generic_cmds = {
     "dev_status"   : (dev_status,   "Get status of devices after given unix time."),
     "add_fail"     : (add_fail,     "Get <device> a fail for <named> group."),
     "dev_results"  : (dev_results,  "Get <device> results."),
-    "dev_result"   : (dev_result,   "Get <device> result of <index> (<count>)"),
     }
 
 
