@@ -47,7 +47,7 @@ def group_results(context, cmd_args):
     if not db_group:
         print 'No group of name "%s" found.' % group_name
         sys.exit(-1)
-    print "Group has %u result sessions." % db_group.get_sessions_count()
+    print "Group has %u result sessions." % db_group.get_all_sessions_count()
 
 
 def print_session(session):
@@ -71,7 +71,7 @@ def group_result(context, cmd_args):
         print 'No group of name "%s" found.' % group_name
         sys.exit(-1)
     session_index = int(cmd_args[-1])
-    sessions = db_group.get_sessions(session_index, 1)
+    sessions = db_group.get_all_sessions(session_index, 1)
     if not sessions:
         print "Result session not found of index %u" % session_index
         sys.exit(-1)
