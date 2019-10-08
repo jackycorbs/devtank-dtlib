@@ -38,6 +38,7 @@ Each "test" is called with the predefined globals:
 "output_normal"   : Message reported to "output" file.
 "output_good"     : Message reported as good output and to "output" file.
 "output_bad"      : Message reported as bad output and to "output" file.
+"store_value"     : Add a named value to be stored in the database with the results.
 
 
 Tests are arranged into "test groups". These contain a list of tests and
