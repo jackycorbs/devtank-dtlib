@@ -51,16 +51,19 @@ def group_results(context, cmd_args):
 
 
 def print_session(session):
+    print "=" * 72
     print "Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S')
     print "Overall :", "passed" if session.pass_fail else "FAILED"
+    print "Session :", session.id
     for dev, dev_results in session.devices.items():
         print "Device :", dev
         for result in dev_results.results:
-            print 'Test : "%s" (Output File:%s, Log File:%s) - %s' % (
-                    result[1],
-                    "%u" % result[2] if result[2] else "NONE",
-                    "%u" % result[3] if result[3] else "NONE",
-                    "passed" if result[0] else "FAILED")
+            if len(result):
+                print 'Test : "%s" (Output File:%s, Log File:%s) - %s' % (
+                        result[1],
+                        "%u" % result[2] if result[2] else "NONE",
+                        "%u" % result[3] if result[3] else "NONE",
+                        "passed" if result[0] else "FAILED")
 
 
 def group_result(context, cmd_args):
@@ -77,6 +80,20 @@ def group_result(context, cmd_args):
         sys.exit(-1)
 
     print_session(sessions[0])
+
+
+def group_dump(context, cmd_args):
+    assert len(cmd_args) > 0, "Wrong argument count."
+    group_name = " ".join(cmd_args)
+    db_group = context.db.get_group(group_name)
+    if not db_group:
+        print 'No group of name "%s" found.' % group_name
+        sys.exit(-1)
+    count = db_group.get_all_sessions_count()
+    for n in range(0, count, 10):
+        sessions = db_group.get_all_sessions(n, 10)
+        for session in sessions:
+            print_session(session)
 
 
 def get_file(context, cmd_args):
@@ -148,6 +165,7 @@ generic_cmds = {
     "list_groups"  : (list_groups,  "List active groups."),
     "group_results": (group_results,"Get results for a <named> group."),
     "group_result" : (group_result, "Get result of a <named> group of <index>"),
+    "group_dump"   : (group_dump,   "Get all results of <named> group (WARNING >all<)"),
     "get_file"     : (get_file,     "Get a file by id."),
     "dev_status"   : (dev_status,   "Get status of devices after given unix time."),
     "add_fail"     : (add_fail,     "Get <device> a fail for <named> group."),

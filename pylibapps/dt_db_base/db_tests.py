@@ -309,7 +309,7 @@ class dev_results_builder(object):
         self.results = []
 
     def set_result(self, index, name, pass_fail, out_file_id, log_file_id):
-        self.results += [(False,)] * (index - len(self.results) + 1)
+        self.results += [(False, "BAD DATA", None, None)] * (index - len(self.results) + 1)
         self.results[index] = (pass_fail, name, out_file_id, log_file_id)
 
 
