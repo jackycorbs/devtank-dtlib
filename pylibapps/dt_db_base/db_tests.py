@@ -324,6 +324,9 @@ class test_group_sessions(object):
         cmd = self.db.sql.get_dev_results(self.id)
         rows = self.db.db.query(cmd)
 
+        if not len(rows):
+            self.pass_fail = False
+
         devs = {}
         for row in rows:
             result_id   = row[0]
