@@ -93,7 +93,8 @@ def dev_status(context, cmd_args):
         results = r[dev_uuid]
         for group in results:
             result = results[group]
-            print '%s : "%s" : %s' % (dev.serial_number, group, "passed" if result[1] else "FAILED")
+            dev_id = dev.serial_number if dev else dev_uuid
+            print '%s : "%s" : %s' % (dev_id, group, "passed" if result[1] else "FAILED")
 
 
 def add_fail(context, cmd_args):
