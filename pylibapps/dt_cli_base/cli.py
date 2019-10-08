@@ -50,6 +50,19 @@ def group_results(context, cmd_args):
     print "Group has %u result sessions." % db_group.get_sessions_count()
 
 
+def print_session(session):
+    print "Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S')
+    print "Overall :", "passed" if session.pass_fail else "FAILED"
+    for dev, dev_results in session.devices.items():
+        print "Device :", dev
+        for result in dev_results.results:
+            print 'Test : "%s" (Output File:%s, Log File:%s) - %s' % (
+                    result[1],
+                    "%u" % result[2] if result[2] else "NONE",
+                    "%u" % result[3] if result[3] else "NONE",
+                    "passed" if result[0] else "FAILED")
+
+
 def group_result(context, cmd_args):
     assert len(cmd_args) > 0, "Wrong argument count."
     group_name = " ".join(cmd_args[:-1])
@@ -63,17 +76,7 @@ def group_result(context, cmd_args):
         print "Result session not found of index %u" % session_index
         sys.exit(-1)
 
-    session = sessions[0]
-    print "Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S')
-    print "Overall :", "passed" if session.pass_fail else "FAILED"
-    for dev, dev_results in session.devices.items():
-        print "Device :", dev
-        for result in dev_results.results:
-            print 'Test : "%s" (Output File:%s, Log File:%s) - %s' % (
-                    result[1],
-                    "%u" % result[2] if result[2] else "NONE",
-                    "%u" % result[3] if result[3] else "NONE",
-                    "passed" if result[0] else "FAILED")
+    print_session(sessions[0])
 
 
 def get_file(context, cmd_args):
@@ -114,6 +117,31 @@ def add_fail(context, cmd_args):
     db_group.add_tests_results(results, tests)
 
 
+def dev_results(context, cmd_args):
+    assert len(cmd_args) == 1, "Wrong argument count."
+    dev_uuid = cmd_args[0]
+    dev = context.db.get_dev(dev_uuid)
+    if not dev:
+        print "Failed to find dev '%s'" % dev_uuid
+        sys.exit(-1)
+
+    print "Device has %u result sessions." % dev.get_session_count()
+
+
+def dev_result(context, cmd_args):
+    assert len(cmd_args) >= 2, "Wrong argument count."
+    dev_uuid = cmd_args[0]
+    index = int(cmd_args[1])
+    count = int(cmd_args[2]) if len(cmd_args) > 2 else 1
+    dev = context.db.get_dev(dev_uuid)
+    if not dev:
+        print "Failed to find dev '%s'" % dev_uuid
+        sys.exit(-1)
+    sessions = dev.get_sessions(index, count)
+    for session in sessions:
+        print_session(session)
+
+
 
 generic_cmds = {
     "update_tests" : (update_tests, "Update <groups yaml> in database."),
@@ -123,6 +151,8 @@ generic_cmds = {
     "get_file"     : (get_file,     "Get a file by id."),
     "dev_status"   : (dev_status,   "Get status of devices after given unix time."),
     "add_fail"     : (add_fail,     "Get <device> a fail for <named> group."),
+    "dev_results"  : (dev_results,  "Get <device> results."),
+    "dev_result"   : (dev_result,   "Get <device> result of <index> (<count>)"),
     }
 
 
