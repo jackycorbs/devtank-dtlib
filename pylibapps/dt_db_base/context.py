@@ -74,6 +74,8 @@ class base_context_object(object):
         raise Exception("Context release_bus not implemented.");
 
     def _db_fail(self, e):
-        print "Failed to reconnect to database, %s" % str(e)
+        print "Fail with database, %s" % str(e)
+        import traceback
+        traceback.print_exc()
         self.db = None
         self.db_error = True
