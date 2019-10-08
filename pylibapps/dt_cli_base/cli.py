@@ -51,6 +51,7 @@ def group_results(context, cmd_args):
 
 
 def print_session(session):
+    print "=" * 72
     print "Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S')
     print "Overall :", "passed" if session.pass_fail else "FAILED"
     print "Session :", session.id
