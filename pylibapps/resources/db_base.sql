@@ -69,10 +69,11 @@ CREATE TABLE "test_group_results" (
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
 	"group_id"	INTEGER NOT NULL,
 	"time_of_tests"	BIGINT NOT NULL,
+	"logs_tz_offset" INTEGER,
 	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id")
 );
 
-INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 3);
+INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 4);
 INSERT INTO "values" ("name", "valid_from") VALUES('settings', 0);
 INSERT INTO "values" ("name", "parent_id", "valid_from") VALUES('defaults', 2, 0);
 INSERT INTO "values" ("name", "valid_from") VALUES('tests_properties', 0);

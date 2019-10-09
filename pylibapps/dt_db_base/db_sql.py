@@ -1,3 +1,4 @@
+import time
 import sys
 
 if sys.version_info[0] < 3:
@@ -16,6 +17,7 @@ class sql_common(object):
         self.dev_result_values_table_name = None
         self.devices_table_name = "devs"
         self.device_key_name = "dev_id"
+        self.db_version = None
 
         self.defaults_id = 3
         self.settings_id = 2
@@ -291,9 +293,15 @@ group_id, now, now)
 
     """
     def add_test_group_results(self, group_id, now):
-        return "\
-INSERT INTO test_group_results (group_id, Time_Of_tests) \
-VALUES (%i, %i)" % (group_id, now)
+        if self.db_version > 3:
+            tz_offset = time.altzone if time.daylight else time.timezone
+            return "\
+    INSERT INTO test_group_results (group_id, Time_Of_tests, logs_tz_offset) \
+    VALUES (%i, %i, %i)" % (group_id, now, tz_offset)
+        else:
+            return "\
+    INSERT INTO test_group_results (group_id, Time_Of_tests) \
+    VALUES (%i, %i)" % (group_id, now)
 
     def get_test_group_results_count(self, group_id):
         return "\
@@ -478,11 +486,13 @@ WHERE test_group_entry_properties.group_entry_id=%i" % group_entry_id
 SELECT (SELECT value_text FROM "values" WHERE name=\'dev_table\' AND parent_id=2) as dev_table,\
 (SELECT value_text FROM "values" WHERE name=\'dev_results_table\' AND parent_id=2) as dev_results_table,\
 (SELECT value_text FROM "values" WHERE name=\'dev_results_table_key\' AND parent_id=2) as dev_results_table_key,\
-(SELECT value_text FROM "values" WHERE name=\'dev_results_values_table\' AND parent_id=2) as dev_results_values_table'
+(SELECT value_text FROM "values" WHERE name=\'dev_results_values_table\' AND parent_id=2) as dev_results_values_table,\
+(SELECT value_int FROM \"values\" WHERE id=1) as db_version'
 
     def use_dynamic_table_info(self, row):
         self.devices_table_name           = row[0]
         self.dev_result_table_name        = row[1]
         self.device_key_name              = row[2]
         self.dev_result_values_table_name = row[3]
+        self.db_version                   = row[4]
 
