@@ -296,7 +296,7 @@ group_id, now, now)
         if self.db_version > 3:
             tz_offset = time.altzone if time.daylight else time.timezone
             return "\
-    INSERT INTO test_group_results (group_id, Time_Of_tests, logs_tz_offset) \
+    INSERT INTO test_group_results (group_id, Time_Of_tests, logs_utc_offset) \
     VALUES (%i, %i, %i)" % (group_id, now, tz_offset)
         else:
             return "\
