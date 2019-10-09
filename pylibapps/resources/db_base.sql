@@ -65,12 +65,20 @@ CREATE TABLE "test_group_entry_properties" (
 	FOREIGN KEY("value_id") REFERENCES "values" ("id")
 );
 
+CREATE TABLE "tester_machines" (
+	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
+	"mac"	VARCHAR(32),
+	"hostname"	VARCHAR(255)
+);
+
 CREATE TABLE "test_group_results" (
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
 	"group_id"	INTEGER NOT NULL,
 	"time_of_tests"	BIGINT NOT NULL,
 	"logs_utc_offset" INTEGER,
-	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id")
+	"tester_machine_id" INTEGER,
+	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id"),
+	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")
 );
 
 INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 4);

@@ -206,7 +206,10 @@ class test_group_obj:
 
         sql = self.db.sql
 
-        cmd = sql.add_test_group_results(self.id, now)
+        machine = self.db.get_own_machine()
+        machine_id = machine.id if machine else None
+
+        cmd = sql.add_test_group_results(self.id, machine_id, now)
         results_id = c.insert(cmd)
 
         for dev_uuid, uuid_results in results.items():

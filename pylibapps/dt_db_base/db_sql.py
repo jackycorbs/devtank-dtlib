@@ -292,12 +292,13 @@ group_id, now, now)
      results related SQL
 
     """
-    def add_test_group_results(self, group_id, now):
+    def add_test_group_results(self, group_id, machine_id, now):
         if self.db_version > 3:
             tz_offset = time.altzone if time.daylight else time.timezone
             return "\
-    INSERT INTO test_group_results (group_id, Time_Of_tests, logs_utc_offset) \
-    VALUES (%i, %i, %i)" % (group_id, now, tz_offset)
+    INSERT INTO test_group_results \
+        (group_id, time_Of_tests, logs_utc_offset, tester_machine_id) \
+    VALUES (%i, %i, %i, %s)" % (group_id, now, tz_offset, _id_null(machine_id))
         else:
             return "\
     INSERT INTO test_group_results (group_id, Time_Of_tests) \
@@ -495,4 +496,22 @@ SELECT (SELECT value_text FROM "values" WHERE name=\'dev_table\' AND parent_id=2
         self.device_key_name              = row[2]
         self.dev_result_values_table_name = row[3]
         self.db_version                   = row[4]
+    """
+    ====================================================================
 
+     Tester Machine related SQL
+
+    """
+    _MACHINE_SQL="SELECT id, mac, hostname FROM tester_machines WHERE "
+
+    def get_machine_by_id(self, machine_id):
+        return self._MACHINE_SQL + "id=%u" % machine_id
+
+    def get_machine(self, mac, hostname):
+        return self._MACHINE_SQL + "mac='%s' AND lower(hostname)='%s'" % \
+            (db_safe_str(mac).lower(), db_safe_str(hostname).lower())
+
+    def add_machine(self, mac, hostname):
+        return "INSERT INTO tester_machines (mac, hostname) \
+        VALUES('%s','%s')" % (db_safe_str(mac).lower(),
+            db_safe_str(hostname))

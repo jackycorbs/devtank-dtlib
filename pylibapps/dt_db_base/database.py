@@ -22,6 +22,7 @@ if sys.version_info[0] < 3:
                           get_settings_tree   as values_get_settings_tree,   \
                           set_defaults        as values_set_defaults
     from tests_group import tests_group_creator
+    from db_tester import db_tester_machine
 else:
     from .test_file_extract import get_args_in_src
     from .db_filestore_protocol import smb_transferer, sftp_transferer
@@ -34,6 +35,7 @@ else:
                            get_settings_tree   as values_get_settings_tree,   \
                            set_defaults        as values_set_defaults
     from .tests_group import tests_group_creator
+    from .db_tester import db_tester_machine
 
 
 
@@ -75,6 +77,7 @@ class tester_database(object):
         if not os.path.exists(work_folder):
             os.mkdir(work_folder)
         self.init_dynamic_tables()
+        self.tester_machine = None
 
     def init_dynamic_tables(self):
         cmd = self.sql.get_dynamic_table_info()
@@ -533,6 +536,14 @@ class tester_database(object):
             for filestore in sftps:
                 self.add_filestore(filestore[0], filestore[1], True,
                                    sftp_transferer.protocol_id)
+
+    def get_machine(self, machine_id):
+        return db_tester_machine.get_by_id(self, machine_id)
+
+    def get_own_machine(self):
+        if not self.tester_machine:
+            self.tester_machine = db_tester_machine.get_own_machine(self)
+        return self.tester_machine
 
     def get_dev(self, dev_uuid):
         raise Exception("Not implemented")
