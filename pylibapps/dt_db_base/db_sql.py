@@ -3,8 +3,12 @@ import sys
 
 if sys.version_info[0] < 3:
     from db_common import *
+    from c_base import dt_get_build_info
 else:
     from .db_common import *
+    from .c_base import dt_get_build_info
+
+
 
 _id_null = lambda x: ("%i" % x) if x else "NULL"
 _int_null = lambda x: ("%i" % x) if x is not None else "NULL"
@@ -295,10 +299,14 @@ group_id, now, now)
     def add_test_group_results(self, group_id, machine_id, now):
         if self.db_version > 3:
             tz_offset = time.altzone if time.daylight else time.timezone
+            sw_git_sha1 = dt_get_build_info()[1][:7]
             return "\
     INSERT INTO test_group_results \
-        (group_id, time_Of_tests, logs_utc_offset, tester_machine_id) \
-    VALUES (%i, %i, %i, %s)" % (group_id, now, tz_offset, _id_null(machine_id))
+        (group_id, time_Of_tests, logs_utc_offset, \
+         tester_machine_id, sw_git_sha1) \
+    VALUES (%i, %i, %i, %s, '%s')" % (
+            group_id, now, tz_offset,
+            _id_null(machine_id), db_safe_str(sw_git_sha1))
         else:
             return "\
     INSERT INTO test_group_results (group_id, Time_Of_tests) \

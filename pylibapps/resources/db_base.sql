@@ -77,6 +77,7 @@ CREATE TABLE "test_group_results" (
 	"time_of_tests"	BIGINT NOT NULL,
 	"logs_utc_offset" INTEGER,
 	"tester_machine_id" INTEGER,
+	"sw_git_sha1" VARCHAR(8),
 	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id"),
 	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")
 );

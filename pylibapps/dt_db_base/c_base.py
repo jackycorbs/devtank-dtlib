@@ -31,10 +31,6 @@ enable_info_msgs     = _c_libbase_func(None,   "enable_info_msgs",     (c_bool,)
 enable_warning_msgs  = _c_libbase_func(None,   "enable_warning_msgs",  (c_bool,))
 ## Is info messages going to log.
 info_msgs_is_enabled = _c_libbase_func(c_bool, "info_msgs_is_enabled", None)
-## Get the build information of C library.
-## @param build_time Time/Data the C library was built.
-## @param git_commit string of the git SHA1 when built.
-dt_get_build_info    = _c_libbase_func(None,   "dt_get_build_info",    (POINTER(c_char_p), POINTER(c_char_p)))
 
 ## Type used to hand C functions microseconds.
 dt_usecs = c_int64
@@ -47,13 +43,17 @@ secs_to_dt_usecs = lambda x : dt_usecs(int(x * 1000000))
 
 # Private imports
 
-_devtank_init     = _c_libbase_func(None, "devtank_init",     None)
-_devtank_ready    = _c_libbase_func(c_bool,"devtank_ready",   None)
-_devtank_shutdown = _c_libbase_func(None, "devtank_shutdown", None)
-_error_msg        = _c_libbase_func(None, "error_msg",        (c_char_p,))
-_warning_msg      = _c_libbase_func(None, "warning_msg",      (c_char_p,))
-_info_msg         = _c_libbase_func(None, "info_msg",         (c_char_p,))
-_set_log_fd       = _c_libbase_func(None, "set_log_fd",       (c_int,))
+## Get the build information of C library.
+## @param build_time Time/Data the C library was built.
+## @param git_commit string of the git SHA1 when built.
+_dt_get_build_info = _c_libbase_func(None,   "dt_get_build_info",    (POINTER(c_char_p), POINTER(c_char_p)))
+_devtank_init      = _c_libbase_func(None, "devtank_init",     None)
+_devtank_ready     = _c_libbase_func(c_bool,"devtank_ready",   None)
+_devtank_shutdown  = _c_libbase_func(None, "devtank_shutdown", None)
+_error_msg         = _c_libbase_func(None, "error_msg",        (c_char_p,))
+_warning_msg       = _c_libbase_func(None, "warning_msg",      (c_char_p,))
+_info_msg          = _c_libbase_func(None, "info_msg",         (c_char_p,))
+_set_log_fd        = _c_libbase_func(None, "set_log_fd",       (c_int,))
 
 # Public exports
 
@@ -162,6 +162,13 @@ def set_log_file(f):
     else:
         _set_log_fd(2) #stderr
         _log_file = None
+
+
+def dt_get_build_info():
+    buildtime = c_char_p()
+    gitcommit = c_char_p()
+    _dt_get_build_info(byref(buildtime), byref(gitcommit))
+    return buildtime.value, gitcommit.value
 
 # Executed on import
 if not _devtank_ready():
