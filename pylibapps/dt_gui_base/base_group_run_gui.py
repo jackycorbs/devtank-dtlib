@@ -237,7 +237,6 @@ class base_run_context(object):
             self.test_list.set_sensitive(True)
             self.dev_list.set_sensitive(True)
             self.run_group_man.readonly = True
-            self.run_group_man.clean_files()
         else:
             # If test finished, cancel is same as ok.
             self.on_ok()
