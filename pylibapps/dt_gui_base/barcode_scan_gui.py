@@ -7,6 +7,15 @@ def _get_scan_widget(context, box):
         return box
 
 
+def _serial_validate(serial):
+    serial = serial.strip()
+    serial = serial.replace("\r\n","_")
+    serial = serial.replace("\r","_")
+    serial = serial.replace("\n","_")
+    serial = serial.replace("\r"," ")
+    return serial
+
+
 class scan_box_base(object):
     def __init__(self, context, box_a, box_b):
         self.context = context
@@ -15,15 +24,26 @@ class scan_box_base(object):
         self._scan_A_id = None
         self._scan_B_id = None
 
+    def _get_barecodeA(self):
+        return _serial_validate(self.scan_barcodeA_entry.get_text())
+
+    def _get_barecodeB(self):
+        return _serial_validate(self.scan_barcodeB_entry.get_text())
+
     def _change_focus(self):
-        self.scan_barcodeA_entry.set_sensitive(False)
-        self.scan_barcodeB_entry.set_sensitive(True)
-        self.scan_barcodeB_entry.grab_focus()
+        serial_numberA = self._get_barecodeA()
+        if serial_numberA:
+            self.scan_barcodeA_entry.set_sensitive(False)
+            self.scan_barcodeB_entry.set_sensitive(True)
+            self.scan_barcodeB_entry.grab_focus()
 
     def _barscan_act(self):
 
-        serial_numberA = self.scan_barcodeA_entry.get_text()
-        serial_numberB = self.scan_barcodeB_entry.get_text()
+        serial_numberA = self._get_barecodeA()
+        serial_numberB = self._get_barecodeB()
+
+        if not serial_numberB:
+            return
 
         if serial_numberA == serial_numberB:
             self.scan_barcodeB_entry.set_sensitive(False)
