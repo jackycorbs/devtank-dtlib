@@ -140,6 +140,14 @@ class db_process_t(object):
         h = hash_md5.hexdigest()
         return [ h[n:n+2] for n in range(0, 8, 2) ]
 
+    def get_batch_folders(self, file_id):
+        r = []
+        while not len(r) or file_id > 1000:
+            file_id = int(file_id / 1000)
+            r += ["_%0003u_" % (file_id % 1000)]
+        r.reverse()
+        return r
+
     def get_rw_file_store(self, c):
         cmd = "SELECT MAX(id) FROM file_stores WHERE is_writable=1"
         c.execute(cmd)
@@ -150,7 +158,8 @@ class db_process_t(object):
     def get_db_folder(self, c):
         cmd = "SELECT name, server_name, base_folder FROM file_stores \
     JOIN file_store_protocols ON \
-    file_store_protocols.id = file_stores.protocol_id"
+    file_store_protocols.id = file_stores.protocol_id \
+    WHERE is_writable=1 ORDER BY file_stores.id DESC"
         c.execute(cmd)
         rows = c.fetchall()
         assert len(rows) == 1
@@ -181,6 +190,12 @@ class db_process_t(object):
                 self.ssh_connections[hostname]=(sftp, ssh)
             return (sftp, row[2])
 
+    def remote_exists(self, sftp, path):
+        try:
+            sftp.stat(path)
+            return True
+        except:
+            return False
 
     def get_file(self, c, file_id):
 
@@ -203,25 +218,24 @@ class db_process_t(object):
         filename = row[3]
 
         remote_filename = "%i.%s" % (file_id, filename)
-        folders = self.get_hash_folders(remote_filename)
 
         db_path = self.db_paths[c]
 
         if isinstance(db_path, str):
             assert row[1] == "LOCALHOST"
             folder = os.path.join(db_path, "db_files")
-            old_path = os.path.join(folder, remote_filename)
-            new_path = os.path.join(folder, *folders)
-            new_path = os.path.join(new_path, remote_filename)
+            folders = self.get_batch_folders(file_id)
+            remote_path = os.path.join(folder, *folders)
+            remote_path = os.path.join(remote_path, remote_filename)
+            if not os.path.exists(remote_path):
+                folders = self.get_hash_folders(remote_filename)
+                remote_path = os.path.join(folder, *folders)
+                remote_path = os.path.join(remote_path, remote_filename)
+                if not os.path.exists(remote_path):
+                    remote_path = os.path.join(folder, remote_filename)
 
-            if os.path.exists(old_path):
-                return old_path
-
-            if not os.path.exists(new_path):
-                print("db path '%s'" % self.db_paths[c])
-                print("file '%s' does not exist" % new_path)
-            assert os.path.exists(new_path)
-            return new_path
+            assert os.path.exists(remote_path), remote_path
+            return remote_path
 
         else:
             if hostname in self.ssh_connections:
@@ -234,9 +248,15 @@ class db_process_t(object):
                 sftp=ssh.open_sftp()
                 self.ssh_connections[hostname]=(sftp, ssh)
 
+            folders = self.get_batch_folders(file_id)
             remote_path = os.path.join(folder, *folders)
             remote_path = os.path.join(remote_path, remote_filename)
-            local_path = os.path.join("/tmp", remote_filename)
+            if not self.remote_exists(sftp, remote_path):
+                folders = self.get_hash_folders(remote_filename)
+                remote_path = os.path.join(folder, *folders)
+                remote_path = os.path.join(remote_path, remote_filename)
+                if not self.remote_exists(sftp, remote_path):
+                    remote_path = os.path.join(folder, remote_filename)
 
             sftp.get(remote_path, local_path)
             return local_path
@@ -244,12 +264,12 @@ class db_process_t(object):
 
     def copy_file(self, folder, filepath, filename, file_id):
        remote_filename = "%i.%s" % (file_id, filename)
-       folders = self.get_hash_folders(remote_filename)
+       folders = self.get_batch_folders(file_id)
 
        if isinstance(folder, str):
             path = folder
-            for hashdir in folders:
-                path = os.path.join(path, hashdir)
+            for subfolder in folders:
+                path = os.path.join(path, subfolder)
                 if not os.path.exists(path):
                     os.makedirs(path)
             new_path = os.path.join(folder, *folders)
@@ -258,8 +278,8 @@ class db_process_t(object):
        else:
             sftp, folder = folder
             path = folder
-            for hashdir in folders:
-                path = os.path.join(path, hashdir)
+            for subfolder in folders:
+                path = os.path.join(path, subfolder)
                 try:
                     sftp.stat(path)
                 except:
@@ -270,13 +290,13 @@ class db_process_t(object):
             sftp.put(filepath, new_path)
 
     def add_file(self, c, filepath, now):
-        cmd = "SELECT id, base_folder FROM file_stores WHERE is_writable=1 ORDER BY id DESC"
+        cmd = "SELECT id FROM file_stores WHERE is_writable=1 ORDER BY id DESC"
         c.execute(cmd)
-        fs_id, fs_frd  = c.fetchone()
+        fs_id  = c.fetchone()[0]
         cmd = "INSERT INTO files (file_store_id, filename, size, modified_date, insert_time) VALUES(%u, '%s', %u, %u, %u)" % (fs_id, os.path.basename(filepath), os.path.getsize(filepath), os.path.getmtime(filepath), now)
         c.execute(cmd) 
         file_id = c.lastrowid
-        self.copy_file(str(fs_frd), filepath, os.path.basename(filepath), file_id)
+        self.copy_file(self.get_db_folder(c), filepath, os.path.basename(filepath), file_id)
         return file_id
 
     def get_line(self, filepath, key):

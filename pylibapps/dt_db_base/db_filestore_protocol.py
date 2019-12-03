@@ -14,6 +14,15 @@ def get_hash_folders(filename):
     return [ h[n:n+2] for n in range(0, 8, 2) ]
 
 
+def get_batch_folders(file_id):
+    r = []
+    while not len(r) or file_id > 1000:
+        file_id = int(file_id / 1000)
+        r += ["_%0003u_" % (file_id % 1000)]
+    r.reverse()
+    return r
+
+
 class smb_transferer(object):
     protocol_id=2
     def __init__(self):
@@ -183,10 +192,18 @@ class sftp_transferer(object):
             self._con = sftp_connection(file_store_host, self._db_def)
         self._cache_con[cache_key] = [self._con, time.time()]
 
-    def _get_remote_name(self, filepath, file_id, upload=False):
+    def _get_remote_name(self, filepath, file_id, upload=False, schema=2):
         filename = os.path.basename(filepath)
         remote_filename = "%i.%s" % (file_id, filename)
-        folders = get_hash_folders(remote_filename)
+        if schema == 2:
+            folders = get_batch_folders(file_id)
+        elif schema == 1:
+            folders = get_hash_folders(remote_filename)
+        elif schema == 0:
+            filename = os.path.basename(filepath)
+            return os.path.join(self._base_folder, remote_filename)
+        else:
+            raise Exception("Unknown file path schema.")
         path = self._base_folder
         for folder in folders:
             path = os.path.join(path, folder)
@@ -204,10 +221,12 @@ class sftp_transferer(object):
         self._con.put(filepath, remote_filepath)
 
     def download(self, filepath, file_id, mod_time):
-        # Look flat first
-        filename = os.path.basename(filepath)
-        remote_filepath = os.path.join(self._base_folder, "%i.%s" % (file_id, filename))
+        # Try remote paths, newest schema to oldest.
+        remote_filepath = self._get_remote_name(filepath, file_id)
         if not self._con.exists(remote_filepath):
-            remote_filepath = self._get_remote_name(filepath, file_id)
+            remote_filepath = self._get_remote_name(filepath, file_id, schema=1)
+            if not self._con.exists(remote_filepath):
+                remote_filepath = self._get_remote_name(filepath, file_id, schema=0)
+
         self._con.get(remote_filepath, filepath)
         os.utime(filepath, (mod_time, mod_time))
