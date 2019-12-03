@@ -324,7 +324,8 @@ self.results_table, self.results_table, self.results_table,
     (file_store_id, row)
                 self.new_c.execute(cmd)
                 new_file_id = self.new_c.lastrowid
-                copy_file(folder, filepath, row[0], new_file_id)
+                folder = self.get_db_folder(self.new_c)
+                self.copy_file(folder, filepath, row[0], new_file_id)
                 if file_key:
                     self.file_dedupe[file_key] = new_file_id
             file_id_map[file_id] = new_file_id
