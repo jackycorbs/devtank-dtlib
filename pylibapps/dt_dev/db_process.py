@@ -141,8 +141,8 @@ class db_process_t(object):
         return [ h[n:n+2] for n in range(0, 8, 2) ]
 
     def get_batch_folders(self, file_id):
-        r = []
-        while not len(r) or file_id > 1000:
+        r = ["files"]
+        while file_id > 1000:
             file_id = int(file_id / 1000)
             r += ["_%0003u_" % (file_id % 1000)]
         r.reverse()
