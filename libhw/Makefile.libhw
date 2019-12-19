@@ -27,9 +27,9 @@ $(OUTDIR)/lib/libhw.a : $(LIBDEVTANKHW_OBJS_STC)
 	mkdir -p `dirname $@`
 	$(AR) rcs $@ $^
 
-$(OUTDIR)/lib/libhw.so : $(LIBDEVTANKHW_OBJS_DYN)
+$(OUTDIR)/lib/libhw.so : $(LIBDEVTANKHW_OBJS_DYN) $(OUTDIR)/lib/libyamlhelper.so
 	mkdir -p `dirname $@`
-	$(CC) --shared -o $@ $^ $(LIBDEVTANKHW_LDFLAGS)
+	$(CC) --shared -o $@ $(LIBDEVTANKHW_OBJS_DYN) $(LIBDEVTANKHW_LDFLAGS)
 
 LIBDEVTANK_DYN += $(OUTDIR)/lib/libhw.so
 LIBDEVTANK_STC := $(OUTDIR)/lib/libhw.a $(LIBDEVTANK_STC)

@@ -26,9 +26,9 @@ $(OUTDIR)/lib/libyamlhelper.a : $(LIBDEVTANKYAML_OBJS_STC)
 	mkdir -p `dirname $@`
 	$(AR) rcs $@ $^
 
-$(OUTDIR)/lib/libyamlhelper.so : $(LIBDEVTANKYAML_OBJS_DYN)
+$(OUTDIR)/lib/libyamlhelper.so : $(LIBDEVTANKYAML_OBJS_DYN) $(OUTDIR)/lib/libbase.so
 	mkdir -p `dirname $@`
-	$(CC) --shared -o $@ $^ $(LIBDEVTANKYAML_LDFLAGS)
+	$(CC) --shared -o $@ $(LIBDEVTANKYAML_OBJS_DYN) $(LIBDEVTANKYAML_LDFLAGS)
 
 LIBDEVTANK_DYN += $(OUTDIR)/lib/libyamlhelper.so
 LIBDEVTANK_STC := $(OUTDIR)/lib/libyamlhelper.a $(LIBDEVTANK_STC)
