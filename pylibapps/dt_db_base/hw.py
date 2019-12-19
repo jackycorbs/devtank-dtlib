@@ -5,7 +5,10 @@ import sys
 import time
 from ctypes import *
 
-from c_base import output_normal, output_good, output_bad, c_base_func
+if sys.version_info[0] >= 3:
+    from .c_base import output_normal, output_good, output_bad, c_base_func
+else:
+    from c_base import output_normal, output_good, output_bad, c_base_func
 
 _c_libcbase = cdll.LoadLibrary("libhw.so")
 
