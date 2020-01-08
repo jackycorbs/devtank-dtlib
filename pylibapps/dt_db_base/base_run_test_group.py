@@ -304,7 +304,6 @@ class base_run_group_manager(object):
         if self.logfile:
             self.logfile.close()
             self.logfile = None
-        self.has_new = True
 
     def _select_testfile(self, testfile):
         self.current_test = testfile
@@ -333,6 +332,7 @@ class base_run_group_manager(object):
             self.session_results[self.current_device]['tests'][self.current_test]['logfile'] = logfile
 
     def _test_status(self, args):
+        self.has_new = True
         args = args.split(' ')
         passfail = args[0]
         passfail = passfail == "True"
