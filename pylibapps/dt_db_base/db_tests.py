@@ -80,24 +80,45 @@ class test_script_obj(object):
             db.commit()
 
 
-class test_group_obj:
+class test_group_obj(object):
     def __init__(self, db, id, name, desc):
         self.db = db
         self.id = id
         self.name = name
         self.desc = desc
+        self._note = 0 if self.db.version >= 5 else None
 
     def __eq__(self, other):
         return self.id == other.id
 
-    def get_tests(self):
-        now = db_ms_now()
+    @property
+    def note(self):
+        if self._note is None:
+            return None
+        if self._note:
+            return self._note
+        if self.db.version >= 5:
+            r = self.db.db.query_one(self.db.sql.get_test_group_creation_note(self.id))
+            self._note = r[0] if r else None
+            return self._note
+
+    def is_modified(self, now=None):
+        if now is None:
+            now = db_ms_now()
+        r = self.db.db.query_one(self.db.sql.is_test_group_modified(self.id, now))
+        assert len(r), "Known group must have returned something."
+        return bool(r[0])
+
+    def get_tests(self, now=None):
+        if now is None:
+            now = db_ms_now()
         rows = self.db.db.query(self.db.sql.get_tests(self.id, now))
         return [ test_script_obj(self.db, row[0], row[1], row[2], row[3], row[4], row[6]) for row in rows ]
 
-    def get_duration(self):
+    def get_duration(self, now=None):
         db = self.db.db
-        now = db_ms_now()
+        if now is None:
+            now = db_ms_now()
         r = 0
         rows = db.query(self.db.sql.get_test_group_durations(self.id, now))
         for row in rows:

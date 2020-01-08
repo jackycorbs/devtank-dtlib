@@ -43,6 +43,7 @@ CREATE TABLE "test_groups" (
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
 	"name"	VARCHAR(255) NOT NULL,
 	"description"	TEXT NOT NULL,
+	"creation_note" TEXT,
 	"valid_from"	BIGINT NOT NULL,
 	"valid_to"	BIGINT
 );
@@ -82,7 +83,7 @@ CREATE TABLE "test_group_results" (
 	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")
 );
 
-INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 4);
+INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 5);
 INSERT INTO "values" ("name", "valid_from") VALUES('settings', 0);
 INSERT INTO "values" ("name", "parent_id", "valid_from") VALUES('defaults', 2, 0);
 INSERT INTO "values" ("name", "valid_from") VALUES('tests_properties', 0);

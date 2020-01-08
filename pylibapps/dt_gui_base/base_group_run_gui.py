@@ -130,9 +130,7 @@ class base_run_context(object):
         total_minutes = total_minutes % 60
         total_sec_frac = int(total_seconds * 100) % 100
         total_seconds = int(total_seconds % 60)
-        self.run_lab.set_text("%s - %02u:%02u:%02u.%02u" % \
-            (self.context.tests_group.name,
-             total_hours, total_minutes, total_seconds, total_sec_frac))
+        self.update_run_lab((total_hours, total_minutes, total_seconds, total_sec_frac))
 
     def finished(self):
 
@@ -245,6 +243,21 @@ class base_run_context(object):
             # If test finished, cancel is same as ok.
             self.on_ok()
 
+    def update_run_lab(self, stamp=None):
+        tests_group = self.context.tests_group
+
+        line = tests_group.name
+
+        if tests_group.note:
+            line += " (%s)" % tests_group.note
+
+        if stamp:
+            if isinstance(stamp, tuple):
+                line += "- %02u:%02u:%02u.%02u" % stamp
+            else:
+                line = '"%s"\n @ %s' % (line, str(stamp))
+
+        self.run_lab.set_text(line)
 
     def on_redo(self):
         self.force_stop()
@@ -253,8 +266,7 @@ class base_run_context(object):
         # Clean files would happen in submit, but only if tests finished.
         self.run_group_man.clean_files()
         self.start_test_group()
-        self.run_lab.set_text(self.context.tests_group.name)
-
+        self.update_run_lab()
 
     def on_info(self):
         self.run_info.set_visible(self.info_btn.get_active())
@@ -434,7 +446,7 @@ def open_run_group(context):
     context.push_view()
     context.change_view("RunGroupViewObj")
 
-    _run_context.run_lab.set_text(context.tests_group.name)
+    _run_context.update_run_lab()
 
 
 def open_ran_group(context, session):
@@ -448,8 +460,7 @@ def open_ran_group(context, session):
 
     stamp = datetime.datetime.fromtimestamp(session.time_of_tests)
 
-    _run_context.run_lab.set_text('"%s"\n@ %s' % \
-                                  (context.tests_group.name, str(stamp)))
+    _run_context.update_run_lab(stamp)
 
 
 def base_init_run_group(context, run_context):

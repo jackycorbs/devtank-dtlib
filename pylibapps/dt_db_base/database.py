@@ -438,7 +438,7 @@ class tester_database(object):
 
         r = self.add_group(group_data["name"],
                            group_data["desc"],
-                           tests, c, now)
+                           tests, c, now, group_data.get("note", None))
 
         if db_cursor is None:
             db.commit()
@@ -490,7 +490,7 @@ class tester_database(object):
     def get_db_now():
         return None
 
-    def add_group(self, name, desc, tests, db_cursor=None, now=None):
+    def add_group(self, name, desc, tests, db_cursor=None, now=None, note=None):
         if now is None:
             now = db_ms_now()
         db = self.db
@@ -498,7 +498,7 @@ class tester_database(object):
             c = db.cursor()
         else:
             c = db_cursor
-        group_id = c.insert(self.sql.add_test_group(name, desc, now))
+        group_id = c.insert(self.sql.add_test_group(name, desc, now, note))
 
         group = self._new_test_group( group_id, name, desc)
 

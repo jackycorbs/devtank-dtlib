@@ -3,6 +3,7 @@
         {
             name : "Example Group",
             desc : "Example Test Group",
+            note : "As Imported",
             tests:
             [
                 [
