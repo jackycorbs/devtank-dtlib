@@ -1,6 +1,8 @@
+from __future__ import print_function
 import time
+import os
 
-_db_debug_print = lambda msg : None
+_db_debug_print = lambda msg : print(msg) if os.environ.get("SQL_DEBUG") else lambda msg : None
 
 
 def set_debug_print(cb):
@@ -22,7 +24,7 @@ class db_cursor(object):
             self._c.execute(cmd)
             _db_debug_print("SQL : '%s'" % cmd)
         except Exception as e:
-            print 'SQL "%s" failed' % cmd
+            print('SQL "%s" failed' % cmd)
             self._parent.fail_catch(e)
 
     def query(self, cmd):
@@ -121,7 +123,7 @@ class db_inf(object):
                 import traceback
                 traceback.print_exc()
         self._db = None
-        print "Bad DB : " + self.db_def['type']
+        print("Bad DB : " + self.db_def['type'])
         if self.error_handler:
             self.error_handler(e)
 
@@ -129,7 +131,7 @@ class db_inf(object):
         try:
             self._db = self._connect_fn(self.db_def)
             self._last_used = time.time()
-            print "Connected DB : " + self.db_def['type']
+            print("Connected DB : " + self.db_def['type'])
         except Exception as e:
             self.fail_catch(e)
 
@@ -138,6 +140,6 @@ class db_inf(object):
             delta = time.time() - self._last_used
             if delta > self._disconnect_time:
                 if self._db:
-                    print "Auto disconnect DB"
+                    print("Auto disconnect DB")
                     self._db.close()
                     self._db = None
