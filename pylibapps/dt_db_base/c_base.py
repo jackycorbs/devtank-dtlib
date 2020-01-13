@@ -62,10 +62,15 @@ USEC_SECOND = 1000000
 ## Microseconds in a minute.
 USEC_MINUTE = (USEC_SECOND * 60)
 
-error_msg   = lambda msg : _error_msg(msg.replace('%','%%'))
-warning_msg = lambda msg : _warning_msg(msg.replace('%','%%'))
-info_msg    = lambda msg : _info_msg(msg.replace('%','%%'))
-
+if sys.version_info[0] >= 3:
+    _to_bytes_msg = lambda msg : msg if isinstance(msg, bytes) else msg.encode()
+    error_msg     = lambda msg : _error_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
+    warning_msg   = lambda msg : _warning_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
+    info_msg      = lambda msg : _info_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
+else:
+    error_msg   = lambda msg : _error_msg(msg.replace('%','%%'))
+    warning_msg = lambda msg : _warning_msg(msg.replace('%','%%'))
+    info_msg    = lambda msg : _info_msg(msg.replace('%','%%'))
 
 
 def output_bad(msg):
