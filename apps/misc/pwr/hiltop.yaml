@@ -1,0 +1,35 @@
+{
+     power_dac:
+     {
+        dev_name : "pwr_dac",
+        voltage_channel: 0,
+        dac_limit : 2.5,
+        dac_to_raw_comment: "4095 / 3.3v",
+        dac_to_raw: 1240.9091,
+        to_dac_divider: 11.822,
+        to_dac_offset: 1.85499
+    },
+    power_adc:
+    {
+        dev_name : "pwr_adc",
+        voltage_channel : 4,
+        current_channel : 5,
+        adc_to_raw_comment: "2047 / 2.048v",
+        v_adc_to_raw: 999.5117,
+        a_adc_to_raw: 999.5117,
+        v_adc_scale: 15.35,
+        v_adc_offset: 0,
+        a_adc_scale: 0.9925,
+        a_adc_offset: 0.1063
+    },
+    power_supply_enable_gpio:
+    {
+        gpio: 37,
+        turn_on: 1,
+    },
+    power_out_enable_gpio:
+    {
+        gpio: 44,
+        turn_on: 1,
+    },
+}
