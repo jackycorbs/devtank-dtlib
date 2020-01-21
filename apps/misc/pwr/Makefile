@@ -1,7 +1,7 @@
 LIBDEVTANKROOT := ../../..
 OUTDIR := output
 
-default: $(OUTDIR)/bin/adj_pwr
+default: $(OUTDIR)/bin/adj_pwr.sh
 
 include $(LIBDEVTANKROOT)/libhw/Makefile.libhw
 
@@ -16,8 +16,8 @@ $(OUTDIR)/bin/adj_pwr: $(LIBDEVTANK_DYN) $(OUTDIR)/build/adj_pwr/main.o
 	mkdir -p `dirname $@`
 	$(CC) $(LIBDEVTANKTESTS_CFLAGS) $(ADJ_PWR_LDFLAGS) $(LIBDEVTANK_LDFLAGS) $(OUTDIR)/build/adj_pwr/main.o -L$(OUTDIR)/lib/ -lhw -lbase -lyamlhelper -o $@
 
-include $(LIBDEVTANKROOT)/Makefile.post
+$(OUTDIR)/bin/adj_pwr.sh : $(OUTDIR)/bin/adj_pwr
+	printf '#! /bin/bash\nown_dir="$$(dirname "$$0")"\nLD_LIBRARY_PATH="$$own_dir"/../lib "$$own_dir"/adj_pwr $$@' > "$@"
+	chmod +x "$@"
 
-.PHONEY: run
-run : $(OUTDIR)/bin/adj_pwr
-	LD_LIBRARY_PATH=$(OUTDIR)/lib $(OUTDIR)/bin/adj_pwr $(ARGS)
+include $(LIBDEVTANKROOT)/Makefile.post
