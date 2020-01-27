@@ -4,7 +4,7 @@ class db_tester_machine(object):
                  mac,
                  hostname):
         self.id       = machine_id
-        self.mac      = mac
+        self.mac      = mac.rstrip()
         self.hostname = hostname
 
     @staticmethod
