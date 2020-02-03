@@ -80,7 +80,10 @@ int main(int argc, char *argv[])
     while(seconds)
     {
         double temp = 0;
-        dt_sleep(USEC_SECOND);
+        printf("Press enter to quit.\n");
+        wait_for_fd(0, USEC_SECOND);
+        if (get_fd_peek(0))
+            break;
         seconds--;
         if (dt_adj_pwr_get_power_out(adj_pwr, &temp))
             printf("Voltage is %GV\n", temp);
