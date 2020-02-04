@@ -618,7 +618,9 @@ class default_group_context(base_run_group_context):
             return []
 
     def stop_devices(self):
-        pass
+        # Tests have been killed, so open and close the bus to ensure it's closed.
+        with self.bus as bus_con:
+            pass
 
 
 class default_run_group_manager(base_run_group_manager):
