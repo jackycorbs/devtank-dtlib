@@ -410,6 +410,10 @@ class base_run_context(object):
 
 
 
+def set_run_context_singleton(_custom_run_context):
+    global _run_context
+    _run_context = _custom_run_context
+
 
 def open_run_group(context):
 
@@ -445,4 +449,3 @@ def base_init_run_group(context, run_context):
     global _run_context
 
     _run_context = run_context(context)
-
