@@ -524,7 +524,7 @@ class base_run_group_manager(object):
                 values = dev_results[test]
 
                 for k in [ 'outfile', 'logfile' ]:
-                    f = values[k]
+                    f = values.get(k, None)
                     if f is None:
                         continue
                     if isinstance(f, int):
@@ -642,4 +642,3 @@ class default_run_group_manager(base_run_group_manager):
                                             warning_line,
                                             error_line,
                                             cmds)
-
