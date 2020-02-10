@@ -80,6 +80,7 @@ class mysql_db_backend(object):
             s = s.strip()
             if len(s):
                 s = s.replace("AUTOINCREMENT", "AUTO_INCREMENT")
+                s = s.replace("BEGIN TRANSACTION", "START TRANSACTION")
                 try:
                     c.execute(s)
                 except Exception as e:
