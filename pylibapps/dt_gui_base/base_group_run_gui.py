@@ -404,6 +404,8 @@ class base_run_context(object):
             selector.select_iter(dev_uuid.iter)
             break
         self.progress_bar.set_fraction(1)
+        self.test_list.set_sensitive(True)
+        self.dev_list.set_sensitive(True)
 
     def set_run_ready(self):
         self.run_group_man.readonly = False
