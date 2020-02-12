@@ -492,12 +492,12 @@ class base_run_group_manager(object):
         self.readonly = True
 
     def _complete_stop(self):
-        self.test_context.stop_devices()
-        self.process = None
-        self.last_end_time = time.time()
         lib_inf = self._run_group_context_class.lib_inf
         lib_inf.set_log_file(None)
         lib_inf.set_output(None)
+        self.test_context.stop_devices()
+        self.process = None
+        self.last_end_time = time.time()
         self.context.release_bus()
 
     def stop(self):
