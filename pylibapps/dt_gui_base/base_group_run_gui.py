@@ -262,6 +262,8 @@ class base_run_context(object):
 
     def _run(self):
         self.run_ok_btn.set_sensitive(False)
+        self.test_list.set_sensitive(False)
+        self.dev_list.set_sensitive(False)
 
         self.out_buf.set_text("")
 
@@ -284,9 +286,6 @@ class base_run_context(object):
 
 
     def start_test_group(self):
-
-        self.test_list.set_sensitive(False)
-        self.dev_list.set_sensitive(False)
 
         test_list_store = self.test_list.get_model()
         dev_list_store = self.dev_list.get_model()
