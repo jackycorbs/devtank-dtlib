@@ -13,7 +13,6 @@
 
 struct gpio_obj_t
 {
-    int          fd;
     char       * path;
 };
 
@@ -37,16 +36,6 @@ extern gpio_obj_t*  gpio_obj_create(const char* path)
         free(r);
         return false;
     }
-    r->fd = open(r->path, O_RDWR);
-    if (r->fd < 0)
-    {
-        error_msg("Failed to open %s : %s", path, strerror(errno));
-        free(r->path);
-        free(r);
-        return NULL;
-    }
-
-    r->path[strlen(path)] = 0; //Strip the extra /value to avoid it in messages.
 
     return r;
 }
@@ -56,7 +45,6 @@ extern void         gpio_obj_destroy(gpio_obj_t * obj)
 {
     if (!obj)
         return;
-    close(obj->fd);
     free(obj->path);
     free(obj);
 }
@@ -69,12 +57,21 @@ extern bool         gpio_obj_read(gpio_obj_t * obj, bool * value)
 
     char value_str[2];
 
-    if (read(obj->fd, value_str, sizeof(value_str)) < 0)
+    int fd = open(obj->path, O_RDONLY);
+    if (fd < 0)
     {
-        error_msg("Failed to read GPIO %s : %s", obj->path,  strerror(errno));
+        error_msg("Failed to read-open GPIO %s : %s", obj->path,  strerror(errno));
         return false;
     }
 
+    if (read(fd, value_str, sizeof(value_str)) != sizeof(value_str))
+    {
+        error_msg("Failed to read GPIO %s : %s", obj->path,  strerror(errno));
+        close(fd);
+        return false;
+    }
+
+    close(fd);
     *value = value_str[0] == '1';
 
     info_msg("GPIO %s read as %c", obj->path, value_str[0]);
@@ -88,13 +85,22 @@ extern bool         gpio_obj_write(gpio_obj_t * obj, bool value)
     if (!obj)
         return false;
 
-    char value_str[2] = { (value)?'1':'0', '\n' };
-
-    if (write(obj->fd, value_str, sizeof(value_str)) < 0)
+    int fd = open(obj->path, O_WRONLY);
+    if (fd < 0)
     {
-        error_msg("Failed to write GPIO %s : %s", obj->path,  strerror(errno));
+        error_msg("Failed to write-open GPIO %s : %s", obj->path,  strerror(errno));
         return false;
     }
+
+    char value_str[2] = { (value)?'1':'0', '\n' };
+
+    if (write(fd, value_str, sizeof(value_str)) != sizeof(value_str))
+    {
+        error_msg("Failed to write GPIO %s : %s", obj->path,  strerror(errno));
+        close(fd);
+        return false;
+    }
+    close(fd);
 
     info_msg("GPIO %s set as %c", obj->path, value_str[0]);
 
