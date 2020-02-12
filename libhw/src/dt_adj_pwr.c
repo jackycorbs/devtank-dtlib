@@ -486,7 +486,9 @@ bool dt_adj_pwr_enable_power_supply(dt_adj_pwr_t *adj_pwr, bool enable)
 
     bool state = (enable)?adj_pwr->power_supply_enable_gpio_on:!adj_pwr->power_supply_enable_gpio_on;
 
-    info_msg("Enable chip supply.");
+    const char* state_name = (enable)?"enabled":"disabled";
+
+    info_msg("Set power supply to %s", state_name);
 
     return gpio_obj_write(adj_pwr->power_supply_enable_gpio, state);
 }
