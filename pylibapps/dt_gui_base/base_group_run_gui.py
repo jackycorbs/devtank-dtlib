@@ -260,29 +260,13 @@ class base_run_context(object):
             self.load_info()
 
 
-    def start_test_group(self):
-
-        context = self.context
-        tests_group = context.tests_group
-
-        self.test_list.set_sensitive(False)
-        self.dev_list.set_sensitive(False)
-
-        test_list_store = self.test_list.get_model()
-        dev_list_store = self.dev_list.get_model()
-
-        test_list_store.clear()
-        dev_list_store.clear()
-
-        for test in tests_group.tests:
-            test_list_store.append([test.name, "", test])
-
-        for dev in context.devices:
-            dev_list_store.append([dev.uuid, ""])
-
+    def _run(self):
         self.run_ok_btn.set_sensitive(False)
 
         self.out_buf.set_text("")
+
+        context = self.context
+        tests_group = context.tests_group
 
         self.progress_bar.set_fraction(0)
         if tests_group.duration:
@@ -297,6 +281,27 @@ class base_run_context(object):
         self.test_start_time = time.time()
         if not self.run_group_man.start():
             self.finished()
+
+
+    def start_test_group(self):
+
+        self.test_list.set_sensitive(False)
+        self.dev_list.set_sensitive(False)
+
+        test_list_store = self.test_list.get_model()
+        dev_list_store = self.dev_list.get_model()
+
+        test_list_store.clear()
+        dev_list_store.clear()
+
+        for test in self.context.tests_group.tests:
+            test_list_store.append([test.name, "", test])
+
+        for dev in self.context.devices:
+            dev_list_store.append([dev.uuid, ""])
+
+        self._run()
+
 
     def _scroll_to_end(self, widget, alloc):
         adj = widget.get_vadjustment()
