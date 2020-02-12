@@ -67,9 +67,9 @@ extern bool         gpio_obj_read(gpio_obj_t * obj, bool * value)
     if (!obj || !value)
         return false;
 
-    char value_str[3];
+    char value_str[2];
 
-    if (read(obj->fd, value_str, 3) < 0)
+    if (read(obj->fd, value_str, sizeof(value_str)) < 0)
     {
         error_msg("Failed to read GPIO %s : %s", obj->path,  strerror(errno));
         return false;
@@ -88,15 +88,15 @@ extern bool         gpio_obj_write(gpio_obj_t * obj, bool value)
     if (!obj)
         return false;
 
-    char c = (value)?'1':'0';
+    char value_str[2] = { (value)?'1':'0', '\n' };
 
-    if (write(obj->fd, &c, 1) < 0)
+    if (write(obj->fd, value_str, sizeof(value_str)) < 0)
     {
         error_msg("Failed to write GPIO %s : %s", obj->path,  strerror(errno));
         return false;
     }
 
-    info_msg("GPIO %s set as %c", obj->path, c);
+    info_msg("GPIO %s set as %c", obj->path, value_str[0]);
 
     return true;
 }
