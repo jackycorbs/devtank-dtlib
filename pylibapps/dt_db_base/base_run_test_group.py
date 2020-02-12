@@ -191,7 +191,7 @@ def _thread_test(test_context):
 
                 test_context.send_cmd("STATUS_TEST %s %G" % (str(bool(test_pass)), duration))
 
-                if not test_pass and args['exit_on_fail']:
+                if not test_pass and 'exit_on_fail' in args and args['exit_on_fail']:
                     full_stop = True
                     break
 
