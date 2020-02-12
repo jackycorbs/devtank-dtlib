@@ -505,6 +505,8 @@ bool dt_adj_pwr_power_supply_is_enabled(dt_adj_pwr_t *adj_pwr)
         return false;
     }
 
+    info_msg("Power supply is enabled : %u", state == adj_pwr->power_supply_enable_gpio_on);
+
     return state == adj_pwr->power_supply_enable_gpio_on;
 }
 
@@ -555,7 +557,7 @@ bool dt_adj_pwr_power_out_is_enabled(dt_adj_pwr_t *adj_pwr)
         return false;
     }
 
-    info_msg("Enable power relay.");
+    info_msg("Power relay is enabled : %u", state == adj_pwr->power_out_enable_gpio_on);
 
     return state == adj_pwr->power_out_enable_gpio_on;
 }
