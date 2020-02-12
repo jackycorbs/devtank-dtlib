@@ -492,7 +492,6 @@ class base_run_group_manager(object):
         self.readonly = True
 
     def _complete_stop(self):
-        self.process.join(4)
         self.test_context.stop_devices()
         self.process = None
         self.last_end_time = time.time()
@@ -505,6 +504,8 @@ class base_run_group_manager(object):
         self.live = False
         if self.process:
             self.process.terminate()
+            # Give time for signal to get slave process.
+            time.sleep(0.1)
             self._complete_stop()
 
         self._finished()
