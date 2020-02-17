@@ -51,6 +51,8 @@ class tester_database(object):
         self._known_objs = {}
         self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer(),
                                      smb_transferer.protocol_id  : smb_transferer() }
+        self._file_upload_cache = (None, {})
+        self._new_tests_cache = (None, {})
         if not os.path.exists(work_folder):
             os.mkdir(work_folder)
         self.init_dynamic_tables()
@@ -143,6 +145,11 @@ class tester_database(object):
         file_store_folder = file_store[2]
         protocol_id = file_store[3]
 
+        id_cache = self._file_upload_cache[1]
+        if self._file_upload_cache[0] != c:
+            id_cache = {}
+            self._file_upload_cache = (c, id_cache)
+
         if now is None:
             now = db_ms_now()
 
@@ -156,15 +163,18 @@ class tester_database(object):
         r = []
 
         for filepath in filepaths:
-            filename = os.path.basename(filepath)
-            stat = os.stat(filepath)
-            mod_time = db_time(stat.st_mtime)
-            file_size = stat.st_size
-            file_id = c.insert(self.sql.add_file(filename,
-                file_store_id, now, mod_time, file_size))
-            if not file_id:
-                raise Exception("Adding file \"%s\" failed" % filename)
-            protocol_transferer.upload(filepath, file_id)
+            file_id = id_cache.get(filepath, None)
+            if file_id is None:
+                filename = os.path.basename(filepath)
+                stat = os.stat(filepath)
+                mod_time = db_time(stat.st_mtime)
+                file_size = stat.st_size
+                file_id = c.insert(self.sql.add_file(filename,
+                    file_store_id, now, mod_time, file_size))
+                if not file_id:
+                    raise Exception("Adding file \"%s\" failed" % filename)
+                protocol_transferer.upload(filepath, file_id)
+                id_cache[filepath] = file_id
             r += [ file_id ]
 
         return r
@@ -277,6 +287,11 @@ class tester_database(object):
         else:
             c = db_cursor
 
+        tests_id_cache = self._new_tests_cache[1]
+        if self._new_tests_cache[0] != c:
+            tests_id_cache = {}
+            self._new_tests_cache = (c, tests_id_cache)
+
         test_name = test_name if test_name else os.path.basename(local_file)
 
         existing = self.get_test_by_name(test_name, c, now)
@@ -284,11 +299,14 @@ class tester_database(object):
         if existing:
             raise Exception("Test called \"%s\" already exists." % test_name)
 
-        file_id = self._add_files(c, [local_file])[0]
-        test_id = c.insert(self.sql.add_test(file_id, now))
-        self.set_defaults(args, c, now)
-        if db_cursor is None:
-            db.commit()
+        test_id, file_id = tests_id_cache.get((test_name, local_file), (None, None))
+        if test_id is None:
+            file_id = self._add_files(c, [local_file])[0] # Look up again if need be
+            test_id = c.insert(self.sql.add_test(file_id, now))
+            self.set_defaults(args, c, now)
+            if db_cursor is None:
+                db.commit()
+            tests_id_cache[(test_name, local_file)] = (test_id, file_id)
         return self._new_test_obj( test_id, test_name, file_id)
 
     def _update_groups_with_new_test(self, groups, old_test, new_test, db_cursor=None, now=None):
