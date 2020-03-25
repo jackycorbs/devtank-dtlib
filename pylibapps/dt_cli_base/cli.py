@@ -13,7 +13,7 @@ def list_groups(context, cmd_args):
 
 
 def update_tests(context, cmd_args):
-    assert len(cmd_args) == 1, "Wrong argument count."
+    assert len(cmd_args) == 1, "update_tests takes one argument, the path to the yaml file containing the groups."
 
     groups_file = os.path.abspath(cmd_args[0])
 
