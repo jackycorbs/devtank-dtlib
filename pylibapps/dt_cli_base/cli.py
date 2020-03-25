@@ -43,7 +43,7 @@ def update_tests(context, cmd_args):
 
 
 def group_results(context, cmd_args):
-    assert len(cmd_args) > 0, "Wrong argument count."
+    assert len(cmd_args) > 0, "group_results takes one argument, the group name."
     group_name = " ".join(cmd_args)
     db_group = context.db.get_group(group_name)
     if not db_group:
@@ -74,7 +74,7 @@ def print_session(session):
 
 
 def group_result(context, cmd_args):
-    assert len(cmd_args) > 0, "Wrong argument count."
+    assert len(cmd_args) > 0, "group_result takes two arguments, the group name, followed by the session index."
     group_name = " ".join(cmd_args[:-1])
     db_group = context.db.get_group(group_name)
     if not db_group:
@@ -90,7 +90,7 @@ def group_result(context, cmd_args):
 
 
 def group_dump(context, cmd_args):
-    assert len(cmd_args) > 0, "Wrong argument count."
+    assert len(cmd_args) > 0, "group_dump takes one argument, the group name."
     group_name = " ".join(cmd_args)
     db_group = context.db.get_group(group_name)
     if not db_group:
@@ -104,14 +104,14 @@ def group_dump(context, cmd_args):
 
 
 def get_file(context, cmd_args):
-    assert len(cmd_args) == 1, "Wrong argument count."
+    assert len(cmd_args) == 1, "get_file takes one argument, the file_id (integer)"
     file_id = int(cmd_args[0])
     local_path = context.db.get_file_to_local(file_id)
     print("Got file ID %u at %s" % (file_id, local_path))
 
 
 def dev_status(context, cmd_args):
-    assert len(cmd_args) == 1, "Wrong argument count."
+    assert len(cmd_args) == 1, "dev_status takes one argument, the db_timestamp (integer)"
     timestamp = int(cmd_args[0])
     from dt_db_base import db_base_dev
     r = db_base_dev.get_dev_status_since(context.db, timestamp)
@@ -142,7 +142,7 @@ def add_fail(context, cmd_args):
 
 
 def dev_results(context, cmd_args):
-    assert len(cmd_args) == 1, "Wrong argument count."
+    assert len(cmd_args) == 1, "dev_results takes one argument, the device's uuid."
     dev_uuid = cmd_args[0]
     dev = context.db.get_dev(dev_uuid)
     if not dev:
