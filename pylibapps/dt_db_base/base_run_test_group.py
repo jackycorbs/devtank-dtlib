@@ -4,7 +4,7 @@ import sys
 import time
 import datetime
 import traceback
-import cPickle as pickle
+import pickle
 
 import gi
 gi.require_version('GLib', '2.0')
@@ -12,8 +12,12 @@ from gi.repository import GLib
 
 from multiprocessing import Process
 
-import c_base
-import db_values
+if sys.version_info[0] < 3:
+    import c_base
+    import db_values
+else:
+    from . import c_base
+    from . import db_values
 
 _IPC_CMD = "IPC_CMD:"
 
@@ -232,8 +236,8 @@ class base_run_group_manager(object):
         self.current_test = None
         self.current_device = None
 
-        self.stdout_out = os.fdopen(stdout_out, "w", 0)
-        self.stdout_in = os.fdopen(stdout_in, "r", 0)
+        self.stdout_out = os.fdopen(stdout_out, "wb", 0)
+        self.stdout_in = os.fdopen(stdout_in, "rb", 0)
 
         self.live = False
         self.readonly = False

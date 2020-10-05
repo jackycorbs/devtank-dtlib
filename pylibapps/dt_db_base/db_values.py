@@ -1,8 +1,11 @@
 import os
+import sys
 import decimal
 
-from db_common import *
-
+if sys.version_info[0] < 3:
+    from db_common import *
+else:
+    from .db_common import *
 
 def to_type_from_str(value_str):
     if value_str.count(".") == 1:

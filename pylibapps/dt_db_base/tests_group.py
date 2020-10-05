@@ -1,6 +1,11 @@
 import os
+import sys
 
-from db_common import py_type_from_db_type
+if sys.version_info[0] < 3:
+    from db_common import py_type_from_db_type
+else:
+    from .db_common import py_type_from_db_type
+
 
 class tests_group_creator:
     def __init__(self, db, db_group=None):

@@ -4,7 +4,6 @@ import os
 import sys
 import datetime
 import argparse
-import thread
 import yaml
 import types
 

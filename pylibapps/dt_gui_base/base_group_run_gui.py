@@ -1,10 +1,14 @@
 import os
 import time
 import datetime
+import sys
 
-
-from common import get_pass_fail_icon_name
-from notify_gui import open_notify_gui
+if sys.version_info[0] < 3:
+    from common import get_pass_fail_icon_name
+    from notify_gui import open_notify_gui
+else:
+    from .common import get_pass_fail_icon_name
+    from .notify_gui import open_notify_gui
 
 import gi
 gi.require_version('Gtk', '3.0')

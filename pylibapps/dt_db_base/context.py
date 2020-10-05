@@ -1,7 +1,13 @@
 from __future__ import print_function
 import os
+import sys
 import subprocess
-from tests_group import tests_group_creator
+
+if sys.version_info[0] < 3:
+    from tests_group import tests_group_creator
+else:
+    from .tests_group import tests_group_creator
+
 
 class base_context_object(object):
     def __init__(self, args, db_def):

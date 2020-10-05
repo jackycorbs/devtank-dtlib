@@ -1,6 +1,12 @@
 from __future__ import print_function
-from db_common import *
-import db_values
+import sys
+
+if sys.version_info[0] < 3:
+    from db_common import *
+    import db_values
+else:
+    from .db_common import *
+    from . import db_values
 
 
 class test_script_obj(object):

@@ -1,12 +1,15 @@
 import datetime
 import math
+import sys
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GObject
 
-from common import get_pass_fail_icon_name
-
+if sys.version_info[0] < 3:
+    from common import get_pass_fail_icon_name
+else:
+    from .common import get_pass_fail_icon_name
 
 
 class base_session_results_singlton(object):
