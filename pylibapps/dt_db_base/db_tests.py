@@ -256,9 +256,9 @@ class test_group_obj:
                                                                test_value_name, test_value_data, now, True)
                                 c.insert(sql.add_test_value(result_id, value_id))
                         else:
-                            print "Stored value but no table to put it."
+                            print("Stored value but no table to put it.")
                 else:
-                    print "Unknown UUID %s, can't store results." % dev_uuid
+                    print("Unknown UUID %s, can't store results." % dev_uuid)
         if not db_cursor:
             db.commit()
 

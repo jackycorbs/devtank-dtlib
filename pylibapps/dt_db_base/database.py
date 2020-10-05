@@ -351,7 +351,7 @@ class tester_database(object):
                     test_filehash = filename_sha256(local_test_file)
                     new_file_hash = filename_sha256(new_test_file)
                     if test_filehash != new_file_hash:
-                        print 'Updating test "%s"' % filename
+                        print('Updating test "%s"' % filename)
                         test.remove(c, now)
                         args = _extract_defaults(new_test_file,
                                                  default_args)

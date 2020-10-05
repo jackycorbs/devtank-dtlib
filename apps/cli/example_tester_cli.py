@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 
 import os
 import sys
@@ -23,7 +23,7 @@ cmds = dt_cli_base.generic_cmds.copy()
 
 def main():
 
-    print "Command Line Example Tester", datetime.datetime.utcnow()
+    print("Command Line Example Tester", datetime.datetime.utcnow())
 
     args = vars(parser.parse_args())
 
@@ -33,7 +33,7 @@ def main():
 
     if cmd is None:
         parser.print_help()
-        print "\n"
+        print("\n")
         dt_cli_base.print_cmd_help(cmds)
         sys.exit(-1)
 

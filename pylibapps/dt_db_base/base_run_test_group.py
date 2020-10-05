@@ -277,7 +277,7 @@ class base_run_group_manager(object):
             return self.process_line(line)
         except Exception as e:
             import traceback
-            print "LINE PROCESS FAILED"
+            print("LINE PROCESS FAILED")
             traceback.print_exc()
             self.stop()
         ext_cmd = self.external_cmds.get("FINISHED",None)
@@ -290,7 +290,7 @@ class base_run_group_manager(object):
         if self.process.exitcode is None:
             return True
         if self.process.exitcode < 0:
-            print "Process terminated."
+            print("Process terminated.")
             self.live = False
             self._complete_stop()
             self._finished()
@@ -612,10 +612,10 @@ class default_group_context(base_run_group_context):
             bus_con.ready_devices(self.devices)
             return bus_con.devices
         except Exception as e:
-            print "Failed to get devices."
-            print "Backtrace:"
+            print("Failed to get devices.")
+            print("Backtrace:")
             for line in traceback.format_exc().splitlines():
-                print line
+                print(line)
             return []
 
     def stop_devices(self):

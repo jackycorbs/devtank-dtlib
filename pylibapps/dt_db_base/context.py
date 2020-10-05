@@ -31,13 +31,13 @@ class base_context_object(object):
                                             shell=True, stdout=FNULL,
                                             stderr=subprocess.STDOUT)
                 if has_error:
-                    print "Unable to ping host."
+                    print("Unable to ping host.")
                     return False
 
         try:
             db = self.db_def["open_db_backend"](self.db_def)
         except Exception as e:
-            print "ERROR database connection fail : %s" % str(e)
+            print("ERROR database connection fail : %s" % str(e))
             import traceback
             traceback.print_exc()
             db = None
@@ -74,7 +74,7 @@ class base_context_object(object):
         raise Exception("Context release_bus not implemented.");
 
     def _db_fail(self, e):
-        print "Fail with database, %s" % str(e)
+        print("Fail with database, %s" % str(e))
         import traceback
         traceback.print_exc()
         self.db = None
