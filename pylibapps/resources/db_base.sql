@@ -76,7 +76,7 @@ CREATE TABLE "test_group_results" (
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
 	"group_id"	INTEGER NOT NULL,
 	"time_of_tests"	BIGINT NOT NULL,
-	"logs_utc_offset" INTEGER,
+	"logs_tz_name" VARCHAR(32),
 	"tester_machine_id" INTEGER,
 	"sw_git_sha1" VARCHAR(8),
 	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id"),

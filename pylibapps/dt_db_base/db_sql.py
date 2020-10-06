@@ -1,3 +1,4 @@
+import datetime
 import time
 import sys
 
@@ -326,14 +327,14 @@ WHERE test_groups.id = %u AND test_group_entries.valid_from <= %u AND \
     """
     def add_test_group_results(self, group_id, machine_id, now):
         if self.db_version > 3:
-            tz_offset = time.altzone if time.daylight else time.timezone
+            tz_name = datetime.datetime.now().astimezone().tzinfo.tzname(None)
             sw_git_sha1 = dt_get_build_info()[1][:7]
             return "\
     INSERT INTO test_group_results \
-        (group_id, time_Of_tests, logs_utc_offset, \
+        (group_id, time_Of_tests, logs_tz_name, \
          tester_machine_id, sw_git_sha1) \
     VALUES (%i, %i, %i, %s, '%s')" % (
-            group_id, now, tz_offset,
+            group_id, now, db_safe_str(tz_name),
             _id_null(machine_id), db_safe_str(sw_git_sha1))
         else:
             return "\
