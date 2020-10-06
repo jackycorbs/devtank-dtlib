@@ -105,7 +105,7 @@ def output_normal(msg):
 def set_output(sink):
     global _msg_stream
     if sink:
-        assert hasattr(sink, "write")
+        assert hasattr(sink, "write") and hasattr(sink, "isatty")
         _msg_stream = sink
     else:
         _msg_stream = sys.stdout
