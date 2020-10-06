@@ -1,6 +1,13 @@
+import sys
 from dt_gui_base import base_groups_list_gui, open_notify_gui
 
 _singleton = None
+
+if sys.version_info[0] < 3:
+    from group_run_gui import open_run_group
+else:
+    from .group_run_gui import open_run_group
+
 
 class groups_lists_gui(base_groups_list_gui):
     def __init__(self, context):
@@ -12,7 +19,6 @@ class groups_lists_gui(base_groups_list_gui):
 
     def _on_run_btn(self):
         if len(self.context.devices):
-            from group_run_gui import open_run_group
             self._use_selection()
             open_run_group(self.context)
         else:
