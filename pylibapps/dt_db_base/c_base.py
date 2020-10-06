@@ -75,40 +75,53 @@ else:
 
 def output_bad(msg):
     """ Output information about a fail case. """
-    global _msg_stream
     if _msg_stream.isatty():
-        print(_ANSI_RED + msg + _ANSI_DEFAULT, file=_msg_stream)
+        _msg_stream_write(_ANSI_RED)
+        _msg_stream_write(msg)
+        _msg_stream_write(_ANSI_DEFAULT)
+        _msg_stream_write("\n")
     else:
-        print("BAD: %s" % msg, file=_msg_stream)
+        _msg_stream_write("BAD: ")
+        _msg_stream_write(msg)
+        _msg_stream_write("\n")
     _msg_stream.flush()
     lines = msg.splitlines()
     warning_msg("Python bad output: " + lines[0] if len(lines) else "")
 
 def output_good(msg):
     """ Output information about a success case. """
-    global _msg_stream
     if _msg_stream.isatty():
-        print(_ANSI_GREEN + msg + _ANSI_DEFAULT, file=_msg_stream)
+        _msg_stream_write(_ANSI_GREEN)
+        _msg_stream_write(msg)
+        _msg_stream_write(_ANSI_DEFAULT)
+        _msg_stream_write("\n")
     else:
-        print("Good: %s" % msg, file=_msg_stream)
+        _msg_stream_write("Good: ")
+        _msg_stream_write(msg)
+        _msg_stream_write("\n")
     _msg_stream.flush()
     lines = msg.splitlines()
     info_msg("Python good output: " + lines[0] if len(lines) else "")
 
 def output_normal(msg):
-    global _msg_stream
-    print(msg, file=_msg_stream)
+    _msg_stream_write(msg)
+    _msg_stream_write("\n")
     _msg_stream.flush()
     lines = msg.splitlines()
     info_msg("Python normal output: " + lines[0] if len(lines) else "")
 
 def set_output(sink):
-    global _msg_stream
+    global _msg_stream, _msg_stream_write
     if sink:
         assert hasattr(sink, "write") and hasattr(sink, "isatty")
         _msg_stream = sink
+        if hasattr(_msg_stream, "encoding") or sys.version_info[0] < 3:
+            _msg_stream_write = _msg_stream.write
+        else:
+            _msg_stream_write = lambda msg : _msg_stream.write(msg.encode())
     else:
         _msg_stream = sys.stdout
+        _msg_stream_write = _msg_stream.write
 
 
 def make_c_buffer_from(buf, null_terminate=True):
@@ -152,8 +165,9 @@ def set_log_file(f):
 
 # Executed on import
 if not _devtank_ready():
-    global _msg_stream, _log_file
+    global _msg_stream, _msg_stream_write, _log_file
     _devtank_init()
     _msg_stream = sys.stdout
+    _msg_stream_write = _msg_stream.write
     atexit.register(_devtank_shutdown)
     _log_file = None

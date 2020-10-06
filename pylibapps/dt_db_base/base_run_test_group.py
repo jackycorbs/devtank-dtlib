@@ -279,6 +279,8 @@ class base_run_group_manager(object):
 
     def _stdout_in_event(self, src, cond):
         line = self.stdout_in.readline()
+        if sys.version_info[0] >= 3:
+            line = line.decode()
         try:
             return self.process_line(line)
         except Exception as e:
