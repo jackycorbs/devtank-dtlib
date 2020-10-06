@@ -103,9 +103,9 @@ def output_normal(msg):
     info_msg("Python normal output: " + lines[0] if len(lines) else "")
 
 def set_output(sink):
+    global _msg_stream
     if sink:
-        assert isinstance(sink, file)
-        global _msg_stream
+        assert hasattr(sink, "write")
         _msg_stream = sink
     else:
         _msg_stream = sys.stdout
