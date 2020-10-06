@@ -62,8 +62,12 @@ class base_context_object(object):
 
         db.db.error_handler = lambda e: self._db_fail(e)
 
-        db.get_dev = MethodType(lambda db, uuid: \
-                get_dev(db, uuid), db, db.__class__)
+        if sys.version_info[0] < 3:
+            db.get_dev = MethodType(lambda db, uuid: \
+                        get_dev(db, uuid), db, db.__class__)
+        else:
+            db.get_dev = MethodType(lambda db, uuid: \
+                        get_dev(db, uuid), db)
         return True
 
     def db_init(self):
