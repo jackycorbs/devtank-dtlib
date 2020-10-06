@@ -5,8 +5,10 @@ _singleton = None
 
 if sys.version_info[0] < 3:
     from group_run_gui import open_run_group
+    from sessions_results_gui import open_tests_sessions_results
 else:
     from .group_run_gui import open_run_group
+    from .sessions_results_gui import open_tests_sessions_results
 
 
 class groups_lists_gui(base_groups_list_gui):
@@ -25,7 +27,6 @@ class groups_lists_gui(base_groups_list_gui):
             open_notify_gui(self.context, "No devices known.")
 
     def _results_btn(self):
-        from sessions_results_gui import open_tests_sessions_results
         self._use_selection()
         open_tests_sessions_results(self.context)
 
