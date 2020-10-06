@@ -15,7 +15,7 @@ else:
     from .barcode_scan_gui import scan_box_base
 
 
-from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits
+from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits, db_is_str_class
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -114,7 +114,7 @@ def _add_arg(context, tests_group, test, arg, box, all_files):
         val_value = entry['default'] if 'default' in entry else None
     entry['value'] = val_value
     box2.add(lab)
-    if val_type is str or val_type is unicode:
+    if db_is_str_class(val_type):
         if _only_unset:
             global _scans
             scan_grid = Gtk.Grid(column_spacing=10,row_spacing=10)
