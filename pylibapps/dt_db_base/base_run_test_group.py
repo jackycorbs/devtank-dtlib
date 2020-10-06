@@ -86,8 +86,11 @@ def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
-    data = pickle.dumps((n, v)).replace("\n","<NL>")
-    test_context.send_cmd("STORE_VALUE " + data) # Base64 includes a newline
+    data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline
+    # DIY the the IPC as no point going in and out of utf8 on Py3
+    test_context.stdout_out.write(b"STORE_VALUE ")
+    test_context.stdout_out.write(data)
+    test_context.stdout_out.flush()
 
 
 
