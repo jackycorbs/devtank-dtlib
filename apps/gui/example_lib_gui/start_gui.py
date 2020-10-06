@@ -41,7 +41,7 @@ def _is_board_in_rig(context, db_dev, next_view, serial_number):
 def _view_results(context, db_dev, next_view, serial_number, yes_no):
 
     if yes_no:
-        from sessions_results_gui import open_dev_tests_sessions_results
+        from .sessions_results_gui import open_dev_tests_sessions_results
         context.devices = [fake_example_dev(serial_number, db_dev.uuid)]
         open_dev_tests_sessions_results(context, db_dev)
         return
@@ -70,7 +70,7 @@ class _start_double_scan(scan_box_base):
         if context.args['production']:
             db_test_group = context.db.get_group("Example Group")
             context.tests_group.populate_from(db_test_group)
-            from group_run_gui import open_run_group
+            from .group_run_gui import open_run_group
             next_view = open_run_group
         else:
             next_view = example_lib_gui.open_groups_list

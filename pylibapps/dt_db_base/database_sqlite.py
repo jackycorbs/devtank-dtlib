@@ -1,9 +1,16 @@
 import os
+import sys
 import sqlite3
 import datetime
-from database import tester_database
-from db_filestore_protocol import sftp_transferer
-from db_inf import db_inf
+
+if sys.version_info[0] < 3:
+    from database import tester_database
+    from db_filestore_protocol import sftp_transferer
+    from db_inf import db_inf
+else:
+    from .database import tester_database
+    from .db_filestore_protocol import sftp_transferer
+    from .db_inf import db_inf
 
 
 class sqlite_tester_database(tester_database):

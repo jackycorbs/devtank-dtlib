@@ -5,17 +5,36 @@ TODO: Really this should always be called a different thread than the GUI thread
 '''
 from __future__ import print_function
 import os
+import sys
 import copy
 import yaml
 import hashlib
 
-from test_file_extract import get_args_in_src
-from db_filestore_protocol import smb_transferer, sftp_transferer
+if sys.version_info[0] < 3:
+    from test_file_extract import get_args_in_src
+    from db_filestore_protocol import smb_transferer, sftp_transferer
 
-from db_common import *
-from db_tests import test_script_obj, test_group_obj, test_group_sessions
+    from db_common import *
+    from db_tests import test_script_obj, test_group_obj, test_group_sessions
 
-import db_values
+    from db_values import get_db_version      as values_get_db_version,      \
+                          get_result_props_id as values_get_result_props_id, \
+                          get_settings_tree   as values_get_settings_tree,   \
+                          set_defaults        as values_set_defaults
+    from tests_group import tests_group_creator
+else:
+    from .test_file_extract import get_args_in_src
+    from .db_filestore_protocol import smb_transferer, sftp_transferer
+
+    from .db_common import *
+    from .db_tests import test_script_obj, test_group_obj, test_group_sessions
+
+    from .db_values import get_db_version      as values_get_db_version,      \
+                           get_result_props_id as values_get_result_props_id, \
+                           get_settings_tree   as values_get_settings_tree,   \
+                           set_defaults        as values_set_defaults
+    from .tests_group import tests_group_creator
+
 
 
 def _get_defaults(local_folder):
@@ -44,8 +63,8 @@ class tester_database(object):
     def __init__(self, db, sql, work_folder):
         self.db = db
         self.sql = sql
-        self.version = db_values.get_db_version(db, sql)
-        sql.result_props_id = db_values.get_result_props_id(db, sql)
+        self.version = values_get_db_version(db, sql)
+        sql.result_props_id = values_get_result_props_id(db, sql)
 
         self.work_folder = work_folder
         self._known_objs = {}
@@ -220,7 +239,7 @@ class tester_database(object):
         return local_file
 
     def get_settings(self):
-        return db_values.get_settings_tree(self.db, self.sql, db_ms_now())
+        return values_get_settings_tree(self.db, self.sql, db_ms_now())
 
     def get_resource_files(self):
         rows = self.db.query(self.sql.get_resource_files())
@@ -250,7 +269,7 @@ class tester_database(object):
             c = db.cursor()
         if now is None:
             now = db_ms_now()
-        db_values.set_defaults(self.add_files, args, c, self.sql, now)
+        values_set_defaults(self.add_files, args, c, self.sql, now)
         db.commit()
 
     def get_test_by_name(self, test_name, db_cursor=None, now=None):
@@ -321,7 +340,6 @@ class tester_database(object):
 
 
     def update_tests_in_folder(self, local_folder, db_cursor=None, now=None):
-        from tests_group import tests_group_creator
 
         if now is None:
             now = db_ms_now()
