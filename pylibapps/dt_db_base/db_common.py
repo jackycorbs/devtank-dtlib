@@ -1,3 +1,4 @@
+import sys
 import time
 
 def db_time(py_time):
@@ -23,11 +24,19 @@ def db_safe_name(s):
     return r.rstrip('\0')
 
 
-def db_de_unicode_str(s):
-    return str(s) if isinstance(s, unicode) else s
+if sys.version_info[0] < 3:
+    dbfile = file
+    db_is_string = lambda s : isinstance(s, str) or isinstance(s, unicode)
+    db_std_str = lambda s : str(s) if isinstance(s, unicode) else s
+else:
+    from collections import namedtuple
+    dbfile = namedtuple("dbfile", [])
+    db_std_str = lambda s : s.encode() if isinstance(s, bytes) else s
+    db_is_string = lambda s : isinstance(s, str) or isinstance(s, bytes)
+
 
 def py_type_from_db_type(db_type):
-    py_types = {"file": file,
+    py_types = {"file": dbfile,
                 "int": int,
                 "float": float,
                 "text": str,
@@ -39,6 +48,6 @@ def db_type_from_py_type(py_type):
     db_types = {bool : "bool",
                 int : "int",
                 float : "float:",
-                file : "file",
+                dbfile : "file",
                 str : "text"}
     return db_types[py_type]

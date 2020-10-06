@@ -152,11 +152,11 @@ def update_default(prop):
         index = files_drop.get_active()
         if index >= 0:
             file_id = files_drop.get_model()[index][1]
-            prop["default"] = (file, None, file_id)
+            prop["default"] = (dbfile, None, file_id)
         else:
             filename = new_file_btn.get_filename()
             if filename and len(filename):
-                prop["default"] = (file, filename, None)
+                prop["default"] = (dbfile, filename, None)
             else:
                 prop.pop("default", None)
 

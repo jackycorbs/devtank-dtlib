@@ -52,16 +52,16 @@ def _adjuster_from_entry(entry, places):
 
 def _value_change(tests_group, test, arg, lab, value):
     val_type = tests_group.props_defaults[arg]['type']
-    if val_type is not file:
+    if val_type is not dbfile:
         value = val_type(value)
-    elif val_type is file:
-        assert value[0] is file
+    elif val_type is dbfile:
+        assert value[0] is dbfile
         widgets = value[3]
         value = value[0:3]
         if value[1] is None:
             if value[2] is None:
                 return
-            value = (file,
+            value = (dbfile,
                      tests_group.db.get_file_to_local(value[2]),
                      value[2])
             widgets[1].unselect_all()
@@ -152,7 +152,7 @@ def _add_arg(context, tests_group, test, arg, box, all_files):
             btn.set_active(val_value)
         btn.connect("toggled", lambda x: _value_change(tests_group, test, arg, lab, x.get_active()))
         box2.add(btn)
-    elif val_type is file:
+    elif val_type is dbfile:
         files_store = Gtk.ListStore(str, int)
         files_drop = Gtk.ComboBox()
         files_drop.set_model(files_store)
@@ -173,14 +173,14 @@ def _add_arg(context, tests_group, test, arg, box, all_files):
 
         files_drop.connect("changed", lambda x: _value_change(
             tests_group, test, arg, lab,
-            (file, None,
+            (dbfile, None,
              files_store[files_drop.get_active()][1] \
                 if files_drop.get_active() >= 0 else None,
              (files_drop, btn))))
 
         btn.connect("file-set", lambda x: _value_change(
             tests_group, test, arg, lab,
-            (file, x.get_filename(), None, (files_drop, btn))))
+            (dbfile, x.get_filename(), None, (files_drop, btn))))
     else:
         raise Exception("Unknown property type : %s" % str(val_type))
     box.add(box2)

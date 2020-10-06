@@ -40,7 +40,7 @@ class test_script_obj(object):
     def run_arguments(self):
         return dict([
             (key, value[1] \
-                if (isinstance(value, tuple) and value[0] is file) \
+                if (isinstance(value, tuple) and value[0] is dbfile) \
                 else value)
             for key, value in self.pending_properties.items()])
 
