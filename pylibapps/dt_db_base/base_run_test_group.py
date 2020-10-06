@@ -18,6 +18,10 @@ if sys.version_info[0] < 3:
 else:
     from . import c_base
     from . import db_values
+    def execfile(test_file, args):
+        with open(test_file) as f:
+            exec(f.read(), args)
+
 
 _IPC_CMD = "IPC_CMD:"
 
