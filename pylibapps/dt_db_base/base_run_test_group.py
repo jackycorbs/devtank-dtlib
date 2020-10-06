@@ -40,7 +40,8 @@ class base_run_group_context(object):
         self.tmp_dir = tmp_dir
 
     def send_cmd(self, line):
-        self.stdout_out.write("%s%s\n" % (_IPC_CMD, line))
+        line = "%s%s\n" % (_IPC_CMD, line)
+        self.stdout_out.write(line.encode())
         self.stdout_out.flush()
 
     def get_ready_devices(self, bus_con):
