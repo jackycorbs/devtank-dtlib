@@ -31,7 +31,7 @@ if sys.version_info[0] < 3:
 else:
     from collections import namedtuple
     dbfile = namedtuple("dbfile", [])
-    db_std_str = lambda s : s.encode() if isinstance(s, bytes) else s
+    db_std_str = lambda s : s.decode() if isinstance(s, bytes) else s
     db_is_string = lambda s : isinstance(s, str) or isinstance(s, bytes)
 
 
