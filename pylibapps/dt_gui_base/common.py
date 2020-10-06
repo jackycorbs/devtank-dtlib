@@ -35,6 +35,7 @@ def _update_type(context, prop):
 
     for key in ["has_default", "default"]:
        widget_dict.pop(key, None)
+    prop.pop("default", None)
     _set_property_type_gui(context, prop)
     type_box = widget_dict["type_box"]
     type_box.show_all()
@@ -311,7 +312,10 @@ def _set_property_type_gui(context, prop):
         if prop_has_default:
             default_value = prop['default']
             file_id = default_value[2]
-            files_drop.set_active(all_file_ids.index(file_id))
+            for n in range(0, len(all_file_ids)):
+                if all_file_ids[n] == file_id:
+                    files_drop.set_active(n)
+                    break
         files_drop.set_sensitive(prop_has_default)
         new_file_btn.set_sensitive(prop_has_default)
         files_drop.connect("changed", lambda x: _update_resource_file(prop))
