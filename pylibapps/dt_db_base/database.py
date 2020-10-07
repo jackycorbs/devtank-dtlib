@@ -43,7 +43,8 @@ def _get_defaults(local_folder):
     defaults_file = os.path.join(local_folder, "args.yaml")
     if os.path.exists(defaults_file):
         with open(defaults_file) as f:
-            return yaml.load(f, Loader=yaml.FullLoader)
+            defaults_gen=yaml.safe_load_all(f)
+            return [root for root in defaults_gen][0]
     return {}
 
 def _extract_defaults(test_file, default_args):
@@ -456,7 +457,8 @@ class tester_database(object):
         r = []
         folder = os.path.dirname(filename)
         with open(filename) as f:
-            root_def = yaml.load(f, Loader=yaml.FullLoader)
+            root_def_gen=yaml.safe_load_all(f)
+            root_def = [root for root in root_def_gen][0]
 
             templates = root_def.get('templates', {})
             groups_list = root_def['groups']
