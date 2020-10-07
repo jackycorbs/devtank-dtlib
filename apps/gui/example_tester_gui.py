@@ -1,9 +1,8 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 
 import os
 import datetime
 import argparse
-import thread
 import yaml
 import types
 
@@ -33,14 +32,14 @@ def get_schema():
 def db_load_extra(db):
     tests = db.get_all_tests()
     if not len(tests):
-        print "Import tests"
+        print("Import tests")
         db.add_tests_folder(os.path.abspath("tests"))
         db.load_groups(os.path.abspath("tests/groups.yaml"))
 
 
 def main():
 
-    print "Running Example Tester GUI", datetime.datetime.utcnow()
+    print("Running Example Tester GUI", datetime.datetime.utcnow())
 
     args = vars(parser.parse_args())
 

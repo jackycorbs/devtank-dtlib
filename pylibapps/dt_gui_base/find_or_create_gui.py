@@ -1,5 +1,11 @@
-from barcode_scan_gui import double_scan_view
-from new_gui          import new_obj_view
+import sys
+
+if sys.version_info[0] < 3:
+    from barcode_scan_gui import double_scan_view
+    from new_gui          import new_obj_view
+else:
+    from .barcode_scan_gui import double_scan_view
+    from .new_gui          import new_obj_view
 
 
 class _create_post_scan(new_obj_view):

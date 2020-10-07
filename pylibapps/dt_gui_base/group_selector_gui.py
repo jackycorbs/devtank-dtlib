@@ -1,8 +1,17 @@
 import os
+import sys
 import parser
-from group_properties_gui import *
-from new_test_gui import *
-from edit_test_gui import *
+
+
+if sys.version_info[0] < 3:
+    from group_properties_gui import *
+    from new_test_gui import *
+    from edit_test_gui import *
+else:
+    from .group_properties_gui import *
+    from .new_test_gui import *
+    from .edit_test_gui import *
+
 
 import gi
 gi.require_version('Gtk', '3.0')

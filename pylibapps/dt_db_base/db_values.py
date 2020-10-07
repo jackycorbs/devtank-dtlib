@@ -1,7 +1,11 @@
 import os
+import sys
 import decimal
 
-from db_common import *
+if sys.version_info[0] < 3:
+    from db_common import *
+else:
+    from .db_common import *
 
 
 def to_type_from_str(value_str):
@@ -50,15 +54,15 @@ def _get_value_tree(c, sql, parent_id, now):
     value_entries = c.query(sql.get_value(parent_id, now))
     for value_entry in value_entries:
         found=False
-        name=db_de_unicode_str(value_entry[1])
+        name=db_std_str(value_entry[1])
         for value in value_entry[2:-1]:
             if value is not None:
-                r[name] = db_de_unicode_str(value)
+                r[name] = db_std_str(value)
                 found=True
                 break
         if not found and not value_entry[-1] is None:
             row = c.query_one(sql.get_filename(value_entry[-1]))
-            r[name] = (file, db_de_unicode_str(row[0]), value_entry[-1])
+            r[name] = (dbfile, db_std_str(row[0]), value_entry[-1])
         elif not found:
             r[name] = _get_value_tree(c, sql, value_entry[0], now)
     return r
@@ -75,7 +79,7 @@ def _get_default_by_name(c, sql, prop_name, now):
 
 def add_value(add_files, c, sql, prop_name, prop_value, valid_from, is_result=False):
     prop_type = ""
-    if isinstance(prop_value, str) or isinstance(prop_value, unicode):
+    if db_is_string(prop_value):
         prop_type="Value_Text"
         prop_value="'%s'" % prop_value
     elif isinstance(prop_value, int):
@@ -85,7 +89,7 @@ def add_value(add_files, c, sql, prop_name, prop_value, valid_from, is_result=Fa
     elif isinstance(prop_value, float):
         prop_type="Value_Real"
     elif isinstance(prop_value, tuple):
-        assert prop_value[0] is file
+        assert prop_value[0] is dbfile
         prop_type="Value_File_ID"
         if prop_value[2] is None:
             r = add_files(c, [prop_value[1]])
@@ -104,16 +108,16 @@ def get_test_properties(group_entry_id, db, sql, get_file_to_local):
     cmd = sql.get_test_properties(group_entry_id)
     rows = db.query(cmd)
     for row in rows:
-        name = db_de_unicode_str(row[0])
+        name = db_std_str(row[0])
         if not row[1] is None:
-            r[name] = db_de_unicode_str(row[1])
+            r[name] = db_std_str(row[1])
         elif not row[2] is None:
             r[name] = row[2]
         elif not row[3] is None:
             r[name] = row[3]
         elif not row[4] is None:
             filename = get_file_to_local(row[4])
-            r[name] = (file, db_de_unicode_str(filename), row[4])
+            r[name] = (file, db_std_str(filename), row[4])
         else:
             r[name] = None
     return r
@@ -149,7 +153,7 @@ def set_defaults(add_files, args, c, sql, now):
                         new_value = prop_values[key]
                         old_value = existing[key]
                         if not key in ["desc", "type"]:
-                            if prop_pytype is not file:
+                            if prop_pytype is not dbfile:
                                 new_value = prop_pytype(new_value)
                                 old_value = prop_pytype(old_value)
                             else:
@@ -172,7 +176,7 @@ def set_defaults(add_files, args, c, sql, now):
                 sql_cmd = sql_cmds[prop_type]
                 new_value = prop_values[new_prop]
                 if not new_prop in ["desc", "type"]:
-                    if prop_pytype is not file:
+                    if prop_pytype is not dbfile:
                         new_value = prop_pytype(new_value)
                     else:
                         if new_value[2] is None:

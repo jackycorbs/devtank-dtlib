@@ -1,4 +1,4 @@
-from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits
+from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits, dbfile
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -35,6 +35,7 @@ def _update_type(context, prop):
 
     for key in ["has_default", "default"]:
        widget_dict.pop(key, None)
+    prop.pop("default", None)
     _set_property_type_gui(context, prop)
     type_box = widget_dict["type_box"]
     type_box.show_all()
@@ -152,11 +153,11 @@ def update_default(prop):
         index = files_drop.get_active()
         if index >= 0:
             file_id = files_drop.get_model()[index][1]
-            prop["default"] = (file, None, file_id)
+            prop["default"] = (dbfile, None, file_id)
         else:
             filename = new_file_btn.get_filename()
             if filename and len(filename):
-                prop["default"] = (file, filename, None)
+                prop["default"] = (dbfile, filename, None)
             else:
                 prop.pop("default", None)
 
@@ -299,7 +300,7 @@ def _set_property_type_gui(context, prop):
         cell = Gtk.CellRendererText()
         files_drop.pack_start(cell, True)
         files_drop.add_attribute(cell, "text", 0)
-        all_file_ids = all_files.keys()
+        all_file_ids = list(all_files.keys())
         for file_id in all_file_ids:
             filename = all_files[file_id]
             key = "%i:%s" % (file_id, filename)
@@ -311,7 +312,10 @@ def _set_property_type_gui(context, prop):
         if prop_has_default:
             default_value = prop['default']
             file_id = default_value[2]
-            files_drop.set_active(all_file_ids.index(file_id))
+            for n in range(0, len(all_file_ids)):
+                if all_file_ids[n] == file_id:
+                    files_drop.set_active(n)
+                    break
         files_drop.set_sensitive(prop_has_default)
         new_file_btn.set_sensitive(prop_has_default)
         files_drop.connect("changed", lambda x: _update_resource_file(prop))

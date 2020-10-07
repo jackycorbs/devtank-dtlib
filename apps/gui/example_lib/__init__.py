@@ -1,3 +1,4 @@
+import sys
 
 from dt_db_base import base_open_db_backend,  \
                        set_log_file,          \
@@ -20,8 +21,16 @@ from dt_db_base import base_open_db_backend,  \
                        enable_warning_msgs,   \
                        enable_info_msgs
 
-from db_sql import example_sql_common
+if sys.version_info[0] < 3:
+    from db_sql import example_sql_common
 
-from db_example_dev import db_example_dev
+    from db_example_dev import db_example_dev
 
-from example_hw import example_dev, example_bus_con, example_bus
+    from example_hw import example_dev, example_bus_con, example_bus
+else:
+
+    from .db_sql import example_sql_common
+
+    from .db_example_dev import db_example_dev
+
+    from .example_hw import example_dev, example_bus_con, example_bus

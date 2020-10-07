@@ -1,6 +1,12 @@
 import os
+import sys
 import parser
-from group_selector_gui import open_test_group_selector
+
+if sys.version_info[0] < 3:
+    from group_selector_gui import open_test_group_selector
+else:
+    from .group_selector_gui import open_test_group_selector
+
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -12,7 +18,10 @@ class base_groups_list_gui(object):
     def __init__(self, context):
         self.context = context
 
-        from group_properties_gui import create_list_store
+        if sys.version_info[0] < 3:
+            from group_properties_gui import create_list_store
+        else:
+            from .group_properties_gui import create_list_store
 
         builder = context.builder
 

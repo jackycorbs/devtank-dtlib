@@ -87,7 +87,7 @@ class smb_transferer(object):
                                             self._base_folder,
                                             file_id,
                                             self._safe_name(filename))
-        f = self._ctx.open(remote_uri, os.O_CREAT | os.O_TRUNC | os.O_WRONLY, 0644)
+        f = self._ctx.open(remote_uri, os.O_CREAT | os.O_TRUNC | os.O_WRONLY, 0o0644)
 
         with open(filepath) as f2:
             shutil.copyfileobj(f2, f)

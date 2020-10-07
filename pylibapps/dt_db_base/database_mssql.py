@@ -1,9 +1,16 @@
 import os
+import sys
 import time
 import pymssql
-from database import tester_database
-from db_filestore_protocol import smb_transferer
-from db_inf import db_inf
+
+if sys.version_info[0] < 3:
+    from database import tester_database
+    from db_filestore_protocol import smb_transferer
+    from db_inf import db_inf
+else
+    from .database import tester_database
+    from .db_filestore_protocol import smb_transferer
+    from .db_inf import db_inf
 
 _MSSQL_AUTO_DISCONNECT = 60 * 5
 

@@ -1,4 +1,4 @@
-
+import sys
 from dt_gui_base import base_session_results_singlton
 
 
@@ -8,7 +8,11 @@ class _session_results_singlton(base_session_results_singlton):
         base_session_results_singlton.__init__(self, context)
 
     def _on_open_ran_view(self, session):
-        from group_run_gui import open_ran_group
+        if sys.version_info[0] < 3:
+            from group_run_gui import open_ran_group
+        else:
+            from .group_run_gui import open_ran_group
+
         open_ran_group(self.context, session)
 
 

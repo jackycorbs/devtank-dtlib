@@ -1,6 +1,13 @@
-from db_common import db_time
-from db_obj import db_child
-from db_tests import test_group_sessions
+import sys
+
+if sys.version_info[0] < 3:
+    from db_common import db_time
+    from db_obj import db_child
+    from db_tests import test_group_sessions
+else:
+    from .db_common import db_time
+    from .db_obj import db_child
+    from .db_tests import test_group_sessions
 
 
 class db_base_dev(db_child):

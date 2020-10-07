@@ -1,5 +1,9 @@
+import sys
 
-from db_common import *
+if sys.version_info[0] < 3:
+    from db_common import *
+else:
+    from .db_common import *
 
 _id_null = lambda x: ("%i" % x) if x else "NULL"
 _int_null = lambda x: ("%i" % x) if x is not None else "NULL"

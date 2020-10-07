@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import sys
 import yaml
@@ -8,7 +9,7 @@ import dt_db_base
 def list_groups(context, cmd_args):
     groups = context.db.get_groups()
     for group in groups:
-        print "Group : %s - %s" % ("%25s" % group.name, group.desc)
+        print("Group : %s - %s" % ("%25s" % group.name, group.desc))
 
 
 def update_tests(context, cmd_args):
@@ -28,14 +29,14 @@ def update_tests(context, cmd_args):
         name = group['name']
         db_group = db.get_group(name)
         while db_group:
-            print "Deleting existing '%s'" % name
+            print("Deleting existing '%s'" % name)
             tests = db_group.get_tests()
             for test in tests:
                 test.remove(c, now)
             db_group.delete(c, now)
             db_group = db.get_group(name)
 
-    print "Loading new version of groups."
+    print("Loading new version of groups.")
     db.load_groups(groups_file, c, now)
     db.db.commit()
 
@@ -45,25 +46,25 @@ def group_results(context, cmd_args):
     group_name = " ".join(cmd_args)
     db_group = context.db.get_group(group_name)
     if not db_group:
-        print 'No group of name "%s" found.' % group_name
+        print('No group of name "%s" found.' % group_name)
         sys.exit(-1)
-    print "Group has %u result sessions." % db_group.get_all_sessions_count()
+    print("Group has %u result sessions." % db_group.get_all_sessions_count())
 
 
 def print_session(session):
-    print "=" * 72
-    print "Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S')
-    print "Overall :", "passed" if session.pass_fail else "FAILED"
-    print "Session :", session.id
+    print("=" * 72)
+    print("Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S'))
+    print("Overall :", "passed" if session.pass_fail else "FAILED")
+    print("Session :", session.id)
     for dev, dev_results in session.devices.items():
-        print "Device :", dev
+        print("Device :", dev)
         for result in dev_results.results:
             if len(result):
-                print 'Test : "%s" (Output File:%s, Log File:%s) - %s' % (
+                print('Test : "%s" (Output File:%s, Log File:%s) - %s' % (
                         result[1],
                         "%u" % result[2] if result[2] else "NONE",
                         "%u" % result[3] if result[3] else "NONE",
-                        "passed" if result[0] else "FAILED")
+                        "passed" if result[0] else "FAILED"))
 
 
 def group_result(context, cmd_args):
@@ -71,12 +72,12 @@ def group_result(context, cmd_args):
     group_name = " ".join(cmd_args[:-1])
     db_group = context.db.get_group(group_name)
     if not db_group:
-        print 'No group of name "%s" found.' % group_name
+        print('No group of name "%s" found.' % group_name)
         sys.exit(-1)
     session_index = int(cmd_args[-1])
     sessions = db_group.get_all_sessions(session_index, 1)
     if not sessions:
-        print "Result session not found of index %u" % session_index
+        print("Result session not found of index %u" % session_index)
         sys.exit(-1)
 
     print_session(sessions[0])
@@ -87,7 +88,7 @@ def group_dump(context, cmd_args):
     group_name = " ".join(cmd_args)
     db_group = context.db.get_group(group_name)
     if not db_group:
-        print 'No group of name "%s" found.' % group_name
+        print('No group of name "%s" found.' % group_name)
         sys.exit(-1)
     count = db_group.get_all_sessions_count()
     for n in range(0, count, 10):
@@ -100,7 +101,7 @@ def get_file(context, cmd_args):
     assert len(cmd_args) == 1, "Wrong argument count."
     file_id = int(cmd_args[0])
     local_path = context.db.get_file_to_local(file_id)
-    print "Got file ID %u at %s" % (file_id, local_path)
+    print("Got file ID %u at %s" % (file_id, local_path))
 
 
 def dev_status(context, cmd_args):
@@ -114,8 +115,8 @@ def dev_status(context, cmd_args):
         for group in results:
             result = results[group]
             dev_id = dev.serial_number if dev else dev_uuid
-            print '%s : "%s" : %s' % (dev_id.encode('ascii',errors='ignore'),
-                group, "passed" if result[1] else "FAILED")
+            print('%s : "%s" : %s' % (dev_id.encode('ascii',errors='ignore'),
+                group, "passed" if result[1] else "FAILED"))
 
 
 def add_fail(context, cmd_args):
@@ -124,7 +125,7 @@ def add_fail(context, cmd_args):
     group_name = " ".join(cmd_args[1:])
     db_group = context.db.get_group(group_name)
     if not db_group:
-        print 'No group of name "%s" found.' % group_name
+        print('No group of name "%s" found.' % group_name)
         sys.exit(-1)
 
     tests = db_group.get_tests()
@@ -139,7 +140,7 @@ def dev_results(context, cmd_args):
     dev_uuid = cmd_args[0]
     dev = context.db.get_dev(dev_uuid)
     if not dev:
-        print "Failed to find dev '%s'" % dev_uuid
+        print("Failed to find dev '%s'" % dev_uuid)
         sys.exit(-1)
 
     count = dev.get_session_count()
@@ -164,9 +165,9 @@ generic_cmds = {
 
 
 def print_cmd_help(cmds):
-    print "Commands:"
+    print("Commands:")
     for cmd, entry in cmds.items():
-        print "%s : %s" % ("%14s" % cmd, "%14s" % entry[1])
+        print("%s : %s" % ("%14s" % cmd, "%14s" % entry[1]))
 
 
 def execute_cmd(context, cmd, cmd_args, cmds):
@@ -174,7 +175,7 @@ def execute_cmd(context, cmd, cmd_args, cmds):
     entry = cmds.get(cmd, None)
 
     if not entry:
-        print "Unknown command : %s" % cmd
+        print("Unknown command : %s" % cmd)
         print_cmd_help(cmds)
     else:
         entry[0](context, cmd_args)

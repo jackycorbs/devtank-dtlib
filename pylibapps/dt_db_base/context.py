@@ -1,6 +1,13 @@
+from __future__ import print_function
 import os
+import sys
 import subprocess
-from tests_group import tests_group_creator
+
+if sys.version_info[0] < 3:
+    from tests_group import tests_group_creator
+else:
+    from .tests_group import tests_group_creator
+
 
 class base_context_object(object):
     def __init__(self, args, db_def):
@@ -31,13 +38,13 @@ class base_context_object(object):
                                             shell=True, stdout=FNULL,
                                             stderr=subprocess.STDOUT)
                 if has_error:
-                    print "Unable to ping host."
+                    print("Unable to ping host.")
                     return False
 
         try:
             db = self.db_def["open_db_backend"](self.db_def)
         except Exception as e:
-            print "ERROR database connection fail : %s" % str(e)
+            print("ERROR database connection fail : %s" % str(e))
             import traceback
             traceback.print_exc()
             db = None
@@ -55,8 +62,12 @@ class base_context_object(object):
 
         db.db.error_handler = lambda e: self._db_fail(e)
 
-        db.get_dev = MethodType(lambda db, uuid: \
-                get_dev(db, uuid), db, db.__class__)
+        if sys.version_info[0] < 3:
+            db.get_dev = MethodType(lambda db, uuid: \
+                        get_dev(db, uuid), db, db.__class__)
+        else:
+            db.get_dev = MethodType(lambda db, uuid: \
+                        get_dev(db, uuid), db)
         return True
 
     def db_init(self):
@@ -74,7 +85,7 @@ class base_context_object(object):
         raise Exception("Context release_bus not implemented.");
 
     def _db_fail(self, e):
-        print "Fail with database, %s" % str(e)
+        print("Fail with database, %s" % str(e))
         import traceback
         traceback.print_exc()
         self.db = None

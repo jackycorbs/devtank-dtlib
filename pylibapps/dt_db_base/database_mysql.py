@@ -1,10 +1,17 @@
 import os
+import sys
 import time
 import mysql.connector as mysqlconn
 import pytz
-from database import tester_database
-from db_filestore_protocol import sftp_transferer
-from db_inf import db_inf, db_cursor
+
+if sys.version_info[0] < 3:
+    from database import tester_database
+    from db_filestore_protocol import sftp_transferer
+    from db_inf import db_inf, db_cursor
+else:
+    from .database import tester_database
+    from .db_filestore_protocol import sftp_transferer
+    from .db_inf import db_inf, db_cursor
 
 _MYSQL_AUTO_DISCONNECT = 60 * 5
 

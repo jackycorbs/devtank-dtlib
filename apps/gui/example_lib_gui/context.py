@@ -21,6 +21,6 @@ class gui_context_object(base_gui_context_object):
 
     def _db_fail(self, e):
         base_gui_context_object._db_fail(self, e)
-        from start_gui import open_start_page
+        from .start_gui import open_start_page
         self.clear_view_stack()
         open_start_page(self)

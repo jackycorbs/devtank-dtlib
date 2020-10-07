@@ -1,9 +1,10 @@
+from __future__ import print_function
 import os
 import sys
 import time
 import datetime
 import traceback
-import cPickle as pickle
+import pickle
 
 import gi
 gi.require_version('GLib', '2.0')
@@ -11,10 +12,20 @@ from gi.repository import GLib
 
 from multiprocessing import Process
 
-import c_base
-import db_values
+if sys.version_info[0] < 3:
+    import c_base
+    import db_values
+    from db_common import db_std_str
+else:
+    from . import c_base
+    from . import db_values
+    from .db_common import db_std_str
+    def execfile(test_file, args):
+        with open(test_file) as f:
+            exec(f.read(), args)
 
-_IPC_CMD = "IPC_CMD:"
+
+_IPC_CMD = b"IPC_CMD:"
 
 
 
@@ -35,7 +46,9 @@ class base_run_group_context(object):
         self.tmp_dir = tmp_dir
 
     def send_cmd(self, line):
-        self.stdout_out.write("%s%s\n" % (_IPC_CMD, line))
+        self.stdout_out.write(_IPC_CMD)
+        self.stdout_out.write(line.encode())
+        self.stdout_out.write(b"\n")
         self.stdout_out.flush()
 
     def get_ready_devices(self, bus_con):
@@ -76,8 +89,13 @@ def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
     _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
-    data = pickle.dumps((n, v)).replace("\n","<NL>")
-    test_context.send_cmd("STORE_VALUE " + data) # Base64 includes a newline
+    data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline
+    # DIY the the IPC as no point going in and out of utf8 on Py3
+    test_context.stdout_out.write(_IPC_CMD)
+    test_context.stdout_out.write(b"STORE_VALUE ")
+    test_context.stdout_out.write(data)
+    test_context.stdout_out.write(b"\n")
+    test_context.stdout_out.flush()
 
 
 
@@ -231,8 +249,8 @@ class base_run_group_manager(object):
         self.current_test = None
         self.current_device = None
 
-        self.stdout_out = os.fdopen(stdout_out, "w", 0)
-        self.stdout_in = os.fdopen(stdout_in, "r", 0)
+        self.stdout_out = os.fdopen(stdout_out, "wb", 0)
+        self.stdout_in = os.fdopen(stdout_in, "rb", 0)
 
         self.live = False
         self.readonly = False
@@ -277,7 +295,7 @@ class base_run_group_manager(object):
             return self.process_line(line)
         except Exception as e:
             import traceback
-            print "LINE PROCESS FAILED"
+            print("LINE PROCESS FAILED")
             traceback.print_exc()
             self.stop()
         ext_cmd = self.external_cmds.get("FINISHED",None)
@@ -290,7 +308,7 @@ class base_run_group_manager(object):
         if self.process.exitcode is None:
             return True
         if self.process.exitcode < 0:
-            print "Process terminated."
+            print("Process terminated.")
             self.live = False
             self._complete_stop()
             self._finished()
@@ -363,7 +381,7 @@ class base_run_group_manager(object):
         self.current_device = new_uuid
 
     def _store_value(self, data):
-        data = pickle.loads(data.replace("<NL>","\n"))
+        data = pickle.loads(data.replace(b"<NL>",b"\n"))
         name = data[0]
         value = data[1]
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
@@ -372,20 +390,25 @@ class base_run_group_manager(object):
 
     def process_line(self, line):
         if not self.live:
-            if line.startswith(_IPC_CMD + "START_TESTS"):
+            if isinstance(line, bytes) and line.startswith(_IPC_CMD + b"START_TESTS"):
                 self.live = True
             return True
-        if line.startswith(_IPC_CMD):
+        if isinstance(line, bytes) and line.startswith(_IPC_CMD):
             line = line[len(_IPC_CMD):].strip()
-            parts = line.split(' ')
+            parts = line.split(b' ')
             name = parts[0]
-            opt = " ".join(parts[1:]) if len(parts) > 1 else None
+            opt = b" ".join(parts[1:]) if len(parts) > 1 else None
+            name = db_std_str(name)
+            if name != "STORE_VALUE":
+                opt = db_std_str(opt)
             cb = self.cmds[name]
             cb(opt)
             if name in self.external_cmds:
                 cb = self.external_cmds[name]
                 cb(opt)
         else:
+            if isinstance(line, bytes) and sys.version_info[0] >= 3:
+                line = line.decode()
             ansi = None
             if len(line) > 22 and \
                line[2] == '/' and \
@@ -612,10 +635,10 @@ class default_group_context(base_run_group_context):
             bus_con.ready_devices(self.devices)
             return bus_con.devices
         except Exception as e:
-            print "Failed to get devices."
-            print "Backtrace:"
+            print("Failed to get devices.")
+            print("Backtrace:")
             for line in traceback.format_exc().splitlines():
-                print line
+                print(line)
             return []
 
     def stop_devices(self):

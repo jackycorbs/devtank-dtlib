@@ -1,5 +1,12 @@
-from db_common import *
-import db_values
+from __future__ import print_function
+import sys
+
+if sys.version_info[0] < 3:
+    from db_common import *
+    import db_values
+else:
+    from .db_common import *
+    from . import db_values
 
 
 class test_script_obj(object):
@@ -33,7 +40,7 @@ class test_script_obj(object):
     def run_arguments(self):
         return dict([
             (key, value[1] \
-                if (isinstance(value, tuple) and value[0] is file) \
+                if (isinstance(value, tuple) and value[0] is dbfile) \
                 else value)
             for key, value in self.pending_properties.items()])
 
@@ -256,9 +263,9 @@ class test_group_obj:
                                                                test_value_name, test_value_data, now, True)
                                 c.insert(sql.add_test_value(result_id, value_id))
                         else:
-                            print "Stored value but no table to put it."
+                            print("Stored value but no table to put it.")
                 else:
-                    print "Unknown UUID %s, can't store results." % dev_uuid
+                    print("Unknown UUID %s, can't store results." % dev_uuid)
         if not db_cursor:
             db.commit()
 
