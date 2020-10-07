@@ -280,7 +280,7 @@ void usr_signal(int sig)
 void devtank_init()
 {
     if (setlocale(LC_ALL, "") == NULL)
-        fatal_error("Failed to setup locale");
+        warning_msg("Failed to setup locale");
 
     signal(SIGTERM, fatal_signal);
     signal(SIGINT,  fatal_signal);
