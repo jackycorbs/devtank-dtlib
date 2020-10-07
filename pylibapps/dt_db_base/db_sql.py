@@ -1,4 +1,5 @@
 import datetime
+from dateutil.tz import tzlocal
 import time
 import sys
 
@@ -327,7 +328,8 @@ WHERE test_groups.id = %u AND test_group_entries.valid_from <= %u AND \
     """
     def add_test_group_results(self, group_id, machine_id, now):
         if self.db_version > 3:
-            tz_name = datetime.datetime.now().astimezone().tzinfo.tzname(None)
+            tz = tzlocal()
+            tz_name = tz.tzname(datetime.datetime.now(tz))
             sw_git_sha1 = dt_get_build_info()[1][:7]
             return "\
     INSERT INTO test_group_results \
