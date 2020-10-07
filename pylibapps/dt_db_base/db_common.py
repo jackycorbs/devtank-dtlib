@@ -30,6 +30,11 @@ def db_safe_str(s):
     s = s.replace('"', '')
     return s.rstrip('\0')
 
+def db_safe_null_str(s):
+    if s is None:
+        return "NULL"
+    return "'%s'" % db_safe_str(s)
+
 def db_safe_name(s):
     s = db_std_str(s)
     r = s.replace("'", '"')

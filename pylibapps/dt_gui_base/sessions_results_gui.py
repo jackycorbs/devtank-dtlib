@@ -75,7 +75,7 @@ class base_session_results_singlton(object):
             return
 
     def _on_row_double_click(self, session):
-        self.context.tests_group.populate_from(session.group)
+        self.context.tests_group.populate_from(session.group, session.time_of_tests)
         self._size = None
         self._on_open_ran_view(session)
 

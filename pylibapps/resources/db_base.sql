@@ -43,6 +43,7 @@ CREATE TABLE "test_groups" (
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
 	"name"	VARCHAR(255) NOT NULL,
 	"description"	TEXT NOT NULL,
+	"creation_note" TEXT,
 	"valid_from"	BIGINT NOT NULL,
 	"valid_to"	BIGINT
 );
@@ -65,14 +66,24 @@ CREATE TABLE "test_group_entry_properties" (
 	FOREIGN KEY("value_id") REFERENCES "values" ("id")
 );
 
+CREATE TABLE "tester_machines" (
+	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
+	"mac"	VARCHAR(32),
+	"hostname"	VARCHAR(255)
+);
+
 CREATE TABLE "test_group_results" (
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
 	"group_id"	INTEGER NOT NULL,
 	"time_of_tests"	BIGINT NOT NULL,
-	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id")
+	"logs_tz_name" VARCHAR(32),
+	"tester_machine_id" INTEGER,
+	"sw_git_sha1" VARCHAR(8),
+	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id"),
+	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")
 );
 
-INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 3);
+INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 5);
 INSERT INTO "values" ("name", "valid_from") VALUES('settings', 0);
 INSERT INTO "values" ("name", "parent_id", "valid_from") VALUES('defaults', 2, 0);
 INSERT INTO "values" ("name", "valid_from") VALUES('tests_properties', 0);

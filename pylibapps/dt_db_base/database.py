@@ -22,6 +22,7 @@ if sys.version_info[0] < 3:
                           get_settings_tree   as values_get_settings_tree,   \
                           set_defaults        as values_set_defaults
     from tests_group import tests_group_creator
+    from db_tester import db_tester_machine
 else:
     from .test_file_extract import get_args_in_src
     from .db_filestore_protocol import smb_transferer, sftp_transferer
@@ -34,6 +35,7 @@ else:
                            get_settings_tree   as values_get_settings_tree,   \
                            set_defaults        as values_set_defaults
     from .tests_group import tests_group_creator
+    from .db_tester import db_tester_machine
 
 
 
@@ -41,7 +43,8 @@ def _get_defaults(local_folder):
     defaults_file = os.path.join(local_folder, "args.yaml")
     if os.path.exists(defaults_file):
         with open(defaults_file) as f:
-            return yaml.load(f, Loader=yaml.FullLoader)
+            defaults_gen=yaml.safe_load_all(f)
+            return [root for root in defaults_gen][0]
     return {}
 
 def _extract_defaults(test_file, default_args):
@@ -75,6 +78,7 @@ class tester_database(object):
         if not os.path.exists(work_folder):
             os.mkdir(work_folder)
         self.init_dynamic_tables()
+        self.tester_machine = None
 
     def init_dynamic_tables(self):
         cmd = self.sql.get_dynamic_table_info()
@@ -435,7 +439,7 @@ class tester_database(object):
 
         r = self.add_group(group_data["name"],
                            group_data["desc"],
-                           tests, c, now)
+                           tests, c, now, group_data.get("note", None))
 
         if db_cursor is None:
             db.commit()
@@ -453,7 +457,8 @@ class tester_database(object):
         r = []
         folder = os.path.dirname(filename)
         with open(filename) as f:
-            root_def = yaml.load(f, Loader=yaml.FullLoader)
+            root_def_gen=yaml.safe_load_all(f)
+            root_def = [root for root in root_def_gen][0]
 
             templates = root_def.get('templates', {})
             groups_list = root_def['groups']
@@ -487,7 +492,7 @@ class tester_database(object):
     def get_db_now():
         return None
 
-    def add_group(self, name, desc, tests, db_cursor=None, now=None):
+    def add_group(self, name, desc, tests, db_cursor=None, now=None, note=None):
         if now is None:
             now = db_ms_now()
         db = self.db
@@ -495,7 +500,7 @@ class tester_database(object):
             c = db.cursor()
         else:
             c = db_cursor
-        group_id = c.insert(self.sql.add_test_group(name, desc, now))
+        group_id = c.insert(self.sql.add_test_group(name, desc, now, note))
 
         group = self._new_test_group( group_id, name, desc)
 
@@ -533,6 +538,14 @@ class tester_database(object):
             for filestore in sftps:
                 self.add_filestore(filestore[0], filestore[1], True,
                                    sftp_transferer.protocol_id)
+
+    def get_machine(self, machine_id):
+        return db_tester_machine.get_by_id(self, machine_id)
+
+    def get_own_machine(self):
+        if not self.tester_machine:
+            self.tester_machine = db_tester_machine.get_own_machine(self)
+        return self.tester_machine
 
     def get_dev(self, dev_uuid):
         raise Exception("Not implemented")

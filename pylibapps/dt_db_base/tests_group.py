@@ -2,9 +2,9 @@ import os
 import sys
 
 if sys.version_info[0] < 3:
-    from db_common import py_type_from_db_type
+    from db_common import py_type_from_db_type, db_ms_now, db_time
 else:
-    from .db_common import py_type_from_db_type
+    from .db_common import py_type_from_db_type, db_ms_now, db_time
 
 
 class tests_group_creator:
@@ -16,6 +16,7 @@ class tests_group_creator:
         self.description = ""
         self.db_group = None
         self.duration = None
+        self.note = None
         self.passed = False
         if db:
             self.update_defaults()
@@ -46,17 +47,22 @@ class tests_group_creator:
         self.duration = None
 
 
-    def populate_from(self, db_group):
+    def populate_from(self, db_group, pynowtime=None):
         self.db_group = db_group
         self.name = db_group.name
         self.description = db_group.desc
 
-        self.tests = db_group.get_tests()
+        now = db_time(pynowtime) if pynowtime is not None else db_ms_now()
+
+        self.tests = db_group.get_tests(now)
+
+        modified = db_group.is_modified(now)
+        self.note = None if modified else db_group.note
 
         for test in self.tests:
             test.load_properties()
 
-        self.duration = db_group.get_duration()
+        self.duration = db_group.get_duration(now)
         self.passed = False
 
 

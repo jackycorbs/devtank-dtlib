@@ -109,7 +109,8 @@ class db_process_t(object):
 
     def db_open(self, db_url):
         if db_url[0]=='{':
-            db_def=yaml.load(db_url, Loader=yaml.FullLoader)
+            db_def_gen=yaml.safe_load_all(db_url)
+            db_def = [root for root in db_def_gen][0]
             print ('Opening "%s" on "%s"' % (db_def["dbname"], db_def["host"]), file=sys.stderr)
             db = mysqlconn.connect(database=db_def["dbname"],
                                    user=db_def["user"],

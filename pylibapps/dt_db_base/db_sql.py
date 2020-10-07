@@ -1,9 +1,16 @@
+import datetime
+from dateutil.tz import tzlocal
+import time
 import sys
 
 if sys.version_info[0] < 3:
     from db_common import *
+    from c_base import dt_get_build_info
 else:
     from .db_common import *
+    from .c_base import dt_get_build_info
+
+
 
 _id_null = lambda x: ("%i" % x) if x else "NULL"
 _int_null = lambda x: ("%i" % x) if x is not None else "NULL"
@@ -16,6 +23,7 @@ class sql_common(object):
         self.dev_result_values_table_name = None
         self.devices_table_name = "devs"
         self.device_key_name = "dev_id"
+        self.db_version = None
 
         self.defaults_id = 3
         self.settings_id = 2
@@ -223,10 +231,11 @@ ORDER BY order_position" % (dev_result_table_name, now, now, group_id)
      tests group related SQL
 
     """
-    def add_test_group(self, name, desc, valid_from):
+    def add_test_group(self, name, desc, valid_from, note=None):
         return "\
-INSERT INTO test_groups (name, description, valid_from) \
-VALUES('%s', '%s', %i)" % (db_safe_str(name), db_safe_str(desc), valid_from)
+INSERT INTO test_groups (name, description, creation_note, valid_from) \
+VALUES('%s', '%s', %s, %i)" % (db_safe_str(name), db_safe_str(desc),
+db_safe_null_str(note), valid_from)
 
     def add_test_group_test(self, group_id, test_id, name, order_pos,
                             valid_from):
@@ -284,16 +293,55 @@ WHERE test_group_id=%i AND valid_from<=%i AND \
 (valid_to IS NULL OR valid_to>%i) GROUP BY test_group_entries.id" % (
 dev_result_table_name, dev_result_table_name, dev_result_table_name,
 group_id, now, now)
+
+    def get_test_group_creation_note(self, group_id):
+        return "SELECT creation_note FROM test_groups WHERE id=%u" % group_id
+
+    def is_test_group_modified(self, group_id, now):
+        return "\
+SELECT MIN(\
+   MIN(test_groups.valid_to is NULL OR \
+       test_groups.valid_to > %u),\
+   MIN(test_group_entries.valid_to is NULL OR \
+       test_group_entries.valid_to > %u),\
+   MIN(tests.valid_to is NULL OR \
+       tests.valid_to > %u),\
+   MIN('values'.valid_to is NULL OR \
+       'values'.valid_to > %u)) = 0 \
+FROM test_groups \
+LEFT JOIN test_group_entries ON \
+  test_group_entries.test_group_id = test_groups.id \
+LEFT JOIN test_group_entry_properties ON \
+  test_group_entry_properties.group_entry_id = test_group_entries.id \
+LEFT JOIN tests ON \
+  tests.id = test_group_entries.test_id \
+LEFT JOIN 'values' ON \
+  'values'.id = test_group_entry_properties.value_id \
+WHERE test_groups.id = %u AND test_group_entries.valid_from <= %u AND \
+'values'.valid_from <= %u" % (now, now, now, now, group_id, now, now)
+
     """
     ====================================================================
 
      results related SQL
 
     """
-    def add_test_group_results(self, group_id, now):
-        return "\
-INSERT INTO test_group_results (group_id, Time_Of_tests) \
-VALUES (%i, %i)" % (group_id, now)
+    def add_test_group_results(self, group_id, machine_id, now):
+        if self.db_version > 3:
+            tz = tzlocal()
+            tz_name = tz.tzname(datetime.datetime.now(tz))
+            sw_git_sha1 = dt_get_build_info()[1][:7]
+            return "\
+    INSERT INTO test_group_results \
+        (group_id, time_Of_tests, logs_tz_name, \
+         tester_machine_id, sw_git_sha1) \
+    VALUES (%i, %i, '%s', %s, '%s')" % (
+            group_id, now, db_safe_str(tz_name),
+            _id_null(machine_id), db_safe_str(sw_git_sha1))
+        else:
+            return "\
+    INSERT INTO test_group_results (group_id, Time_Of_tests) \
+    VALUES (%i, %i)" % (group_id, now)
 
     def get_test_group_results_count(self, group_id):
         return "\
@@ -478,11 +526,31 @@ WHERE test_group_entry_properties.group_entry_id=%i" % group_entry_id
 SELECT (SELECT value_text FROM "values" WHERE name=\'dev_table\' AND parent_id=2) as dev_table,\
 (SELECT value_text FROM "values" WHERE name=\'dev_results_table\' AND parent_id=2) as dev_results_table,\
 (SELECT value_text FROM "values" WHERE name=\'dev_results_table_key\' AND parent_id=2) as dev_results_table_key,\
-(SELECT value_text FROM "values" WHERE name=\'dev_results_values_table\' AND parent_id=2) as dev_results_values_table'
+(SELECT value_text FROM "values" WHERE name=\'dev_results_values_table\' AND parent_id=2) as dev_results_values_table,\
+(SELECT value_int FROM \"values\" WHERE id=1) as db_version'
 
     def use_dynamic_table_info(self, row):
         self.devices_table_name           = row[0]
         self.dev_result_table_name        = row[1]
         self.device_key_name              = row[2]
         self.dev_result_values_table_name = row[3]
+        self.db_version                   = row[4]
+    """
+    ====================================================================
 
+     Tester Machine related SQL
+
+    """
+    _MACHINE_SQL="SELECT id, mac, hostname FROM tester_machines WHERE "
+
+    def get_machine_by_id(self, machine_id):
+        return self._MACHINE_SQL + "id=%u" % machine_id
+
+    def get_machine(self, mac, hostname):
+        return self._MACHINE_SQL + "mac='%s' AND lower(hostname)='%s'" % \
+            (db_safe_str(mac).lower(), db_safe_str(hostname).lower())
+
+    def add_machine(self, mac, hostname):
+        return "INSERT INTO tester_machines (mac, hostname) \
+        VALUES('%s','%s')" % (db_safe_str(mac).lower(),
+            db_safe_str(hostname))
