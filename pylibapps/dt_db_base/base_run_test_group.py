@@ -83,10 +83,10 @@ def _test_check(lib_inf, test_name, args, results, result, desc):
             _forced_exit()
 
 def _threshold_check(lib_inf, test_name, args, results, sbj, ref, margin, unit, desc):
-    _test_check(lib_inf, test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s == %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
+    _test_check(lib_inf, test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
 def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
-    _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
+    _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s is %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
     data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline

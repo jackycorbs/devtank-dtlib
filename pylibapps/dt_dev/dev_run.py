@@ -57,10 +57,10 @@ def test_check(test_name, args, results, result, desc):
             sys.exit(-1)
 
 def threshold_check(test_name, args, results, sbj, ref, margin, unit, desc):
-    test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s == %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
+    test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
 def exact_check(test_name, args, results, sbj ,ref, desc):
-    test_check(test_name, args, results, sbj == ref, "%s (%s == %s) check" % (desc, str(sbj), str(ref)))
+    test_check(test_name, args, results, sbj == ref, "%s (%s is %s) check" % (desc, str(sbj), str(ref)))
 
 def debug_print(msg):
     print(msg, file=log_file)
