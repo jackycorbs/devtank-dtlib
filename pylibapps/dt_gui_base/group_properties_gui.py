@@ -15,7 +15,7 @@ else:
     from .barcode_scan_gui import scan_box_base
 
 
-from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits, db_is_str_class
+from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits, db_is_str_class, dbfile
 
 import gi
 gi.require_version('Gtk', '3.0')
