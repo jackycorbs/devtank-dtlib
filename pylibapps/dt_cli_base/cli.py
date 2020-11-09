@@ -57,8 +57,13 @@ def print_session(session):
     print("Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S'))
     print("Overall :", "passed" if session.pass_fail else "FAILED")
     print("Session :", session.id)
-    for dev, dev_results in session.devices.items():
-        print("Device :", dev)
+    for dev_uuid, dev_results in session.devices.items():
+        dev = session.db.get_dev(dev_uuid)
+        if dev_uuid != dev.serial_number:
+            print("Device : %s, %s" % (dev_uuid, dev.serial_number))
+        else:
+            print("Device : ", dev_uuid)
+
         for result in dev_results.results:
             if len(result):
                 print('Test : "%s" (Output File:%s, Log File:%s) - %s' % (
