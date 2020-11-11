@@ -168,6 +168,11 @@ def _thread_test(test_context):
 
                 results[name] = True
 
+                test_check      = lambda a,b:       _test_check(lib_inf, name, args, results, a, b)
+                threshold_check = lambda a,b,c,d,e: _threshold_check(lib_inf, name, args, results, a, b, c, d, e)
+                exact_check     = lambda a,b,c:     _exact_check(lib_inf, name, args, results, a, b, c)
+                store_value     = lambda n, v :     _store_value(test_context, n, v)
+
                 try:
                     start_time = time.time()
                     lib_inf.enable_info_msgs(True)
@@ -175,12 +180,14 @@ def _thread_test(test_context):
                     test_exec_map.update({ 'args': args,
                                           'dev': dev,
                                           'name': name,
-                                          'test_check': lambda a,b: _test_check(lib_inf, name, args, results, a, b),
-                                          'threshold_check' : lambda a,b,c,d,e: _threshold_check(lib_inf, name, args, results, a, b, c, d, e),
-                                          'exact_check' : lambda a,b,c: _exact_check(lib_inf, name, args, results, a, b, c),
+                                          'test_check': test_check,
+                                          'threshold_check' : threshold_check,
+                                          'exact_check' : exact_check,
                                           'results': results,
-                                          'store_value' : lambda n, v : _store_value(test_context, n, v),
+                                          'store_value' : store_value,
                                           '__file__' : os.path.abspath(test_file)})
+                    if hasattr(dev, "set_test_functions"):
+                        dev.set_test_functions(threshold_check, exact_check, store_value)
                     execfile(test_file, test_exec_map)
                     lib_inf.enable_info_msgs(False)
                     duration = time.time() - start_time
