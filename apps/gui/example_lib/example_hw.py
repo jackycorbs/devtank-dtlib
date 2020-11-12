@@ -4,14 +4,16 @@ import random
 class example_dev(object):
     def __init__(self, uuid):
         self._uuid=uuid
+        self.test_check      = None
         self.threshold_check = None
         self.exact_check     = None
         self.store_value     = None
 
-    def set_test_functions(self, threshold_check, exact_check, store_value):
+    def set_test_functions(self, test_check, threshold_check, exact_check, store_value):
         self.threshold_check = threshold_check
         self.exact_check     = exact_check
         self.store_value     = store_value
+        self.test_check      = test_check
 
     ## Get Example device Universal Unique ID
     @property
@@ -19,7 +21,7 @@ class example_dev(object):
         return self._uuid
 
     def update_uuid_from_hw(self):
-        self.exact_check(True, True, "Internal binding check")
+        self.test_check(True, "Internal binding check")
         self.uuid = "%02x:%02x:%02x:%02x:%02x:%02x" % \
                     (random.randint(0, 255),
                      random.randint(0, 255),
