@@ -18,6 +18,9 @@
                         "my_test_str"    : "hello world"
                     }
                 ],
+                [
+                    "test3.py", {}
+                ]
             ]
         },
     ]

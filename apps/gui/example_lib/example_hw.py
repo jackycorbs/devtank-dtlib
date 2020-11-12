@@ -33,6 +33,9 @@ class example_dev(object):
     def uuid(self, uuid):
         self._uuid = uuid
 
+    def read_serial(self):
+        return "hello world"
+
 
 
 ## Open connection to a Example bus.

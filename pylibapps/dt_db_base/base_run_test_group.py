@@ -44,6 +44,7 @@ class base_run_group_context(object):
         self.devices = []
         self.last_end_time = last_end_time
         self.tmp_dir = tmp_dir
+        self.sub_test_count = 0
 
     def send_cmd(self, line):
         self.stdout_out.write(_IPC_CMD)
@@ -73,20 +74,23 @@ def _forced_exit():
     raise ForceExitException
 
 
-def _test_check(lib_inf, test_name, args, results, result, desc):
+def _test_check(test_context, test_name, args, results, result, desc):
     if result:
-        lib_inf.output_good("%s - passed" % desc)
+        test_context.lib_inf.output_good("%s - passed" % desc)
     else:
         results[test_name] = False
-        lib_inf.output_bad("%s - FAILED" % desc)
+        msg = "%s - FAILED" % desc
+        test_context.lib_inf.output_bad(msg)
+        _store_value(test_context, "SUB_FAIL_%u" % test_context.sub_test_count, msg)
         if "exit_on_fail" in args and args["exit_on_fail"]:
             _forced_exit()
+    test_context.sub_test_count += 1
 
-def _threshold_check(lib_inf, test_name, args, results, sbj, ref, margin, unit, desc):
-    _test_check(lib_inf, test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
+def _threshold_check(test_context, test_name, args, results, sbj, ref, margin, unit, desc):
+    _test_check(test_context, test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
-def _exact_check(lib_inf, test_name, args, results, sbj ,ref, desc):
-    _test_check(lib_inf, test_name, args, results, sbj == ref, "%s (%s is %s) check" % (desc, str(sbj), str(ref)))
+def _exact_check(test_context, test_name, args, results, sbj ,ref, desc):
+    _test_check(test_context, test_name, args, results, sbj == ref, "%s (%s is %s) check" % (desc, str(sbj), str(ref)))
 
 def _store_value(test_context, n, v):
     data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline
@@ -102,7 +106,7 @@ def _store_value(test_context, n, v):
 def _thread_test(test_context):
     bus = test_context.get_bus()
 
-    lib_inf = test_context.__class__.lib_inf
+    lib_inf = test_context.lib_inf
 
     test_context.send_cmd("START_TESTS")
 
@@ -168,10 +172,12 @@ def _thread_test(test_context):
 
                 results[name] = True
 
-                test_check      = lambda a,b:       _test_check(lib_inf, name, args, results, a, b)
-                threshold_check = lambda a,b,c,d,e: _threshold_check(lib_inf, name, args, results, a, b, c, d, e)
-                exact_check     = lambda a,b,c:     _exact_check(lib_inf, name, args, results, a, b, c)
+                test_check      = lambda a,b:       _test_check(test_context, name, args, results, a, b)
+                threshold_check = lambda a,b,c,d,e: _threshold_check(test_context, name, args, results, a, b, c, d, e)
+                exact_check     = lambda a,b,c:     _exact_check(test_context, name, args, results, a, b, c)
                 store_value     = lambda n, v :     _store_value(test_context, n, v)
+
+                test_context.sub_test_count = 0
 
                 try:
                     start_time = time.time()

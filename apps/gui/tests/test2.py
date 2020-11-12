@@ -15,6 +15,8 @@ Test Specific Arguments:
 
 '''
 
+test_var =  args["my_test_str"]
+
 output_normal("Current UUID : " + dev.uuid)
 
 output_good("I'm happy")
@@ -22,6 +24,9 @@ output_bad("I'm sad")
 output_normal("I'm ok")
 
 output_normal("Arg : %s" % args["my_test_str"])
+
+exact_check('"%s"' % test_var, '"%s"' % dev.read_serial(), "Fake Serial read.") 
+threshold_check(3.4, 3.3, 0.2, "V", "Fake voltage check")
 
 store_value("Test String", "hello there")
 store_value("Test Int", 4)
