@@ -19,6 +19,13 @@
                     }
                 ],
                 [
+                    [ "test2-again.py", "test2.py" ],
+                    {
+                        "my_test_str"    : "goodbye world",
+                        "exit_on_fail"   : False
+                    }
+                ],
+                [
                     "test3.py", {}
                 ]
             ]

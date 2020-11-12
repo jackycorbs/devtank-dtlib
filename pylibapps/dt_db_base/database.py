@@ -393,7 +393,7 @@ class tester_database(object):
     def add_tests_folder(self, local_folder, db_cursor=None, now=None):
         self.update_tests_in_folder(local_folder, db_cursor, now)
 
-    def group_from_dict(self, group_data, folder=None, db_cursor=None, now=None):
+    def group_from_dict(self, group_data, folder, db_cursor=None, now=None):
         if now is None:
             now = db_ms_now()
         db = self.db
@@ -407,10 +407,20 @@ class tester_database(object):
         for test_name, test_args in group_data["tests"]:
             if 'exit_on_fail' not in test_args:
                 test_args['exit_on_fail'] = True
-            test_obj = self.get_test_by_name(test_name, c, now)
-            if not test_obj:
-                assert folder
+
+            if isinstance(test_name, list):
+                assert len(test_name) == 2, "If list is given for testname, it should be name then filename. : " + str(testname)
+                filename = test_name[1]
+                test_name = test_name[0]
+                test_obj = self.get_test_by_name(filename, c, now)
+                test_filename = os.path.join(folder, filename)
+                if test_obj:
+                    test_obj = copy.copy(test_obj)
+                    test_obj.name = test_name
+            else:
+                test_obj = self.get_test_by_name(test_name, c, now)
                 test_filename = os.path.join(folder, test_name)
+            if not test_obj:
                 if not os.path.exists(test_filename):
                     raise Exception("Test file '%s' not found" % test_filename)
                 args = _extract_defaults(test_filename, default_args)
@@ -430,12 +440,12 @@ class tester_database(object):
 
         test_used = {}
         for test in tests:
-            if test.filename in test_used:
-                count = test_used[test.filename]
+            if test.name in test_used:
+                count = test_used[test.name]
                 test.name += "#%02i" % count
-                test_used[test.filename] = count + 1
+                test_used[test.name] = count + 1
             else:
-                test_used[test.filename] = 1
+                test_used[test.name] = 1
 
         r = self.add_group(group_data["name"],
                            group_data["desc"],
