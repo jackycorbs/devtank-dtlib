@@ -1,10 +1,9 @@
+from __future__ import print_function, absolute_import
+
 import os
 import sys
 
-if sys.version_info[0] < 3:
-    from db_common import py_type_from_db_type, db_ms_now, db_time
-else:
-    from .db_common import py_type_from_db_type, db_ms_now, db_time
+from .db_common import py_type_from_db_type, db_ms_now, db_time
 
 
 class tests_group_creator:

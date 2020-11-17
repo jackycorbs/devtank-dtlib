@@ -1,18 +1,13 @@
+from __future__ import print_function, absolute_import
+
 import os
 import sys
 import copy
 
-if sys.version_info[0] < 3:
-    from query_gui import open_query_gui
-    from notify_gui import open_notify_gui
-
-    from group_naming_gui import open_test_group_naming
-    from barcode_scan_gui import scan_box_base
-else:
-    from .query_gui import open_query_gui
-    from .notify_gui import open_notify_gui
-    from .group_naming_gui import open_test_group_naming
-    from .barcode_scan_gui import scan_box_base
+from .query_gui import open_query_gui
+from .notify_gui import open_notify_gui
+from .group_naming_gui import open_test_group_naming
+from .barcode_scan_gui import scan_box_base
 
 
 from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits, db_is_str_class, dbfile

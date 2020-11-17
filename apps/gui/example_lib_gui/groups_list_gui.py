@@ -1,14 +1,12 @@
+from __future__ import print_function, absolute_import
+
 import sys
 from dt_gui_base import base_groups_list_gui, open_notify_gui
 
 _singleton = None
 
-if sys.version_info[0] < 3:
-    from group_run_gui import open_run_group
-    from sessions_results_gui import open_tests_sessions_results
-else:
-    from .group_run_gui import open_run_group
-    from .sessions_results_gui import open_tests_sessions_results
+from .group_run_gui import open_run_group
+from .sessions_results_gui import open_tests_sessions_results
 
 
 class groups_lists_gui(base_groups_list_gui):

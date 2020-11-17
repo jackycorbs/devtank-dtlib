@@ -1,15 +1,13 @@
+from __future__ import print_function, absolute_import
+
 import datetime
 from dateutil.tz import tzlocal
 import time
 import sys
 
-if sys.version_info[0] < 3:
-    from db_common import *
-    from c_base import dt_get_build_info
-else:
-    from .db_common import *
-    from .c_base import dt_get_build_info
 
+from .db_common import *
+from .c_base import dt_get_build_info
 
 
 _id_null = lambda x: ("%i" % x) if x else "NULL"

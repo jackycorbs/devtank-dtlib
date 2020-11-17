@@ -1,31 +1,21 @@
+from __future__ import print_function, absolute_import
+
 import sys
 
 def _open_sqlite_db(db_def):
-    if sys.version_info[0] < 3:
-        from database_sqlite import sqlite_db_backend
-    else:
-        from .database_sqlite import sqlite_db_backend
+    from .database_sqlite import sqlite_db_backend
     return sqlite_db_backend(db_def)
 
 def _open_mssql_db(db_def):
-    if sys.version_info[0] < 3:
-        from database_mssql import mssql_db_backend
-    else:
-        from .database_mssql import mssql_db_backend
+    from .database_mssql import mssql_db_backend
     return mssql_db_backend(db_def)
 
 def _open_mysql_db(db_def):
-    if sys.version_info[0] < 3:
-        from database_mysql import mysql_db_backend
-    else:
-        from .database_mysql import mysql_db_backend
+    from .database_mysql import mysql_db_backend
     return mysql_db_backend(db_def)
 
 def _open_pg_db(db_def):
-    if sys.version_info[0] < 3:
-        from database_pg import pg_db_backend
-    else:
-        from .database_pg import pg_db_backend
+    from .database_pg import pg_db_backend
     return pg_db_backend(db_def)
 
 def base_open_db_backend(db_def):

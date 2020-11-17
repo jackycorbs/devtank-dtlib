@@ -1,26 +1,17 @@
+from __future__ import print_function, absolute_import
+
 import sys
-if sys.version_info[0] < 3:
-    from resources import *
 
-    from context import gui_context_object
+from .resources import *
 
-    from start_gui import open_start_page, init_start_page
-    from group_run_gui import init_run_group, open_ran_group, open_run_group
-    from groups_list_gui import init_groups_list, open_groups_list
-    from sessions_results_gui import init_tests_sessions_results,     \
-                                     open_dev_tests_sessions_results, \
-                                     open_tests_sessions_results
-else:
-    from .resources import *
+from .context import gui_context_object
 
-    from .context import gui_context_object
-
-    from .start_gui import open_start_page, init_start_page
-    from .group_run_gui import init_run_group, open_ran_group, open_run_group
-    from .groups_list_gui import init_groups_list, open_groups_list
-    from .sessions_results_gui import init_tests_sessions_results,     \
-                                      open_dev_tests_sessions_results, \
-                                      open_tests_sessions_results
+from .start_gui import open_start_page, init_start_page
+from .group_run_gui import init_run_group, open_ran_group, open_run_group
+from .groups_list_gui import init_groups_list, open_groups_list
+from .sessions_results_gui import init_tests_sessions_results,     \
+                                  open_dev_tests_sessions_results, \
+                                  open_tests_sessions_results
 
 
 from dt_gui_base import dt_gui_base_init, \

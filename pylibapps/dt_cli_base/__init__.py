@@ -1,5 +1,4 @@
+from __future__ import print_function, absolute_import
+
 import sys
-if sys.version_info[0] < 3:
-    from cli import generic_cmds, print_cmd_help, execute_cmd
-else:
-    from .cli import generic_cmds, print_cmd_help, execute_cmd
+from .cli import generic_cmds, print_cmd_help, execute_cmd

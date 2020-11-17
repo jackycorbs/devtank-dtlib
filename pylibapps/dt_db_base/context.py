@@ -1,12 +1,10 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
+
 import os
 import sys
 import subprocess
 
-if sys.version_info[0] < 3:
-    from tests_group import tests_group_creator
-else:
-    from .tests_group import tests_group_creator
+from .tests_group import tests_group_creator
 
 
 class base_context_object(object):

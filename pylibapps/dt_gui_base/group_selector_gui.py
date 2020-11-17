@@ -1,16 +1,13 @@
+from __future__ import print_function, absolute_import
+
 import os
 import sys
 import parser
 
 
-if sys.version_info[0] < 3:
-    from group_properties_gui import *
-    from new_test_gui import *
-    from edit_test_gui import *
-else:
-    from .group_properties_gui import *
-    from .new_test_gui import *
-    from .edit_test_gui import *
+from .group_properties_gui import *
+from .new_test_gui import *
+from .edit_test_gui import *
 
 
 import gi

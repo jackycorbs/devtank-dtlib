@@ -1,14 +1,11 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import os
 import sys
 import time
 from ctypes import *
 
-if sys.version_info[0] >= 3:
-    from .c_base import output_normal, output_good, output_bad, c_base_func
-else:
-    from c_base import output_normal, output_good, output_bad, c_base_func
+from .c_base import output_normal, output_good, output_bad, c_base_func
 
 _c_libcbase = cdll.LoadLibrary("libhw.so")
 
@@ -143,4 +140,3 @@ class gpio_t(object):
     @value.setter
     def value(self, v):
         assert _gpio_obj_write(self._c_ptr, v), "GPIO write failed."
-

@@ -1,11 +1,10 @@
+from __future__ import print_function, absolute_import
+
 import os
 import sys
 import decimal
 
-if sys.version_info[0] < 3:
-    from db_common import *
-else:
-    from .db_common import *
+from .db_common import *
 
 
 def to_type_from_str(value_str):

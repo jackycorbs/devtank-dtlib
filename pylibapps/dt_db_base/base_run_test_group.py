@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import os
 import sys
 import time
@@ -12,14 +12,11 @@ from gi.repository import GLib
 
 from multiprocessing import Process
 
-if sys.version_info[0] < 3:
-    import c_base
-    import db_values
-    from db_common import db_std_str
-else:
-    from . import c_base
-    from . import db_values
-    from .db_common import db_std_str
+from . import c_base
+from . import db_values
+from .db_common import db_std_str
+
+if sys.version_info[0] >= 3:
     def execfile(test_file, args):
         with open(test_file) as f:
             exec(f.read(), args)

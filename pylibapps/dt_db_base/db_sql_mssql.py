@@ -1,10 +1,9 @@
+from __future__ import print_function, absolute_import
+
 import sys
 
 
-if sys.version_info[0] < 3:
-    from db_sql import sql_common
-else:
-    from .db_sql import sql_common
+from .db_sql import sql_common
 
 
 class mssql_sql_overload(sql_common):

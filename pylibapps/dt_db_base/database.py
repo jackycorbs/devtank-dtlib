@@ -3,39 +3,26 @@
 TODO: Really this should always be called a different thread than the GUI thread while the GUI thread has a waiting indicator.
 
 '''
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 import os
 import sys
 import copy
 import yaml
 import hashlib
 
-if sys.version_info[0] < 3:
-    from test_file_extract import get_args_in_src
-    from db_filestore_protocol import smb_transferer, sftp_transferer
 
-    from db_common import *
-    from db_tests import test_script_obj, test_group_obj, test_group_sessions
+from .test_file_extract import get_args_in_src
+from .db_filestore_protocol import smb_transferer, sftp_transferer
 
-    from db_values import get_db_version      as values_get_db_version,      \
-                          get_result_props_id as values_get_result_props_id, \
-                          get_settings_tree   as values_get_settings_tree,   \
-                          set_defaults        as values_set_defaults
-    from tests_group import tests_group_creator
-    from db_tester import db_tester_machine
-else:
-    from .test_file_extract import get_args_in_src
-    from .db_filestore_protocol import smb_transferer, sftp_transferer
+from .db_common import *
+from .db_tests import test_script_obj, test_group_obj, test_group_sessions
 
-    from .db_common import *
-    from .db_tests import test_script_obj, test_group_obj, test_group_sessions
-
-    from .db_values import get_db_version      as values_get_db_version,      \
-                           get_result_props_id as values_get_result_props_id, \
-                           get_settings_tree   as values_get_settings_tree,   \
-                           set_defaults        as values_set_defaults
-    from .tests_group import tests_group_creator
-    from .db_tester import db_tester_machine
+from .db_values import get_db_version      as values_get_db_version,      \
+                       get_result_props_id as values_get_result_props_id, \
+                       get_settings_tree   as values_get_settings_tree,   \
+                       set_defaults        as values_set_defaults
+from .tests_group import tests_group_creator
+from .db_tester import db_tester_machine
 
 
 

@@ -1,9 +1,8 @@
+from __future__ import print_function, absolute_import
+
 import sys
 
-if sys.version_info[0] < 3:
-    from notify_gui import open_notify_gui
-else:
-    from .notify_gui import open_notify_gui
+from .notify_gui import open_notify_gui
 
 import gi
 gi.require_version('Gtk', '3.0')
