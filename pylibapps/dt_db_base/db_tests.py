@@ -99,13 +99,6 @@ class test_group_obj(object):
             self._note = r[0] if r else None
             return self._note
 
-    def is_modified(self, now=None):
-        if now is None:
-            now = db_ms_now()
-        r = self.db.db.query_one(self.db.sql.is_test_group_modified(self.id, now))
-        assert len(r), "Known group must have returned something."
-        return bool(r[0])
-
     def get_tests(self, now=None):
         if now is None:
             now = db_ms_now()

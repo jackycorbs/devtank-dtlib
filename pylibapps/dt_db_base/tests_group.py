@@ -55,8 +55,7 @@ class tests_group_creator:
 
         self.tests = db_group.get_tests(now)
 
-        modified = db_group.is_modified(now)
-        self.note = None if modified else db_group.note
+        self.note = db_group.note
 
         for test in self.tests:
             test.load_properties()

@@ -295,29 +295,6 @@ group_id, now, now)
     def get_test_group_creation_note(self, group_id):
         return "SELECT creation_note FROM test_groups WHERE id=%u" % group_id
 
-    def is_test_group_modified(self, group_id, now):
-        return "\
-SELECT MIN(\
-   MIN(test_groups.valid_to is NULL OR \
-       test_groups.valid_to > %u),\
-   MIN(test_group_entries.valid_to is NULL OR \
-       test_group_entries.valid_to > %u),\
-   MIN(tests.valid_to is NULL OR \
-       tests.valid_to > %u),\
-   MIN('values'.valid_to is NULL OR \
-       'values'.valid_to > %u)) = 0 \
-FROM test_groups \
-LEFT JOIN test_group_entries ON \
-  test_group_entries.test_group_id = test_groups.id \
-LEFT JOIN test_group_entry_properties ON \
-  test_group_entry_properties.group_entry_id = test_group_entries.id \
-LEFT JOIN tests ON \
-  tests.id = test_group_entries.test_id \
-LEFT JOIN 'values' ON \
-  'values'.id = test_group_entry_properties.value_id \
-WHERE test_groups.id = %u AND test_group_entries.valid_from <= %u AND \
-'values'.valid_from <= %u" % (now, now, now, now, group_id, now, now)
-
     """
     ====================================================================
 
