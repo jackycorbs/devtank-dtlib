@@ -82,10 +82,27 @@ class merger_t(db_process_t):
         print("Copy over files")
 
         self.file_dedupe = {}
-        self.new_c.execute("SELECT id, filename, size FROM files")
+
+        # Select files not just results logs
+        cmd = "SELECT files.id FROM files WHERE files.id NOT IN (\
+        SELECT files.id FROM files JOIN {results_table} \
+        WHERE files.id = {results_table}.output_file_id OR \
+        files.id = log_file_id)".format(results_table=self.results_table)
+        self.new_c.execute(cmd)
         rows = self.new_c.fetchall()
         for row in rows:
-            tupkey = self.get_file_key(self.new_c, row)
+            tupkey = self.get_file_key(self.new_c, *row)
+            self.file_dedupe[tupkey] = row[0]
+
+        # Select results logs
+        cmd = "SELECT files.id FROM files WHERE files.id IN (\
+        SELECT files.id FROM files JOIN {results_table} \
+        WHERE files.id = {results_table}.output_file_id OR \
+        files.id = log_file_id)".format(results_table=self.results_table)
+        self.new_c.execute(cmd)
+        rows = self.new_c.fetchall()
+        for row in rows:
+            tupkey = self.get_file_key(self.new_c, *row, is_result=True)
             self.file_dedupe[tupkey] = row[0]
 
         self.old_file_id_map = {}

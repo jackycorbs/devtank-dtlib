@@ -324,15 +324,19 @@ class db_process_t(object):
             return "%02u:%02u:%02u" % (hours, minutes, seconds)
         return "%02u:%02u" % (minutes, seconds)
 
-    def get_file_key(self, c, row):
-        filepath = self.get_file(c, row[0])
-        filesize = os.path.getsize(filepath)
-        md5 = hashlib.md5(open(filepath,'rb').read()).hexdigest()
-        return (row[1], row[2], md5)
+    def get_file_key(self, c, file_id, filename, filesize, is_result=False):
+        if not is_result:
+            filepath = self.get_file(c, file_id)
+            filesize = os.path.getsize(filepath)
+            md5 = hashlib.md5(open(filepath,'rb').read()).hexdigest()
+        else:
+            # If it's a result file, there is no point getting it and hashing it as the name is unique
+            md5 = 0
+        return (filename, filesize, md5)
 
     def get_file_key_from_id(self, c, file_id):
         c.execute("SELECT id, filename, size FROM files WHERE id=%u" % file_id)
-        return self.get_file_key(c, c.fetchone())
+        return self.get_file_key(c, *c.fetchone())
 
     def get_tests(self, c, tests_ids=None):
         cmd = "SELECT tests.id, files.filename, tests.file_id, tests.valid_from, tests.valid_to \
