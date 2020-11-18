@@ -21,6 +21,7 @@ class merger_t(db_process_t):
     def __init__(self):
         self.old_c = None
         self.new_c = None
+        self.old_machine_id_map = {}
         self.old_dev_id_map = {}
         self.old_file_id_map = {}
         self.file_dedupe = {}
@@ -47,6 +48,25 @@ class merger_t(db_process_t):
 
         db_process_t.__init__(self)
 
+
+    def copy_machines(self):
+        print("Copy over machines")
+        cmd = "SELECT id, hostname, mac FROM tester_machines"
+        self.old_c.execute(cmd)
+        rows = self.old_c.fetchall()
+        for row in rows:
+            org_machine_id, hostname, mac_address = row
+            cmd = "SELECT id FROM tester_machines WHERE mac='%s'" % mac_address
+            self.new_c.execute(cmd)
+            r = self.new_c.fetchone()
+            if r is None:
+                cmd = "INSERT INTO tester_machines (hostname, mac) \
+                    VALUES('%s', '%s')" % (hostname, mac_address)
+                self.new_c.execute(cmd)
+                new_machine_id = self.new_c.lastrowid
+            else:
+                new_machine_id = row[0]
+            self.old_machine_id_map[org_machine_id] = new_machine_id
 
     def get_dev_row(self):
         return "id, uid"
@@ -571,6 +591,7 @@ self.results_table, self.results_table, self.results_table,
         self.old_groups_id_map, self.old_groups_name_map, \
             self.old_tests_content_map, self.old_arg_content_map = self.setup_maps(self.old_c)
 
+        self.copy_machines()
         self.copy_devices()
         self.copy_files()
         self.copy_results()
