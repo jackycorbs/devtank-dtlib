@@ -34,10 +34,11 @@ class db_obj_t(object):
 
 
 class test_group_t(db_obj_t):
-    def __init__(self, id, name, desc, valid_from, valid_to, entries):
+    def __init__(self, id, name, desc, notes, valid_from, valid_to, entries):
         db_obj_t.__init__(self, id, name, valid_from, valid_to)
         self.desc = desc
         self.entries = entries
+        self.notes = notes
 
 
 class group_entry_t(db_obj_t):
@@ -360,7 +361,7 @@ class db_process_t(object):
         return tests_id_map, tests_name_map
 
     def get_groups(self, c, group_ids=None):
-        cmd = 'SELECT test_groups.id, test_groups.name, test_groups.description, test_groups.valid_from, test_groups.valid_to,\
+        cmd = 'SELECT test_groups.id, test_groups.name, test_groups.description, test_groups.notes, test_groups.valid_from, test_groups.valid_to,\
            test_group_entries.id, test_group_entries.name, test_group_entries.order_position, test_group_entries.valid_from, test_group_entries.valid_to,\
            tests.id, files.filename, tests.file_id, tests.valid_from, tests.valid_to,\
           "values".id, "values".name, "values".value_text, "values".value_int, "values".value_real, "values".value_file_id, "values".valid_from, "values".valid_to \
@@ -393,7 +394,7 @@ class db_process_t(object):
             rows += [[ None ] * len(rows[0])]
 
         for row in rows:
-            test_groups_id, test_groups_name, test_groups_description, test_groups_valid_from, test_groups_valid_to,\
+            test_groups_id, test_groups_name, test_groups_description, test_groups_notes, test_groups_valid_from, test_groups_valid_to,\
             test_group_entries_id, test_group_entries_name, test_group_entries_order_position, test_group_entries_valid_from, test_group_entries_valid_to,\
             tests_id, test_filename, tests_file_id, tests_valid_from, tests_valid_to, \
             values_id, values_name, values_value_text, values_value_int, values_value_real, values_value_file_id, values_valid_from, values_valid_to = row
@@ -431,7 +432,7 @@ class db_process_t(object):
                     groups_name_map.setdefault(group.name, [])
                     groups_name_map[group.name] += [ group ]
                 if test_groups_id:
-                    current_group = test_group_t(test_groups_id, test_groups_name, test_groups_description, test_groups_valid_from, test_groups_valid_to, [])
+                    current_group = test_group_t(test_groups_id, test_groups_name, test_groups_description, test_groups_notes, test_groups_valid_from, test_groups_valid_to, [])
                     entries = []
 
         return groups_id_map, groups_name_map

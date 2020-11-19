@@ -177,7 +177,9 @@ output_file_id, log_file_id, group_result_id, duration" % \
         print("Copy over Session Results")
         self.old_session_id_map = {}
         self.old_result_id_map = {}
-        cmd = "SELECT test_group_results.id, test_groups.name, time_of_tests, test_groups.id \
+        cmd = "SELECT test_group_results.id, test_groups.name, \
+                      time_of_tests, test_groups.id, \
+                      logs_tz_name, tester_machine_id, sw_git_sha1 \
             FROM test_group_results \
             JOIN test_groups ON test_groups.id = test_group_results.group_id"
         self.old_c.execute(cmd)
@@ -185,24 +187,28 @@ output_file_id, log_file_id, group_result_id, duration" % \
 
         old_results_map = {}
         for row in rows:
-            old_results_map[(row[1], row[2])] = (row[0], row[3])
+            session_id, name, timestamp, group_id, tz_name, machine_id, git_sha1 = row
+            old_results_map[(name, timestamp)] = (session_id, group_id, tz_name, machine_id, git_sha1)
 
         # Result results at exactly the same time for a group named exacted the same.
         self.new_c.execute(cmd)
         rows = self.new_c.fetchall()
         for row in rows:
-            key = (row[1], row[2])
+            session_id, name, timestamp, group_id, tz_name, machine_id, git_sha1 = row
+            key = (name, timestamp)
             old_results_map.pop(key, None)
 
         self.importing_session_ids = []
 
         for key in old_results_map:
             time_of_tests = key[1]
-            old_session_id, old_group_id = old_results_map[key]
+            old_session_id, old_group_id, tz_name, old_machine_id, git_sha1 = old_results_map[key]
+
+            new_machine_id = self.old_machine_id_map.get(old_machine_id, None)
 
             group_id = self.get_match_group_at_time( self.old_groups_id_map[old_group_id], time_of_tests)
-            cmd = "INSERT INTO test_group_results (group_id, time_of_tests)\
-     VALUES(%u, %u)" % (group_id, time_of_tests)
+            cmd = "INSERT INTO test_group_results (group_id, time_of_tests, tester_machine_id, logs_tz_name, sw_git_sha1)\
+     VALUES(%u, %u)" % (group_id, time_of_tests, new_machine_id, tz_name, git_sha1)
             self.new_c.execute(cmd)
             self.old_session_id_map[old_session_id] = self.new_c.lastrowid
             self.importing_session_ids += [old_session_id]
@@ -438,8 +444,8 @@ self.results_table, self.results_table, self.results_table,
 
         print("Creating new group of '%s'" % group.name)
 
-        cmd = "INSERT INTO \"test_groups\" (name, description, valid_from, valid_to) VALUES \
-        ('%s','%s',%u,%s)" % (group.name, group.desc,
+        cmd = "INSERT INTO \"test_groups\" (name, description, notes, valid_from, valid_to) VALUES \
+        ('%s','%s',%u,%s)" % (group.name, group.desc, group.notes,
             group.valid_from, group.valid_to if group.valid_to else "NULL")
         self.new_c.execute(cmd)
         new_group_id = self.new_c.lastrowid
