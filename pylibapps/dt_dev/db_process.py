@@ -240,10 +240,10 @@ class db_process_t(object):
             return remote_path
 
         else:
+            db_def = db_path
             if hostname in self.ssh_connections:
                 sftp, ssh = self.ssh_connections[hostname]
             else:
-                db_def = db_path
                 ssh = paramiko.SSHClient()
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
@@ -251,14 +251,26 @@ class db_process_t(object):
                 self.ssh_connections[hostname]=(sftp, ssh)
 
             folders = self.get_batch_folders(file_id)
-            remote_path = os.path.join(folder, *folders)
-            remote_path = os.path.join(remote_path, remote_filename)
+            remote_dir_v3 = os.path.join(folder, *folders)
+            remote_path = os.path.join(remote_dir_v3, remote_filename)
             if not self.remote_exists(sftp, remote_path):
                 folders = self.get_hash_folders(remote_filename)
-                remote_path = os.path.join(folder, *folders)
-                remote_path = os.path.join(remote_path, remote_filename)
+                remote_dir_v2 = os.path.join(folder, *folders)
+                remote_path = os.path.join(remote_dir_v2, remote_filename)
                 if not self.remote_exists(sftp, remote_path):
                     remote_path = os.path.join(folder, remote_filename)
+
+            if not self.remote_exists(sftp, remote_path):
+                print("File not found '%s'" % remote_filename)
+                print("Tried v3 folder : %s" % remote_dir_v3)
+                print("Tried v2 folder : %s" % remote_dir_v2)
+                raise Exception("File download failed")
+
+            temp_dir = db_def.get("temp_folder", "/tmp/")
+            if not os.path.exists(temp_dir) or not os.path.isdir(temp_dir):
+                os.mkdir(temp_dir)
+
+            local_path = os.path.join(temp_dir, remote_filename)
 
             sftp.get(remote_path, local_path)
             return local_path
