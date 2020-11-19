@@ -75,9 +75,6 @@ class merger_t(db_process_t):
                 new_machine_id = r[0]
             self.old_machine_id_map[org_machine_id] = new_machine_id
 
-    def get_dev_row(self):
-        return "id, uid"
-
     def add_device(self, dev_row, dev_uid, dev_sn):
         return "INSERT INTO %s (uid, serial_number) \
             VALUES('%s', '%s')" % (self.dev_table, dev_uid, dev_sn)
@@ -93,17 +90,17 @@ class merger_t(db_process_t):
             dev_uid    = row[1]
             dev_sn     = row[2]
 
-            cmd = "SELECT %s FROM %s WHERE serial_number = '%s'" % (self.get_dev_row(), self.dev_table, dev_sn)
+            cmd = "SELECT id FROM %s WHERE serial_number = '%s'" % (self.dev_table, dev_sn)
             self.new_c.execute(cmd)
             r = self.new_c.fetchone()
             if r is None:
                 cmd = self.add_device(r, dev_uid, dev_sn)
                 self.new_c.execute(cmd)
-                dev_id = self.new_c.lastrowid
-                self.old_dev_id_map[org_dev_id] = dev_id
+                new_dev_id = self.new_c.lastrowid
             else:
-                dev_id = row[0]
-                self.old_dev_id_map[org_dev_id] = dev_id
+                new_dev_id = r[0]
+
+            self.old_dev_id_map[org_dev_id] = new_dev_id
 
     def copy_files(self):
         print("Copy over files")
@@ -168,9 +165,11 @@ output_file_id, log_file_id, group_result_id, duration" % \
 (self.results_table, self.results_table_dev)
 
     def add_result(self, row):
+        # Remember that row[1:] of get_result_row
         row = list(row)
         row[0] = self.old_dev_id_map[row[0]]
         row[1] = self.old_entry_id_map[row[1]]
+        #row[2] pass_fail
         row[3] = _db_int_or_null(self.old_file_id_map.get(row[3], None))
         row[4] = _db_int_or_null(self.old_file_id_map.get(row[4], None))
         row[5] = self.old_session_id_map[row[5]]
@@ -201,9 +200,9 @@ output_file_id, log_file_id, group_result_id, duration" % \
         self.new_c.execute(cmd)
         rows = self.new_c.fetchall()
         for row in rows:
-            session_id, name, timestamp, group_id, tz_name, machine_id, git_sha1 = row
+            old_session_id, name, timestamp, group_id, tz_name, machine_id, git_sha1 = row
             key = (name, timestamp)
-            old_results_map.pop(key, None)
+            old_entry = old_results_map.pop(key, None)
 
         self.importing_session_ids = []
 
@@ -220,7 +219,8 @@ output_file_id, log_file_id, group_result_id, duration" % \
                     _db_str_or_null(tz_name),
                     _db_str_or_null(git_sha1))
             self.new_c.execute(cmd)
-            self.old_session_id_map[old_session_id] = self.new_c.lastrowid
+            new_session_id = self.new_c.lastrowid
+            self.old_session_id_map[old_session_id] = new_session_id
             self.importing_session_ids += [old_session_id]
 
         print("Copy Results")
