@@ -12,6 +12,11 @@ from .db_process import test_group_t, group_entry_t, test_t, arg_t, db_process_t
 
 import logging
 
+def _db_str_or_null(s):
+    return "'%s'" % s if s else "NULL"
+
+def _db_int_or_null(db_id):
+    return "%i" % db_id if db_id is not None else "NULL"
 
 
 group_at_time_t = namedtuple('group_at_time', ['group', 'valid_from', 'valid_to'])
@@ -105,7 +110,7 @@ class merger_t(db_process_t):
 
         print("Hashing non-log files")
         # Select files not just results logs
-        cmd = "SELECT files.id FROM files WHERE files.id NOT IN (\
+        cmd = "SELECT files.id, files.filename, files.size FROM files WHERE files.id NOT IN (\
         SELECT files.id FROM files JOIN {results_table} \
         WHERE files.id = {results_table}.output_file_id OR \
         files.id = log_file_id)".format(results_table=self.results_table)
@@ -117,7 +122,7 @@ class merger_t(db_process_t):
 
         # Select results logs
         print("Hashing log files")
-        cmd = "SELECT files.id FROM files WHERE files.id IN (\
+        cmd = "SELECT files.id, files.filename, files.size  FROM files WHERE files.id IN (\
         SELECT files.id FROM files JOIN {results_table} \
         WHERE files.id = {results_table}.output_file_id OR \
         files.id = log_file_id)".format(results_table=self.results_table)
@@ -164,10 +169,10 @@ output_file_id, log_file_id, group_result_id, duration" % \
         row = list(row)
         row[0] = self.old_dev_id_map[row[0]]
         row[1] = self.old_entry_id_map[row[1]]
-        row[3] = "%u" % self.old_file_id_map[row[3]] if row[3] else "NULL"
-        row[4] = "%u" % self.old_file_id_map[row[4]] if row[4] else "NULL"
+        row[3] = _db_int_or_null(self.old_file_id_map.get(row[3], None))
+        row[4] = _db_int_or_null(self.old_file_id_map.get(row[4], None))
         row[5] = self.old_session_id_map[row[5]]
-        row[6] = "%u" % row[6] if row[6] else "NULL"
+        row[6] = _db_int_or_null(row[6])
         return "INSERT INTO %s (%s, \
     group_entry_id, pass_fail, output_file_id, log_file_id, \
     group_result_id, duration) VALUES(%u, %u, %u, %s, %s, %u, %s)" \
@@ -208,7 +213,10 @@ output_file_id, log_file_id, group_result_id, duration" % \
 
             group_id = self.get_match_group_at_time( self.old_groups_id_map[old_group_id], time_of_tests)
             cmd = "INSERT INTO test_group_results (group_id, time_of_tests, tester_machine_id, logs_tz_name, sw_git_sha1)\
-     VALUES(%u, %u)" % (group_id, time_of_tests, new_machine_id, tz_name, git_sha1)
+     VALUES(%u, %u, %s, %s, %s)" % (group_id, time_of_tests,
+                    _db_int_or_null(new_machine_id),
+                    _db_str_or_null(tz_name),
+                    _db_str_or_null(git_sha1))
             self.new_c.execute(cmd)
             self.old_session_id_map[old_session_id] = self.new_c.lastrowid
             self.importing_session_ids += [old_session_id]
@@ -444,9 +452,9 @@ self.results_table, self.results_table, self.results_table,
 
         print("Creating new group of '%s'" % group.name)
 
-        cmd = "INSERT INTO \"test_groups\" (name, description, notes, valid_from, valid_to) VALUES \
-        ('%s','%s',%u,%s)" % (group.name, group.desc, group.notes,
-            group.valid_from, group.valid_to if group.valid_to else "NULL")
+        cmd = "INSERT INTO \"test_groups\" (name, description, creation_note, valid_from, valid_to) VALUES \
+        ('%s','%s',%s, %u,%s)" % (group.name, group.desc, _db_str_or_null(group.notes),
+            group.valid_from, _db_int_or_null(group.valid_to))
         self.new_c.execute(cmd)
         new_group_id = self.new_c.lastrowid
 
@@ -466,7 +474,7 @@ self.results_table, self.results_table, self.results_table,
             if not new_test:
                 new_file_id = self.get_remapped_file_id(test.file_key, test.file_id)
                 cmd = "INSERT INTO \"tests\" (file_id, valid_from, valid_to) VALUES \
-                (%u,%u,%s)" % (new_file_id, test.valid_from, "%u" % test.valid_to if test.valid_to else "NULL")
+                (%u,%u,%s)" % (new_file_id, test.valid_from, _db_int_or_null(test.valid_to))
                 self.new_c.execute(cmd)
                 new_test_id = self.new_c.lastrowid
                 new_test = test_t(new_test_id, test.name, test.file_key, new_file_id, test.valid_from, test.valid_to)
@@ -484,7 +492,7 @@ self.results_table, self.results_table, self.results_table,
     (name, test_group_id, test_id, valid_from, valid_to, order_position) \
     VALUES ('%s', %u, %u, %u ,%s, %u)" % (entry.name, new_group_id,
                                           new_test.id,  entry.valid_from,
-                                          entry.valid_to if entry.valid_to else "NULL",
+                                          _db_int_or_null(entry.valid_to),
                                           entry.pos)
             self.new_c.execute(cmd)
             new_entry_id = self.new_c.lastrowid
@@ -581,12 +589,8 @@ self.results_table, self.results_table, self.results_table,
         self.old_c.execute(cmd)
         old_db_version = self.old_c.fetchone()[0]
 
-        if new_db_version != 2 and new_db_version != 3:
+        if new_db_version != 5 and new_db_version != 5:
             print("Unable to merge into v%u database." % new_db_version)
-            return -1
-
-        if old_db_version != 3:
-            print("Unable to merge from v%u database." % old_db_version)
             return -1
 
         self.load_custom_table_names(self.new_c)
