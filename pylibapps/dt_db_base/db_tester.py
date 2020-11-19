@@ -50,6 +50,9 @@ class db_tester_machine(object):
         with open("/etc/hostname") as f:
             own_hostname = f.readline()
 
+        own_mac = own_mac.strip()
+        own_hostname = own_hostname.strip()
+
         machine = db_tester_machine.get(db, own_mac, own_hostname)
         if machine:
             return machine
