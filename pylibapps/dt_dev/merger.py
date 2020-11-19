@@ -103,6 +103,7 @@ class merger_t(db_process_t):
 
         self.file_dedupe = {}
 
+        print("Hashing non-log files")
         # Select files not just results logs
         cmd = "SELECT files.id FROM files WHERE files.id NOT IN (\
         SELECT files.id FROM files JOIN {results_table} \
@@ -115,6 +116,7 @@ class merger_t(db_process_t):
             self.file_dedupe[tupkey] = row[0]
 
         # Select results logs
+        print("Hashing log files")
         cmd = "SELECT files.id FROM files WHERE files.id IN (\
         SELECT files.id FROM files JOIN {results_table} \
         WHERE files.id = {results_table}.output_file_id OR \
