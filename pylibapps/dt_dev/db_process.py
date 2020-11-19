@@ -241,6 +241,15 @@ class db_process_t(object):
 
         else:
             db_def = db_path
+
+            temp_dir = db_def.get("temp_folder", "/tmp/")
+            if not os.path.exists(temp_dir) or not os.path.isdir(temp_dir):
+                os.mkdir(temp_dir)
+
+            local_path = os.path.join(temp_dir, remote_filename)
+            if os.path.exists(local_path):
+                return local_path
+
             if hostname in self.ssh_connections:
                 sftp, ssh = self.ssh_connections[hostname]
             else:
@@ -265,12 +274,6 @@ class db_process_t(object):
                 print("Tried v3 folder : %s" % remote_dir_v3)
                 print("Tried v2 folder : %s" % remote_dir_v2)
                 raise Exception("File download failed")
-
-            temp_dir = db_def.get("temp_folder", "/tmp/")
-            if not os.path.exists(temp_dir) or not os.path.isdir(temp_dir):
-                os.mkdir(temp_dir)
-
-            local_path = os.path.join(temp_dir, remote_filename)
 
             sftp.get(remote_path, local_path)
             return local_path
