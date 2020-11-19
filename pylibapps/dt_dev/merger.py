@@ -61,6 +61,8 @@ class merger_t(db_process_t):
         rows = self.old_c.fetchall()
         for row in rows:
             org_machine_id, hostname, mac_address = row
+            hostname = hostname.strip()
+            mac_address = mac_address.strip()
             cmd = "SELECT id FROM tester_machines WHERE mac='%s'" % mac_address
             self.new_c.execute(cmd)
             r = self.new_c.fetchone()
@@ -70,7 +72,7 @@ class merger_t(db_process_t):
                 self.new_c.execute(cmd)
                 new_machine_id = self.new_c.lastrowid
             else:
-                new_machine_id = row[0]
+                new_machine_id = r[0]
             self.old_machine_id_map[org_machine_id] = new_machine_id
 
     def get_dev_row(self):
