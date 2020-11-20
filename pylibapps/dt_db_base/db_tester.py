@@ -9,9 +9,9 @@ class db_tester_machine(object):
 
     @staticmethod
     def get_by_id(db, machine_id):
-        if db.version < 4:
+        if db.version < 4 or machine_id is None:
             return None
-        
+
         cmd = db.sql.get_machine_by_id(machine_id)
         row = db.db.query_one(cmd)
         if not row:
