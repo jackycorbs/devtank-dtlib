@@ -102,7 +102,7 @@ class merger_t(db_process_t):
                 dev_id = self.new_c.lastrowid
                 self.old_dev_id_map[org_dev_id] = dev_id
             else:
-                dev_id = row[0]
+                dev_id = r[0]
                 self.old_dev_id_map[org_dev_id] = dev_id
 
     def copy_files(self):
