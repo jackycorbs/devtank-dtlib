@@ -30,7 +30,7 @@ class base_run_group_context(object):
     def __init__(self, context, bus, last_end_time, stdout_out,
                  tmp_dir):
         tests_group = context.tests_group
-        self.is_production = context.args['production']
+        self.args = context.args
         self.bus = bus
         self.tests = [(test.id, test.get_file_to_local(),
                        test.name,
@@ -79,7 +79,12 @@ def _test_check(test_context, test_name, args, results, result, desc):
         msg = "%s - FAILED" % desc
         test_context.lib_inf.output_bad(msg)
         _store_value(test_context, "SUB_FAIL_%u" % test_context.sub_test_count, msg)
-        if "exit_on_fail" in args and args["exit_on_fail"]:
+        if test_context.args.get("freeze_on_fail", False):
+            test_context.lib_inf.output_normal(">>>>FROZEN UNTIL USER INPUT<<<<")
+            # We don't want stdin to acturally be closed.
+            with os.fdopen(os.dup(0)) as stdin:
+                stdin.read(1)
+        if args.get("exit_on_fail", False):
             _forced_exit()
     test_context.sub_test_count += 1
 
@@ -219,7 +224,7 @@ def _thread_test(test_context):
 
                 test_context.send_cmd("STATUS_TEST %s %G" % (str(bool(test_pass)), duration))
 
-                if not test_pass and 'exit_on_fail' in args and args['exit_on_fail']:
+                if not test_pass and args.get('exit_on_fail', False):
                     full_stop = True
                     break
 
