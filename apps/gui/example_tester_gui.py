@@ -20,6 +20,7 @@ parser.add_argument('--desktop', help='Running on a desktop', action='store_true
 parser.add_argument('--production', help='Hide advanced and quit.', action='store_true')
 parser.add_argument('--admin', help='Show Test Groups', action='store_true')
 parser.add_argument('--config', help='DB config file to use', type=str)
+parser.add_argument('--freeze_on_fail', help='Freeze on a failure', action='store_true')
 
 
 def get_schema():
