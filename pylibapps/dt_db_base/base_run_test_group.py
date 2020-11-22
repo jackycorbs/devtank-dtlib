@@ -10,7 +10,7 @@ import gi
 gi.require_version('GLib', '2.0')
 from gi.repository import GLib
 
-from multiprocessing import Process
+from multiprocessing import Process, Queue
 
 from . import c_base
 from . import db_values
@@ -42,6 +42,7 @@ class base_run_group_context(object):
         self.last_end_time = last_end_time
         self.tmp_dir = tmp_dir
         self.sub_test_count = 0
+        self.input_queue = Queue()
 
     def send_cmd(self, line):
         self.stdout_out.write(_IPC_CMD)
@@ -80,10 +81,10 @@ def _test_check(test_context, test_name, args, results, result, desc):
         test_context.lib_inf.output_bad(msg)
         _store_value(test_context, "SUB_FAIL_%u" % test_context.sub_test_count, msg)
         if test_context.args.get("freeze_on_fail", False):
-            test_context.lib_inf.output_normal(">>>>FROZEN UNTIL USER INPUT<<<<")
-            # We don't want stdin to acturally be closed.
-            with os.fdopen(os.dup(0)) as stdin:
-                stdin.read(1)
+            test_context.lib_inf.output_normal(">>>>FROZEN UNTIL USER CONTINUES<<<<")
+            test_context.send_cmd("FREEZE")
+            test_context.input_queue.get()
+
         if args.get("exit_on_fail", False):
             _forced_exit()
     test_context.sub_test_count += 1
@@ -296,7 +297,8 @@ class base_run_group_manager(object):
                      "STATUS_TEST":   lambda args:     self._test_status(args),
                      "STATUS_DEV":    lambda passfail: self._dev_status(passfail == "True"),
                      "SET_UUID":      lambda new_uuid: self._dev_set_uuid(new_uuid),
-                     "STORE_VALUE":   lambda data: self._store_value(data),
+                     "STORE_VALUE":   lambda data:     self._store_value(data),
+                     "FREEZE":        lambda args:     self._freeze(),
                      }
 
         GLib.io_add_watch(self.stdout_in,
@@ -402,6 +404,12 @@ class base_run_group_manager(object):
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
         test_dict.setdefault("stored_values", {})
         test_dict["stored_values"][name] = value
+
+    def _freeze(self):
+        pass
+
+    def unfreeze(self):
+        self.test_context.input_queue.put(True)
 
     def process_line(self, line):
         if not self.live:

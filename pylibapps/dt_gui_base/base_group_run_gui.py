@@ -42,6 +42,7 @@ class base_run_context(object):
         self.info_btn = builder.get_object("run_info_btn")
         self.run_info = builder.get_object("run_info")
         self.redo_btn = builder.get_object("run_redo_btn")
+        self.unfreeze_btn = builder.get_object("run_unfreeze_btn")
         self.run_split_box = builder.get_object("run_split_box")
 
         self.out_text = builder.get_object("test_output_text")
@@ -78,7 +79,8 @@ class base_run_context(object):
              "START_LOGFILE": lambda logfile:  self.start_logfile(logfile),
              "STATUS_TEST":   lambda args:     self.test_status(args),
              "STATUS_DEV":    lambda passfail: self.dev_status(passfail == "True"),
-             "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid)
+             "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid),
+             "FREEZE":        lambda args:     self.freeze(),
             })
 
         self.total_duration = None
@@ -94,6 +96,7 @@ class base_run_context(object):
         self.run_ok_btn.connect("clicked",     lambda btn: self.on_ok())
         self.info_btn.connect("toggled",       lambda btn: self.on_info())
         self.redo_btn.connect("clicked",       lambda btn: self.on_redo())
+        self.unfreeze_btn.connect("clicked",   lambda btn: self.on_unfreeze())
 
         context.on_exit_cbs.insert(0, self.force_stop)
 
@@ -112,6 +115,7 @@ class base_run_context(object):
 
         self.info_btn.set_active(False)
         self.run_info.set_visible(False)
+        self.unfreeze_btn.set_visible(False)
 
         if not self.run_group_man.readonly:
             self.start_test_group()
@@ -207,6 +211,16 @@ class base_run_context(object):
         treeiters = selection.get_selected_rows()[1]
         for treeiter in treeiters:
             dev_list_store[treeiter][0] = new_uuid
+
+    def freeze(self):
+        self.unfreeze_btn.set_visible(True)
+        width = self.window.get_parent_window().get_width()
+        self.info_btn.set_active(True)
+        self.run_split_box.set_position(width * 0.3)
+
+    def on_unfreeze(self):
+        self.unfreeze_btn.set_visible(False)
+        self.run_group_man.unfreeze()
 
     def _stop_update(self):
         if not self.update_id is None:
