@@ -59,6 +59,14 @@ class base_run_group_context(object):
     def finished(self, bus_con):
         self.send_cmd("FINISHED")
 
+    def freeze(self):
+        self.send_cmd("FREEZE")
+        self.input_queue.get()
+        self.unfrozen()
+
+    def unfrozen(self):
+        pass
+
     def get_bus(self):
         return self.bus
 
@@ -82,8 +90,7 @@ def _test_check(test_context, test_name, args, results, result, desc):
         _store_value(test_context, "SUB_FAIL_%u" % test_context.sub_test_count, msg)
         if test_context.args.get("freeze_on_fail", False):
             test_context.lib_inf.output_normal(">>>>FROZEN UNTIL USER CONTINUES<<<<")
-            test_context.send_cmd("FREEZE")
-            test_context.input_queue.get()
+            test_context.freeze()
 
         if args.get("exit_on_fail", False):
             _forced_exit()
