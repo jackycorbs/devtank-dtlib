@@ -157,6 +157,21 @@ def dev_results(context, cmd_args):
             print_session(session)
 
 
+def show_group(context, cmd_args):
+    group_id = int(cmd_args[0])
+    group = context.db.get_group_by_id(group_id)
+    print("Group ID :", group_id)
+    print("Group Name :", group.name)
+    print("Group Desc :", group.desc)
+    print("Group Note :", group.note)
+    tests = group.get_tests()
+    for test in tests:
+        print("Test :", test.name)
+        test.load_properties()
+        for key, value in test.pending_properties.items():
+            print("Arg:",key, "value(%s):" % (str(type(value))), value)
+
+
 generic_cmds = {
     "update_tests" : (update_tests, "Update <groups yaml> in database."),
     "list_groups"  : (list_groups,  "List active groups."),
@@ -167,6 +182,7 @@ generic_cmds = {
     "dev_status"   : (dev_status,   "Get status of devices after given unix time."),
     "add_fail"     : (add_fail,     "Get <device> a fail for <named> group."),
     "dev_results"  : (dev_results,  "Get <device> results."),
+    "show_group"   : (show_group,   "Print information about a <test group ID>"),
     }
 
 
