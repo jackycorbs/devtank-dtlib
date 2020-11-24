@@ -167,6 +167,7 @@ def show_group(context, cmd_args):
     tests = group.get_tests()
     for test in tests:
         print("Test :", test.name)
+        print("Test File :", test.get_file_to_local())
         test.load_properties()
         for key, value in test.pending_properties.items():
             print("Arg:",key, "value(%s):" % (str(type(value))), value)
