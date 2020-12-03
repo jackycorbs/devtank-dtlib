@@ -20,6 +20,24 @@ parser.add_argument('command', help='command followed by arguments.', nargs='*')
 cmds = dt_cli_base.generic_cmds.copy()
 
 
+
+def run_group(context, cmd_args):
+    assert len(cmd_args) > 0, "run_group takes one argument, the group name."
+    group_name = " ".join(cmd_args[0:])
+    print("Runing test group :", group_name)
+    db_group = context.db.get_group(group_name)
+    context.tests_group.populate_from(db_group)
+    run_group_man = dt_db_base.default_run_group_manager(context)
+    print("Starting")
+    run_group_man.start()
+    run_group_man.wait_for_end()
+    print("Finished")
+
+
+cmds["run_group"] = (run_group, "Run group <name> on attached hardware.")
+
+
+
 def main():
 
     print("Command Line Example Tester", datetime.datetime.utcnow())
@@ -53,7 +71,7 @@ def main():
     db_def["work_folder"] = os.path.abspath("../gui/files_cache")
     db_def["open_db_backend"] = example_lib.base_open_db_backend
 
-    context = dt_db_base.base_context_object(args, db_def)
+    context = example_lib.cli_context_object(args, db_def)
 
     context.db_init()
 

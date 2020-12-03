@@ -28,3 +28,5 @@ from .db_sql import example_sql_common
 from .db_example_dev import db_example_dev
 
 from .example_hw import example_dev, example_bus_con, example_bus
+
+from .context import cli_context_object
