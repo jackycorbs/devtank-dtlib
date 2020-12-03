@@ -25,6 +25,11 @@ if sys.version_info[0] >= 3:
 _IPC_CMD = b"IPC_CMD:"
 
 
+class ForceExitException(Exception):
+    """Raise an exception exit is forced."""
+    pass
+
+
 
 class base_run_group_context(object):
     def __init__(self, context, bus, last_end_time, stdout_out,
@@ -70,46 +75,39 @@ class base_run_group_context(object):
     def get_bus(self):
         return self.bus
 
+    def forced_exit(self):
+        raise ForceExitException
 
-class ForceExitException(Exception):
-    """Raise an exception exit is forced."""
-    pass
+    def test_check(self, test_name, args, results, result, desc):
+        if result:
+            self.lib_inf.output_good("%s - passed" % desc)
+        else:
+            results[test_name] = False
+            msg = "%s - FAILED" % desc
+            self.lib_inf.output_bad(msg)
+            self.store_value("SUB_FAIL_%u" % self.sub_test_count, msg)
+            if self.args.get("freeze_on_fail", False):
+                self.lib_inf.output_normal(">>>>FROZEN UNTIL USER CONTINUES<<<<")
+                self.freeze()
 
+            if args.get("exit_on_fail", False):
+                self.forced_exit()
+        self.sub_test_count += 1
 
-def _forced_exit():
-    raise ForceExitException
+    def threshold_check(self, test_name, args, results, sbj, ref, margin, unit, desc):
+        self.test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
+    def exact_check(self, test_name, args, results, sbj ,ref, desc):
+        self.test_check(test_name, args, results, sbj == ref, "%s (%s should be %s) check" % (desc, str(sbj), str(ref)))
 
-def _test_check(test_context, test_name, args, results, result, desc):
-    if result:
-        test_context.lib_inf.output_good("%s - passed" % desc)
-    else:
-        results[test_name] = False
-        msg = "%s - FAILED" % desc
-        test_context.lib_inf.output_bad(msg)
-        _store_value(test_context, "SUB_FAIL_%u" % test_context.sub_test_count, msg)
-        if test_context.args.get("freeze_on_fail", False):
-            test_context.lib_inf.output_normal(">>>>FROZEN UNTIL USER CONTINUES<<<<")
-            test_context.freeze()
-
-        if args.get("exit_on_fail", False):
-            _forced_exit()
-    test_context.sub_test_count += 1
-
-def _threshold_check(test_context, test_name, args, results, sbj, ref, margin, unit, desc):
-    _test_check(test_context, test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
-
-def _exact_check(test_context, test_name, args, results, sbj ,ref, desc):
-    _test_check(test_context, test_name, args, results, sbj == ref, "%s (%s is %s) check" % (desc, str(sbj), str(ref)))
-
-def _store_value(test_context, n, v):
-    data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline
-    # DIY the the IPC as no point going in and out of utf8 on Py3
-    test_context.stdout_out.write(_IPC_CMD)
-    test_context.stdout_out.write(b"STORE_VALUE ")
-    test_context.stdout_out.write(data)
-    test_context.stdout_out.write(b"\n")
-    test_context.stdout_out.flush()
+    def store_value(self, n, v):
+        data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline
+        # DIY the the IPC as no point going in and out of utf8 on Py3
+        self.stdout_out.write(_IPC_CMD)
+        self.stdout_out.write(b"STORE_VALUE ")
+        self.stdout_out.write(data)
+        self.stdout_out.write(b"\n")
+        self.stdout_out.flush()
 
 
 
@@ -123,7 +121,7 @@ def _thread_test(test_context):
     lib_inf.output_normal("Starting test group: " + test_context.test_group)
 
 
-    exec_map = {'exit': _forced_exit,
+    exec_map = {'exit': test_context.forced_exit,
                 'output_normal' : lib_inf.output_normal,
                 'output_good' : lib_inf.output_good,
                 'output_bad' : lib_inf.output_bad,
@@ -182,10 +180,10 @@ def _thread_test(test_context):
 
                 results[name] = True
 
-                test_check      = lambda a,b:       _test_check(test_context, name, args, results, a, b)
-                threshold_check = lambda a,b,c,d,e: _threshold_check(test_context, name, args, results, a, b, c, d, e)
-                exact_check     = lambda a,b,c:     _exact_check(test_context, name, args, results, a, b, c)
-                store_value     = lambda n, v :     _store_value(test_context, n, v)
+                test_check      = lambda a,b:       test_context.test_check(name, args, results, a, b)
+                threshold_check = lambda a,b,c,d,e: test_context.threshold_check(name, args, results, a, b, c, d, e)
+                exact_check     = lambda a,b,c:     test_context.exact_check(name, args, results, a, b, c)
+                store_value     = lambda n, v :     test_context.store_value(n, v)
 
                 test_context.sub_test_count = 0
 
@@ -349,7 +347,7 @@ class base_run_group_manager(object):
 
     def _select_testfile(self, testfile):
         self.current_test = testfile
-        self.session_results[self.current_device]['tests'][self.current_test] = {}
+        self.session_results[self.current_device]['tests'][self.current_test] = {'passfail' : False}
 
     def _select_dev(self, dev_uuid):
         self.current_device = dev_uuid
