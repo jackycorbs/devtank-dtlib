@@ -16,22 +16,57 @@ parser.add_argument('-v','--verbose', help='Increase log information', action='s
 parser.add_argument('--config', help='DB config file to use', type=str)
 parser.add_argument('command', help='command followed by arguments.', nargs='*')
 
+_debug_messages = False
 
 cmds = dt_cli_base.generic_cmds.copy()
 
 
+_ANSI_RED     = "\x1B[31m"
+_ANSI_GREEN   = "\x1B[32m"
+_ANSI_WARN    = "\x1B[33m"
+_ANSI_DEFAULT = "\x1B[39m"
+
+
+def print_line(colorcode, msg):
+    sys.stdout.write(colorcode + msg + _ANSI_DEFAULT)
+
 
 def run_group(context, cmd_args):
-    assert len(cmd_args) > 0, "run_group takes one argument, the group name."
-    group_name = " ".join(cmd_args[0:])
-    print("Runing test group :", group_name)
+    import gi
+    gi.require_version('GLib', '2.0')
+    from gi.repository import GLib
+
+    assert len(cmd_args) > 1, "run_group takes twos argument, the group name and device serial"
+    group_name = " ".join(cmd_args[0:-1])
+    dev_serial = cmd_args[-1]
+
+    db_dev = example_lib.db_example_dev.get_by_serial(context.db, dev_serial)
+    if not db_dev:
+        db_dev = example_lib.db_example_dev.create(context.db, dev_serial, "UNSET")
+        db_dev.update_uuid("<unknown>-%u" % db_dev.id)
+    context.devices = [db_dev]
+
     db_group = context.db.get_group(group_name)
+    if not db_group:
+        print("Failed to find tests group.")
+        sys.exit(-1)
     context.tests_group.populate_from(db_group)
-    run_group_man = dt_db_base.default_run_group_manager(context)
-    print("Starting")
-    run_group_man.start()
-    run_group_man.wait_for_end()
-    print("Finished")
+    loop = GLib.MainLoop()
+    run_group_man = dt_db_base.default_run_group_manager(context,
+                                                    lambda msg : print_line(_ANSI_GREEN, msg),
+                                                    lambda msg : print_line(_ANSI_RED, msg),
+                                                    lambda msg : print_line(_ANSI_DEFAULT, msg),
+                                                    lambda msg : print_line(_ANSI_DEFAULT, msg) if _debug_messages else None,
+                                                    lambda msg : print_line(_ANSI_WARN, msg) if _debug_messages else None,
+                                                    lambda msg : print_line(_ANSI_RED, msg) if _debug_messages else None,
+                                                    { "FINISHED" : lambda args: loop.quit() } )
+    print("=" * 72)
+    if run_group_man.start():
+        loop.run()
+        run_group_man.wait_for_end()
+    else:
+        print("Failed to start tests group.")
+    print("=" * 72)
 
 
 cmds["run_group"] = (run_group, "Run group <name> on attached hardware.")
@@ -55,7 +90,9 @@ def main():
         sys.exit(-1)
 
     if args['verbose']:
+        global _debug_messages
         example_lib.enable_info_msgs(True)
+        _debug_messages = True
 
     if args['config']:
         db_def_file = args['config']
