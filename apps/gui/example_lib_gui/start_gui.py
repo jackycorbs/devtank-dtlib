@@ -14,12 +14,6 @@ from dt_gui_base import scan_box_base, open_query_gui
 _singleton = None
 
 
-class fake_example_dev(object):
-    def __init__(self, serial_number, uuid):
-        self.serial_number = serial_number
-        self.uuid          = uuid
-
-
 def _board_in_rig(context, db_dev, next_view, serial_number, yes_no):
 
     if not yes_no:
@@ -28,7 +22,7 @@ def _board_in_rig(context, db_dev, next_view, serial_number, yes_no):
     if not db_dev:
         db_dev = example_lib.db_example_dev.create(context.db, serial_number, "UNSET")
         db_dev.update_uuid("<unknown>-%u" % db_dev.id)
-    context.devices = [fake_example_dev(serial_number, db_dev.uuid)]
+    context.devices = [db_dev]
 
     next_view(context)
 
