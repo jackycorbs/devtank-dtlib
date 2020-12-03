@@ -134,6 +134,9 @@ def _thread_test(test_context):
 
         ready_devices = test_context.get_ready_devices(bus_con)
 
+        if not len(ready_devices):
+            lib_inf.error_msg("No devices")
+
         full_stop=False
 
         for dev in ready_devices:
@@ -463,11 +466,7 @@ class base_run_group_manager(object):
 
                 if self.logfile:
                     self.logfile.write(line)
-                elif not self.readonly:
-                    if ansi:
-                        sys.stderr.write(ansi + line + _ANSI_DEFAULT)
-                    else:
-                        sys.stderr.write(line)
+
             else:
                 if line.startswith("Good: "):
                     ansi = _ANSI_GREEN
@@ -480,11 +479,6 @@ class base_run_group_manager(object):
 
                 if self.outfile:
                     self.outfile.write(line)
-                elif not self.readonly:
-                    if ansi:
-                        sys.stderr.write(ansi + line + _ANSI_DEFAULT)
-                    else:
-                        sys.stderr.write(line)
 
         return True
 
