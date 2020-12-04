@@ -46,14 +46,15 @@ secs_to_dt_usecs = lambda x : dt_usecs(int(x * 1000000))
 ## Get the build information of C library.
 ## @param build_time Time/Data the C library was built.
 ## @param git_commit string of the git SHA1 when built.
-_dt_get_build_info = _c_libbase_func(None,   "dt_get_build_info",    (POINTER(c_char_p), POINTER(c_char_p)))
-_devtank_init      = _c_libbase_func(None, "devtank_init",     None)
-_devtank_ready     = _c_libbase_func(c_bool,"devtank_ready",   None)
-_devtank_shutdown  = _c_libbase_func(None, "devtank_shutdown", None)
-_error_msg         = _c_libbase_func(None, "error_msg",        (c_char_p,))
-_warning_msg       = _c_libbase_func(None, "warning_msg",      (c_char_p,))
-_info_msg          = _c_libbase_func(None, "info_msg",         (c_char_p,))
-_set_log_fd        = _c_libbase_func(None, "set_log_fd",       (c_int,))
+_dt_get_build_info = _c_libbase_func(None,   "dt_get_build_info", (POINTER(c_char_p), POINTER(c_char_p)))
+_devtank_init      = _c_libbase_func(None,   "devtank_init",      None)
+_devtank_ready     = _c_libbase_func(c_bool, "devtank_ready",     None)
+_devtank_shutdown  = _c_libbase_func(None,   "devtank_shutdown",  None)
+_error_msg         = _c_libbase_func(None,   "error_msg",         (c_char_p,))
+_warning_msg       = _c_libbase_func(None,   "warning_msg",       (c_char_p,))
+_info_msg          = _c_libbase_func(None,   "info_msg",          (c_char_p,))
+_set_log_fd        = _c_libbase_func(None,   "set_log_fd",        (c_int,))
+_get_log_fd        = _c_libbase_func(c_int,  "get_log_fd",        None)
 
 # Public exports
 
