@@ -98,7 +98,7 @@ class base_run_group_context(object):
         self.test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
-        self.test_check(test_name, args, results, sbj == ref, "%s (%s should be %s) check" % (desc, str(sbj), str(ref)))
+        self.test_check(test_name, args, results, sbj == ref, "%s (%s is ref %s) check" % (desc, str(sbj), str(ref)))
 
     def store_value(self, n, v):
         data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline
