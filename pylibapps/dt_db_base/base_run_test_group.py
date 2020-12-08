@@ -56,10 +56,10 @@ class base_run_group_context(object):
         self.stdout_out.flush()
 
     def get_ready_devices(self, bus_con):
-        raise Exception("Unimplemented")
+        raise NotImplementedError
 
     def stop_devices(self):
-        raise Exception("Unimplemented")
+        raise NotImplementedError
 
     def finished(self, bus_con):
         self.send_cmd("FINISHED")

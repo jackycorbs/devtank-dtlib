@@ -62,6 +62,7 @@ class base_context_object(object):
         self.tests_group.db = db
         self.tests_group.update_defaults()
         get_dev = self.db_def["fn_get_dev"]
+        get_dev_by_sn = self.db_def.get("fn_get_dev_by_sn", None)
         from types import MethodType
 
         db.db.error_handler = lambda e: self._db_fail(e)
@@ -69,9 +70,15 @@ class base_context_object(object):
         if sys.version_info[0] < 3:
             db.get_dev = MethodType(lambda db, uuid: \
                         get_dev(db, uuid), db, db.__class__)
+            if get_dev_by_sn:
+                db.get_dev_by_sn = MethodType(lambda db, serial_number: \
+                        get_dev_by_sn(db, serial_number), db, db.__class__)
         else:
             db.get_dev = MethodType(lambda db, uuid: \
                         get_dev(db, uuid), db)
+            if get_dev_by_sn:
+                db.get_dev_by_sn = MethodType(lambda db, serial_number: \
+                        get_dev_by_sn(db, serial_number), db)
         return True
 
     def db_init(self):
@@ -83,10 +90,10 @@ class base_context_object(object):
         return r
 
     def lock_bus(self):
-        raise Exception("Context lock_bus not implemented.");
+        raise NotImplementedError
 
     def release_bus(self):
-        raise Exception("Context release_bus not implemented.");
+        raise NotImplementedError
 
     def _db_fail(self, e):
         print("Fail with database, %s" % str(e))
