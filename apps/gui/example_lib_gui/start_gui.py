@@ -36,7 +36,7 @@ def _view_results(context, db_dev, next_view, serial_number, yes_no):
 
     if yes_no:
         from .sessions_results_gui import open_dev_tests_sessions_results
-        context.devices = [fake_example_dev(serial_number, db_dev.uuid)]
+        context.devices = [db_dev]
         open_dev_tests_sessions_results(context, db_dev)
         return
 
