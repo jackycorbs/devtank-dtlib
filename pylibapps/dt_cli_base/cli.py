@@ -104,10 +104,13 @@ def group_dump(context, cmd_args):
 
 
 def get_file(context, cmd_args):
-    assert len(cmd_args) == 1, "get_file takes one argument, the file_id (integer)"
-    file_id = int(cmd_args[0])
-    local_path = context.db.get_file_to_local(file_id)
-    print("Got file ID %u at %s" % (file_id, local_path))
+    assert len(cmd_args) >= 1, "get_file takes one argument, the file_id (integer)"
+    n = 0
+    while n < len(cmd_args):
+        file_id = int(cmd_args[n])
+        local_path = context.db.get_file_to_local(file_id)
+        print("Got file ID %u at %s" % (file_id, local_path))
+        n += 1
 
 
 def dev_status(context, cmd_args):
