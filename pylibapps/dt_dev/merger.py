@@ -76,16 +76,16 @@ class merger_t(db_process_t):
             self.old_machine_id_map[org_machine_id] = new_machine_id
 
     def get_dev_row(self):
-        return "id, uid"
+        return "uid, serial_number"
 
-    def add_device(self, dev_row, dev_uid, dev_sn):
+    def add_device(self, dev_row):
         return "INSERT INTO %s (uid, serial_number) \
-            VALUES('%s', '%s')" % (self.dev_table, dev_uid, dev_sn)
+            VALUES('%s', '%s')" % (self.dev_table, dev_row[0], dev_row[1])
 
     def copy_devices(self):
         print("Copy over devices")
 
-        cmd = "SELECT id, uid, serial_number FROM %s" % self.dev_table
+        cmd = "SELECT id, %s FROM %s" % (self.get_dev_row(), self.dev_table)
         self.old_c.execute(cmd)
         rows = self.old_c.fetchall()
         for row in rows:
@@ -93,11 +93,11 @@ class merger_t(db_process_t):
             dev_uid    = row[1]
             dev_sn     = row[2]
 
-            cmd = "SELECT %s FROM %s WHERE serial_number = '%s'" % (self.get_dev_row(), self.dev_table, dev_sn)
+            cmd = "SELECT id FROM %s WHERE serial_number = '%s'" % (self.dev_table, dev_sn)
             self.new_c.execute(cmd)
             r = self.new_c.fetchone()
             if r is None:
-                cmd = self.add_device(r, dev_uid, dev_sn)
+                cmd = self.add_device(row[1:])
                 self.new_c.execute(cmd)
                 dev_id = self.new_c.lastrowid
                 self.old_dev_id_map[org_dev_id] = dev_id
