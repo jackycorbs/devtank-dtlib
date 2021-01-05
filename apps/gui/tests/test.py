@@ -4,7 +4,7 @@ This test programs the device with a provided executable.
 
 Input Variables:
 
-  args    - arguments dictionary given to pyaisg tester that may be used to
+  args    - arguments dictionary given to demo tester that may be used to
              changed nature of test.
   dev     - Example device under test
   name    - Name of test being run.
