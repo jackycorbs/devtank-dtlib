@@ -27,12 +27,15 @@ from .db_tester import db_tester_machine
 
 
 def _get_defaults(local_folder):
+    r = {"exit_on_fail": { 'desc'   : 'Exit on Fail',
+                           'type'   : 'bool',
+                           'default': True }}
     defaults_file = os.path.join(local_folder, "args.yaml")
     if os.path.exists(defaults_file):
         with open(defaults_file) as f:
             defaults_gen=yaml.safe_load_all(f)
-            return [root for root in defaults_gen][0]
-    return {}
+            r.update([root for root in defaults_gen][0])
+    return r
 
 def _extract_defaults(test_file, default_args):
     args = get_args_in_src(test_file)
