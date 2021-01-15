@@ -8,8 +8,13 @@ import dt_db_base
 
 def list_groups(context, cmd_args):
     groups = context.db.get_groups()
+    longest_name = 0
     for group in groups:
-        print("Group : %s - %s" % ("%25s" % group.name, group.desc))
+        if len(group.name) > longest_name:
+            longest_name = len(group.name)
+
+    for group in groups:
+        print('Group : %4s : "%*.s%s" - "%s"' % ("%u" % group.id, longest_name - len(group.name), "", group.name, group.desc))
 
 
 def update_tests(context, cmd_args):
