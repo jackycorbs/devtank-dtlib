@@ -475,3 +475,29 @@ class db_process_t(object):
 
     def commit(self, c):
         self.dbrefs[c].commit()
+
+    def get_generic_db_version(self, c):
+        cmd = "SELECT value_int FROM  \"values\" WHERE id=1"
+        c.execute(cmd)
+        row = c.fetchone()
+        return row[0]
+
+    def update_generic_v3_to_v4(self, c):
+        assert self.get_generic_db_version(c) == 3
+        cmd = "ALTER TABLE test_groups ADD COLUMN creation_note TEXT"
+        c.execute(cmd)
+        cmd = "UPDATE \"values\" SET value_int = 4 WHERE id=1"
+        c.execute(cmd)
+
+    def update_generic_v4_to_v5(self, c):
+        assert self.get_generic_db_version(c) == 4
+        cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTO_INCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
+        c.execute(cmd)
+        cmd = "ALTER TABLE test_group_results \
+ADD COLUMN logs_tz_name VARCHAR(32),\
+ADD COLUMN tester_machine_id INTEGER,\
+ADD COLUMN sw_git_sha1 VARCHAR(8),\
+ADD FOREIGN KEY (tester_machine_id) REFERENCES tester_machines(id)"
+        c.execute(cmd)
+        cmd = "UPDATE \"values\" SET value_int = 5 WHERE id=1"
+        c.execute(cmd)
