@@ -53,6 +53,10 @@ class merger_t(db_process_t):
 
         self.merge_from_ts = 0
         self.old_max_ts = 0
+        self.imported_devs_count = 0
+        self.imported_results_count = 0
+        self.imported_test_groups_count = 0
+        self.imported_files_count = 0
 
         db_process_t.__init__(self)
 
@@ -104,6 +108,7 @@ class merger_t(db_process_t):
                 self.new_c.execute(cmd)
                 dev_id = self.new_c.lastrowid
                 self.old_dev_id_map[org_dev_id] = dev_id
+                self.imported_devs_count += 1
             else:
                 dev_id = r[0]
                 self.old_dev_id_map[org_dev_id] = dev_id
@@ -112,7 +117,17 @@ class merger_t(db_process_t):
 
         self.file_dedupe = {}
 
-        print("Hashing non-log files")
+        print("Querying files to import")
+        cmd = "SELECT id, filename, size, modified_date, insert_time FROM files \
+WHERE files.insert_time > %u" % self.merge_from_ts
+        self.old_c.execute(cmd)
+        import_file_rows = self.old_c.fetchall()
+
+        if not len(import_file_rows):
+            # New new files, so no deduplication to do
+            return 0
+
+        print("Hashing current non-log files")
         # Select files not just results logs
         cmd = "SELECT files.id, files.filename, files.size FROM files \
 WHERE files.id NOT IN (\
@@ -126,7 +141,7 @@ WHERE files.id NOT IN (\
             self.file_dedupe[tupkey] = row[0]
 
         # Select results logs
-        print("Hashing log files")
+        print("Hashing current log files")
         cmd = "SELECT files.id, files.filename, files.size  FROM files \
 WHERE files.id IN (\
   SELECT files.id FROM files \
@@ -143,23 +158,8 @@ WHERE files.id IN (\
 
         folder = self.get_db_folder(self.new_c)
 
-        cmd = "SELECT id, filename, size, modified_date, insert_time FROM files \
-WHERE files.insert_time > {min_ts} AND files.id NOT IN (\
-  SELECT files.id FROM files \
-  JOIN {results_table} ON output_file_id = files.id OR log_file_id = files.id) \
-UNION \
-SELECT id, filename, size, modified_date, insert_time FROM files \
-WHERE files.id IN (\
-  SELECT files.id FROM files \
-  JOIN {results_table} ON output_file_id = files.id OR log_file_id = files.id \
-  JOIN test_group_results ON test_group_results.id = group_result_id \
-  WHERE test_group_results.time_of_tests > {min_ts})\
-".format(results_table=self.results_table, min_ts=self.merge_from_ts)
-        self.old_c.execute(cmd)
-        rows = self.old_c.fetchall()
-
-        print("Copy over files")
-        for row in rows:
+        print("Copy over %u files" % len(import_file_rows))
+        for row in import_file_rows:
             file_id = row[0]
             filepath = self.get_file(self.old_c, file_id)
             filesize = os.path.getsize(filepath)
@@ -180,7 +180,9 @@ WHERE files.id IN (\
                 new_file_id = self.new_c.lastrowid
                 self.copy_file(folder, filepath, row[1], new_file_id)
                 self.file_dedupe[tupkey] = new_file_id
+                self.imported_files_count += 1
             self.old_file_id_map[file_id] = new_file_id
+        return self.imported_files_count
 
 
     def get_result_row(self):
@@ -249,19 +251,23 @@ output_file_id, log_file_id, group_result_id, duration" % \
 
         print("Copy Results")
 
-        cmd = "SELECT %s FROM %s JOIN test_group_results ON test_group_results.id = %s.group_result_id \
-WHERE group_result_id in (%s)" % (self.get_result_row(),
-                                  self.results_table,
-                                  self.results_table,
-                                  ",".join([str(session_id) for session_id in self.importing_session_ids]))
-        c = self.old_c.execute(cmd)
-        rows = self.old_c.fetchall()
-        for row in rows:
-            cmd = self.add_result(row[1:])
-            self.new_c.execute(cmd)
-            self.old_result_id_map[row[0]] = self.new_c.lastrowid
+        if len(self.importing_session_ids):
+            cmd = "SELECT %s FROM %s JOIN test_group_results ON test_group_results.id = %s.group_result_id \
+    WHERE group_result_id in (%s)" % (self.get_result_row(),
+                                      self.results_table,
+                                      self.results_table,
+                                      ",".join([str(session_id) for session_id in self.importing_session_ids]))
+            c = self.old_c.execute(cmd)
+            rows = self.old_c.fetchall()
+            for row in rows:
+                cmd = self.add_result(row[1:])
+                self.imported_results_count += 1
+                self.new_c.execute(cmd)
+                self.old_result_id_map[row[0]] = self.new_c.lastrowid
 
     def copy_results_values(self):
+        if not len(self.importing_session_ids):
+            return
         cmd = 'SELECT id FROM "values" WHERE name = \'results_values\''
         c = self.new_c.execute(cmd)
         row = self.new_c.fetchone()
@@ -401,6 +407,7 @@ self.results_table, self.results_table, self.results_table,
                 new_file_id = self.new_c.lastrowid
                 folder = self.get_db_folder(self.new_c)
                 self.copy_file(folder, filepath, row[0], new_file_id)
+                self.imported_files_count += 1
                 if file_key:
                     self.file_dedupe[file_key] = new_file_id
             self.old_file_id_map[file_id] = new_file_id
@@ -580,6 +587,7 @@ self.results_table, self.results_table, self.results_table,
         if not new_group_id:
             print("Should have should been created for old ID %u at time %u" % (group.id, time_of_tests))
             sys.exit(-1)
+        self.imported_test_groups_count += 1
         return new_group_id
 
     def decuplicate_live_tests(self):
@@ -610,6 +618,10 @@ self.results_table, self.results_table, self.results_table,
         self.file_dedupe = {}
         self.old_entry_id_map = {}
         self.old_max_ts = 0
+        self.imported_devs_count = 0
+        self.imported_results_count = 0
+        self.imported_test_groups_count = 0
+        self.imported_files_count = 0
 
         cmd = 'SELECT value_int FROM "values" WHERE id=1'
 
@@ -632,11 +644,13 @@ self.results_table, self.results_table, self.results_table,
         self.old_groups_id_map, self.old_groups_name_map, \
             self.old_tests_content_map, self.old_arg_content_map = self.setup_maps(self.old_c)
 
-        self.copy_machines()
-        self.copy_devices()
-        self.copy_files()
-        self.copy_results()
-        self.copy_results_values()
-        self.decuplicate_live_tests()
+        if self.copy_files() > 0:
+            self.copy_machines()
+            self.copy_devices()
+            self.copy_results()
+            self.copy_results_values()
+            self.decuplicate_live_tests()
+        else:
+            print("Nothing to import")
 
         self.commit(self.new_c)
