@@ -157,6 +157,21 @@ class db_process_t(object):
         assert row, "No writable filestore."
         return row[0]
 
+    def get_ssh(self, hostname, c):
+        db_def = self.db_paths[c]
+
+        ssh_key = hostname + db_def.get("sftp_user", "")
+
+        if ssh_key in self.ssh_connections:
+            sftp, ssh = self.ssh_connections[ssh_key]
+        else:
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
+            sftp=ssh.open_sftp()
+            self.ssh_connections[ssh_key]=(sftp, ssh)
+        return sftp, ssh
+
     def get_db_folder(self, c):
         cmd = "SELECT name, server_name, base_folder FROM file_stores \
     JOIN file_store_protocols ON \
@@ -181,16 +196,8 @@ class db_process_t(object):
 
             return folder
         else:
-            if hostname in self.ssh_connections:
-                sftp, ssh = self.ssh_connections[hostname]
-            else:
-                db_def = db_path
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
-                sftp=ssh.open_sftp()
-                self.ssh_connections[hostname]=(sftp, ssh)
-            return (sftp, row[2])
+            sftp, ssh = self.get_ssh(hostname, c)
+            return (sftp, folder)
 
     def remote_exists(self, sftp, path):
         try:
@@ -250,14 +257,7 @@ class db_process_t(object):
             if os.path.exists(local_path):
                 return local_path
 
-            if hostname in self.ssh_connections:
-                sftp, ssh = self.ssh_connections[hostname]
-            else:
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
-                sftp=ssh.open_sftp()
-                self.ssh_connections[hostname]=(sftp, ssh)
+            sftp, ssh = self.get_ssh(hostname, c)
 
             folders = self.get_batch_folders(file_id)
             remote_dir_v3 = os.path.join(folder, *folders)
@@ -270,6 +270,7 @@ class db_process_t(object):
                     remote_path = os.path.join(folder, remote_filename)
 
             if not self.remote_exists(sftp, remote_path):
+                print("Hostname : %s, User: %s" % (hostname, db_def.get("sftp_user", None)))
                 print("File not found '%s'" % remote_filename)
                 print("Tried v3 folder : %s" % remote_dir_v3)
                 print("Tried v2 folder : %s" % remote_dir_v2)
@@ -291,7 +292,8 @@ class db_process_t(object):
                     os.makedirs(path)
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
-            shutil.copyfile(filepath, new_path)
+            if not os.path.exists(new_path):
+                shutil.copyfile(filepath, new_path)
        else:
             sftp, folder = folder
             path = folder
@@ -304,7 +306,8 @@ class db_process_t(object):
 
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
-            sftp.put(filepath, new_path)
+            if not self.remote_exists(sftp, new_path):
+                sftp.put(filepath, new_path)
 
     def add_file(self, c, filepath, now):
         cmd = "SELECT id FROM file_stores WHERE is_writable=1 ORDER BY id DESC"
