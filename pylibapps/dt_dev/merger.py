@@ -630,8 +630,12 @@ self.results_table, self.results_table, self.results_table,
         self.old_c.execute(cmd)
         old_db_version = self.old_c.fetchone()[0]
 
-        if new_db_version != 5 and new_db_version != 5:
+        if new_db_version != 5:
             print("Unable to merge into v%u database." % new_db_version)
+            return -1
+
+        if old_db_version != 5:
+            print("Unable to merge from v%u database." % old_db_version)
             return -1
 
         self.load_custom_table_names(self.new_c)

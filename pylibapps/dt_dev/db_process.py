@@ -503,13 +503,33 @@ class db_process_t(object):
 
     def update_generic_v4_to_v5(self, c):
         assert self.get_generic_db_version(c) == 4
-        cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTO_INCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
-        c.execute(cmd)
-        cmd = "ALTER TABLE test_group_results \
-ADD COLUMN logs_tz_name VARCHAR(32),\
-ADD COLUMN tester_machine_id INTEGER,\
-ADD COLUMN sw_git_sha1 VARCHAR(8),\
-ADD FOREIGN KEY (tester_machine_id) REFERENCES tester_machines(id)"
-        c.execute(cmd)
+        if isinstance(c, sqlite3.Cursor):
+            cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTOINCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
+            c.execute(cmd)
+            c.execute('\
+CREATE TABLE "test_group_results_new" (                                 \
+	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,                          \
+	"group_id"	INTEGER NOT NULL,                                       \
+	"time_of_tests"	BIGINT NOT NULL,                                    \
+	"logs_tz_name" VARCHAR(32),                                         \
+	"tester_machine_id" INTEGER,                                        \
+	"sw_git_sha1" VARCHAR(8),                                           \
+	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id"),            \
+	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")\
+);')
+            c.execute('PRAGMA foreign_keys = OFF')
+            c.execute('INSERT INTO test_group_results_new SELECT id, group_id, time_of_tests, NULL as logs_tz_name, NULL as tester_machine_id, NULL as sw_git_sha1 FROM test_group_results')
+            c.execute('DROP TABLE test_group_results')
+            c.execute('ALTER TABLE test_group_results_new RENAME TO test_group_results')
+            c.execute('PRAGMA foreign_keys = ON')
+        else:
+            cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTO_INCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
+            c.execute(cmd)
+            cmd = "ALTER TABLE test_group_results \
+    ADD COLUMN logs_tz_name VARCHAR(32),\
+    ADD COLUMN tester_machine_id INTEGER,\
+    ADD COLUMN sw_git_sha1 VARCHAR(8),\
+    ADD FOREIGN KEY (tester_machine_id) REFERENCES tester_machines(id)"
+            c.execute(cmd)
         cmd = "UPDATE \"values\" SET value_int = 5 WHERE id=1"
         c.execute(cmd)
