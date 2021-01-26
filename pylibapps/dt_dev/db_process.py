@@ -10,6 +10,12 @@ import copy
 import sys
 import os
 
+def db_str_or_null(s):
+    return "'%s'" % s if s else "NULL"
+
+def db_int_or_null(db_id):
+    return "%i" % db_id if db_id is not None else "NULL"
+
 
 class db_obj_t(object):
     def __init__(self, id, name, valid_from, valid_to):
@@ -506,6 +512,23 @@ class db_process_t(object):
         if isinstance(c, sqlite3.Cursor):
             cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTOINCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
             c.execute(cmd)
+        else:
+            cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTO_INCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
+            c.execute(cmd)
+
+        upgrade_tz = os.environ.get("DTDB_UPGRADE_TZ_NAME", None)
+        upgrade_gitsha1 = os.environ.get("DTDB_UPGRADE_GITSHA1", None)
+        upgrade_machine = os.environ.get("DTDB_UPGRADE_MACHINE", None)
+
+        if upgrade_machine:
+            parts = upgrade_machine.split(",")
+            assert len(parts) == 2, "DTDB_UPGRADE_MACHINE not correctly, should be name and mac comma separated."
+            c.execute("INSERT INTO tester_machines (mac, hostname) VALUES('%s', '%s')" % (parts[1], parts[0]))
+            machine_id = c.lastrowid
+        else:
+            machine_id = None
+
+        if isinstance(c, sqlite3.Cursor):
             c.execute('\
 CREATE TABLE "test_group_results_new" (                                 \
 	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,                          \
@@ -518,18 +541,28 @@ CREATE TABLE "test_group_results_new" (                                 \
 	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")\
 );')
             c.execute('PRAGMA foreign_keys = OFF')
-            c.execute('INSERT INTO test_group_results_new SELECT id, group_id, time_of_tests, NULL as logs_tz_name, NULL as tester_machine_id, NULL as sw_git_sha1 FROM test_group_results')
+            c.execute('INSERT INTO test_group_results_new SELECT id, group_id, time_of_tests,\
+%s as logs_tz_name, %s as tester_machine_id, %s as sw_git_sha1 FROM test_group_results' % (
+    db_str_or_null(upgrade_tz), db_str_or_null(machine_id), db_str_or_null(upgrade_gitsha1)))
             c.execute('DROP TABLE test_group_results')
             c.execute('ALTER TABLE test_group_results_new RENAME TO test_group_results')
             c.execute('PRAGMA foreign_keys = ON')
         else:
-            cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTO_INCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
-            c.execute(cmd)
             cmd = "ALTER TABLE test_group_results \
     ADD COLUMN logs_tz_name VARCHAR(32),\
     ADD COLUMN tester_machine_id INTEGER,\
     ADD COLUMN sw_git_sha1 VARCHAR(8),\
     ADD FOREIGN KEY (tester_machine_id) REFERENCES tester_machines(id)"
             c.execute(cmd)
+
+            if upgrade_tz is not None:
+                c.execute("UPDATE test_group_results SET logs_tz_name='%s'" % upgrade_tz)
+
+            if upgrade_gitsha1 is not None:
+                c.execute("UPDATE test_group_results SET sw_git_sha1='%s'" % upgrade_gitsha1)
+
+            if machine_id is not None:
+                c.execute('UPDATE test_group_results SET tester_machine_id=%u' % machine_id)
+
         cmd = "UPDATE \"values\" SET value_int = 5 WHERE id=1"
         c.execute(cmd)

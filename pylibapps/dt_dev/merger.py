@@ -8,15 +8,9 @@ import yaml
 import sys
 import os
 
-from .db_process import test_group_t, group_entry_t, test_t, arg_t, db_process_t, obj_valid_at, as_human_time
+from .db_process import test_group_t, group_entry_t, test_t, arg_t, db_process_t, obj_valid_at, as_human_time, db_str_or_null, db_int_or_null
 
 import logging
-
-def _db_str_or_null(s):
-    return "'%s'" % s if s else "NULL"
-
-def _db_int_or_null(db_id):
-    return "%i" % db_id if db_id is not None else "NULL"
 
 
 group_at_time_t = namedtuple('group_at_time', ['group', 'valid_from', 'valid_to'])
@@ -194,10 +188,10 @@ output_file_id, log_file_id, group_result_id, duration" % \
         row = list(row)
         row[0] = self.old_dev_id_map[row[0]]
         row[1] = self.old_entry_id_map[row[1]]
-        row[3] = _db_int_or_null(self.get_remapped_file_id(None, row[3]))
-        row[4] = _db_int_or_null(self.get_remapped_file_id(None, row[4]))
+        row[3] = db_int_or_null(self.get_remapped_file_id(None, row[3]))
+        row[4] = db_int_or_null(self.get_remapped_file_id(None, row[4]))
         row[5] = self.old_session_id_map[row[5]]
-        row[6] = _db_int_or_null(row[6])
+        row[6] = db_int_or_null(row[6])
         return "INSERT INTO %s (%s, \
     group_entry_id, pass_fail, output_file_id, log_file_id, \
     group_result_id, duration) VALUES(%u, %u, %u, %s, %s, %u, %s)" \
@@ -242,9 +236,9 @@ output_file_id, log_file_id, group_result_id, duration" % \
             group_id = self.get_match_group_at_time( self.old_groups_id_map[old_group_id], time_of_tests)
             cmd = "INSERT INTO test_group_results (group_id, time_of_tests, tester_machine_id, logs_tz_name, sw_git_sha1)\
      VALUES(%u, %u, %s, %s, %s)" % (group_id, time_of_tests,
-                    _db_int_or_null(new_machine_id),
-                    _db_str_or_null(tz_name),
-                    _db_str_or_null(git_sha1))
+                    db_int_or_null(new_machine_id),
+                    db_str_or_null(tz_name),
+                    db_str_or_null(git_sha1))
             self.new_c.execute(cmd)
             self.old_session_id_map[old_session_id] = self.new_c.lastrowid
             self.importing_session_ids += [old_session_id]
@@ -488,8 +482,8 @@ self.results_table, self.results_table, self.results_table,
         print("Creating new group of '%s'" % group.name)
 
         cmd = "INSERT INTO \"test_groups\" (name, description, creation_note, valid_from, valid_to) VALUES \
-        ('%s','%s',%s, %u,%s)" % (group.name, group.desc, _db_str_or_null(group.notes),
-            group.valid_from, _db_int_or_null(group.valid_to))
+        ('%s','%s',%s, %u,%s)" % (group.name, group.desc, db_str_or_null(group.notes),
+            group.valid_from, db_int_or_null(group.valid_to))
         self.new_c.execute(cmd)
         new_group_id = self.new_c.lastrowid
 
@@ -509,7 +503,7 @@ self.results_table, self.results_table, self.results_table,
             if not new_test:
                 new_file_id = self.get_remapped_file_id(test.file_key, test.file_id)
                 cmd = "INSERT INTO \"tests\" (file_id, valid_from, valid_to) VALUES \
-                (%u,%u,%s)" % (new_file_id, test.valid_from, _db_int_or_null(test.valid_to))
+                (%u,%u,%s)" % (new_file_id, test.valid_from, db_int_or_null(test.valid_to))
                 self.new_c.execute(cmd)
                 new_test_id = self.new_c.lastrowid
                 new_test = test_t(new_test_id, test.name, test.file_key, new_file_id, test.valid_from, test.valid_to)
@@ -527,7 +521,7 @@ self.results_table, self.results_table, self.results_table,
     (name, test_group_id, test_id, valid_from, valid_to, order_position) \
     VALUES ('%s', %u, %u, %u ,%s, %u)" % (entry.name, new_group_id,
                                           new_test.id,  entry.valid_from,
-                                          _db_int_or_null(entry.valid_to),
+                                          db_int_or_null(entry.valid_to),
                                           entry.pos)
             self.new_c.execute(cmd)
             new_entry_id = self.new_c.lastrowid
