@@ -165,9 +165,18 @@ class db_process_t(object):
         if ssh_key in self.ssh_connections:
             sftp, ssh = self.ssh_connections[ssh_key]
         else:
+            hostnameremap = os.environ.get("DTDB_HOSTNAME_REMAP_" + hostname.upper(), None)
+            port = 22
+            if hostnameremap:
+                if hostnameremap.find(":") != -1:
+                    parts = hostnameremap.split(":")
+                    hostname = parts[0]
+                    port = int(parts[1])
+                else:
+                    hostname = hostnameremap
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
+            ssh.connect(hostname, port=port, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
             sftp=ssh.open_sftp()
             self.ssh_connections[ssh_key]=(sftp, ssh)
         return sftp, ssh
