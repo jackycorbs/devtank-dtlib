@@ -2,13 +2,21 @@ from __future__ import print_function
 import mysql.connector as mysqlconn
 import paramiko
 import sqlite3
+import socket
 import yaml
 import shutil
 import hashlib
 import datetime
+import getpass
 import copy
 import sys
 import os
+
+def db_str_or_null(s):
+    return "'%s'" % s if s else "NULL"
+
+def db_int_or_null(db_id):
+    return "%i" % db_id if db_id is not None else "NULL"
 
 
 class db_obj_t(object):
@@ -84,6 +92,15 @@ class db_process_t(object):
         self.db_paths = {}
         self.dbrefs = {}
         self.ssh_connections = {}
+        self.addrs = []
+        self.hostname_is_self = {}
+
+        import netifaces as ni
+        for interface in ni.interfaces():
+            for k,v in ni.ifaddresses(interface).items():
+                for a in v:
+                    self.addrs += [ a['addr'] ]
+
 
     def load_custom_table_names(self, c):
         cmd = 'SELECT value_text FROM "values" WHERE name=\'dev_table\' AND parent_id=2'
@@ -157,6 +174,30 @@ class db_process_t(object):
         assert row, "No writable filestore."
         return row[0]
 
+    def get_ssh(self, hostname, c):
+        db_def = self.db_paths[c]
+
+        ssh_key = hostname + db_def.get("sftp_user", "")
+
+        if ssh_key in self.ssh_connections:
+            sftp, ssh = self.ssh_connections[ssh_key]
+        else:
+            hostnameremap = os.environ.get("DTDB_HOSTNAME_REMAP_" + hostname.upper(), None)
+            port = 22
+            if hostnameremap:
+                if hostnameremap.find(":") != -1:
+                    parts = hostnameremap.split(":")
+                    hostname = parts[0]
+                    port = int(parts[1])
+                else:
+                    hostname = hostnameremap
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname, port=port, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
+            sftp=ssh.open_sftp()
+            self.ssh_connections[ssh_key]=(sftp, ssh)
+        return sftp, ssh
+
     def get_db_folder(self, c):
         cmd = "SELECT name, server_name, base_folder FROM file_stores \
     JOIN file_store_protocols ON \
@@ -181,16 +222,8 @@ class db_process_t(object):
 
             return folder
         else:
-            if hostname in self.ssh_connections:
-                sftp, ssh = self.ssh_connections[hostname]
-            else:
-                db_def = db_path
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
-                sftp=ssh.open_sftp()
-                self.ssh_connections[hostname]=(sftp, ssh)
-            return (sftp, row[2])
+            sftp, ssh = self.get_ssh(hostname, c)
+            return (sftp, folder)
 
     def remote_exists(self, sftp, path):
         try:
@@ -198,6 +231,38 @@ class db_process_t(object):
             return True
         except:
             return False
+
+    def _get_file_folders(self, folder, file_id, filename, exists_fn):
+        remote_filename = "%i.%s" % (file_id, filename)
+
+        folders = self.get_batch_folders(file_id)
+        remote_dir_v3 = os.path.join(folder, *folders)
+        remote_path = os.path.join(remote_dir_v3, remote_filename)
+        if exists_fn(remote_path):
+            return remote_path
+
+        folders = self.get_hash_folders(remote_filename)
+        remote_dir_v2 = os.path.join(folder, *folders)
+        remote_path = os.path.join(remote_dir_v2, remote_filename)
+        if exists_fn(remote_path):
+            return remote_path
+
+        remote_path = os.path.join(folder, remote_filename)
+        if exists_fn(remote_path):
+            return remote_path
+
+        print("File not found '%s'" % remote_filename)
+        print("Tried v3 folder : %s" % remote_dir_v3)
+        print("Tried v2 folder : %s" % remote_dir_v2)
+        return None
+
+    def is_self(self, hostname):
+        is_self = self.hostname_is_self.get(hostname, None)
+        if is_self is None:
+            ip_addr = socket.gethostbyname(hostname)
+            is_self = ip_addr in self.addrs
+            self.hostname_is_self[hostname] = is_self
+        return is_self
 
     def get_file(self, c, file_id):
 
@@ -226,21 +291,20 @@ class db_process_t(object):
         if isinstance(db_path, str):
             assert row[1] == "LOCALHOST"
             folder = os.path.join(db_path, "db_files")
-            folders = self.get_batch_folders(file_id)
-            remote_path = os.path.join(folder, *folders)
-            remote_path = os.path.join(remote_path, remote_filename)
-            if not os.path.exists(remote_path):
-                folders = self.get_hash_folders(remote_filename)
-                remote_path = os.path.join(folder, *folders)
-                remote_path = os.path.join(remote_path, remote_filename)
-                if not os.path.exists(remote_path):
-                    remote_path = os.path.join(folder, remote_filename)
 
-            assert os.path.exists(remote_path), remote_path
+            remote_path = self._get_file_folders(folder, file_id, filename, os.path.exists)
+            assert remote_path is not None, "Local db file fetch failed"
             return remote_path
-
         else:
             db_def = db_path
+
+            # Check if it's on this machine, if so, reference that.
+            if self.is_self(hostname):
+                username = db_def.get("sftp_user", getpass.getuser())
+                local_remote = "/home/%s/%s" % (username, folder)
+                remote_path = self._get_file_folders(local_remote, file_id, filename, os.path.exists)
+                if remote_path is not None:
+                    return remote_path
 
             temp_dir = db_def.get("temp_folder", "/tmp/")
             if not os.path.exists(temp_dir) or not os.path.isdir(temp_dir):
@@ -250,29 +314,11 @@ class db_process_t(object):
             if os.path.exists(local_path):
                 return local_path
 
-            if hostname in self.ssh_connections:
-                sftp, ssh = self.ssh_connections[hostname]
-            else:
-                ssh = paramiko.SSHClient()
-                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                ssh.connect(hostname, username=db_def.get("sftp_user", None), password=db_def.get("sftp_password", None))
-                sftp=ssh.open_sftp()
-                self.ssh_connections[hostname]=(sftp, ssh)
+            sftp, ssh = self.get_ssh(hostname, c)
 
-            folders = self.get_batch_folders(file_id)
-            remote_dir_v3 = os.path.join(folder, *folders)
-            remote_path = os.path.join(remote_dir_v3, remote_filename)
-            if not self.remote_exists(sftp, remote_path):
-                folders = self.get_hash_folders(remote_filename)
-                remote_dir_v2 = os.path.join(folder, *folders)
-                remote_path = os.path.join(remote_dir_v2, remote_filename)
-                if not self.remote_exists(sftp, remote_path):
-                    remote_path = os.path.join(folder, remote_filename)
-
-            if not self.remote_exists(sftp, remote_path):
-                print("File not found '%s'" % remote_filename)
-                print("Tried v3 folder : %s" % remote_dir_v3)
-                print("Tried v2 folder : %s" % remote_dir_v2)
+            remote_path = self._get_file_folders(folder, file_id, filename, lambda p : self.remote_exists(sftp, p))
+            if remote_path is None:
+                print("Hostname : %s, User: %s" % (hostname, db_def.get("sftp_user", None)))
                 raise Exception("File download failed")
 
             sftp.get(remote_path, local_path)
@@ -291,7 +337,8 @@ class db_process_t(object):
                     os.makedirs(path)
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
-            shutil.copyfile(filepath, new_path)
+            if not os.path.exists(new_path):
+                shutil.copyfile(filepath, new_path)
        else:
             sftp, folder = folder
             path = folder
@@ -304,7 +351,8 @@ class db_process_t(object):
 
             new_path = os.path.join(folder, *folders)
             new_path = os.path.join(new_path, remote_filename)
-            sftp.put(filepath, new_path)
+            if not self.remote_exists(sftp, new_path):
+                sftp.put(filepath, new_path)
 
     def add_file(self, c, filepath, now):
         cmd = "SELECT id FROM file_stores WHERE is_writable=1 ORDER BY id DESC"
@@ -475,3 +523,76 @@ class db_process_t(object):
 
     def commit(self, c):
         self.dbrefs[c].commit()
+
+    def get_generic_db_version(self, c):
+        cmd = "SELECT value_int FROM  \"values\" WHERE id=1"
+        c.execute(cmd)
+        row = c.fetchone()
+        return row[0]
+
+    def update_generic_v3_to_v4(self, c):
+        assert self.get_generic_db_version(c) == 3
+        cmd = "ALTER TABLE test_groups ADD COLUMN creation_note TEXT"
+        c.execute(cmd)
+        cmd = "UPDATE \"values\" SET value_int = 4 WHERE id=1"
+        c.execute(cmd)
+
+    def update_generic_v4_to_v5(self, c):
+        assert self.get_generic_db_version(c) == 4
+        if isinstance(c, sqlite3.Cursor):
+            cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTOINCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
+            c.execute(cmd)
+        else:
+            cmd = "CREATE TABLE tester_machines ( id INTEGER PRIMARY KEY AUTO_INCREMENT, mac VARCHAR(32), hostname VARCHAR(255) )"
+            c.execute(cmd)
+
+        upgrade_tz = os.environ.get("DTDB_UPGRADE_TZ_NAME", None)
+        upgrade_gitsha1 = os.environ.get("DTDB_UPGRADE_GITSHA1", None)
+        upgrade_machine = os.environ.get("DTDB_UPGRADE_MACHINE", None)
+
+        if upgrade_machine:
+            parts = upgrade_machine.split(",")
+            assert len(parts) == 2, "DTDB_UPGRADE_MACHINE not correctly, should be name and mac comma separated."
+            c.execute("INSERT INTO tester_machines (mac, hostname) VALUES('%s', '%s')" % (parts[1], parts[0]))
+            machine_id = c.lastrowid
+        else:
+            machine_id = None
+
+        if isinstance(c, sqlite3.Cursor):
+            c.execute('\
+CREATE TABLE "test_group_results_new" (                                 \
+	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,                          \
+	"group_id"	INTEGER NOT NULL,                                       \
+	"time_of_tests"	BIGINT NOT NULL,                                    \
+	"logs_tz_name" VARCHAR(32),                                         \
+	"tester_machine_id" INTEGER,                                        \
+	"sw_git_sha1" VARCHAR(8),                                           \
+	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id"),            \
+	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")\
+);')
+            c.execute('PRAGMA foreign_keys = OFF')
+            c.execute('INSERT INTO test_group_results_new SELECT id, group_id, time_of_tests,\
+%s as logs_tz_name, %s as tester_machine_id, %s as sw_git_sha1 FROM test_group_results' % (
+    db_str_or_null(upgrade_tz), db_str_or_null(machine_id), db_str_or_null(upgrade_gitsha1)))
+            c.execute('DROP TABLE test_group_results')
+            c.execute('ALTER TABLE test_group_results_new RENAME TO test_group_results')
+            c.execute('PRAGMA foreign_keys = ON')
+        else:
+            cmd = "ALTER TABLE test_group_results \
+    ADD COLUMN logs_tz_name VARCHAR(32),\
+    ADD COLUMN tester_machine_id INTEGER,\
+    ADD COLUMN sw_git_sha1 VARCHAR(8),\
+    ADD FOREIGN KEY (tester_machine_id) REFERENCES tester_machines(id)"
+            c.execute(cmd)
+
+            if upgrade_tz is not None:
+                c.execute("UPDATE test_group_results SET logs_tz_name='%s'" % upgrade_tz)
+
+            if upgrade_gitsha1 is not None:
+                c.execute("UPDATE test_group_results SET sw_git_sha1='%s'" % upgrade_gitsha1)
+
+            if machine_id is not None:
+                c.execute('UPDATE test_group_results SET tester_machine_id=%u' % machine_id)
+
+        cmd = "UPDATE \"values\" SET value_int = 5 WHERE id=1"
+        c.execute(cmd)
