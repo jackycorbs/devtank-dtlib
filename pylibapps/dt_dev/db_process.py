@@ -2,10 +2,12 @@ from __future__ import print_function
 import mysql.connector as mysqlconn
 import paramiko
 import sqlite3
+import socket
 import yaml
 import shutil
 import hashlib
 import datetime
+import getpass
 import copy
 import sys
 import os
@@ -90,6 +92,15 @@ class db_process_t(object):
         self.db_paths = {}
         self.dbrefs = {}
         self.ssh_connections = {}
+        self.addrs = []
+        self.hostname_is_self = {}
+
+        import netifaces as ni
+        for interface in ni.interfaces():
+            for k,v in ni.ifaddresses(interface).items():
+                for a in v:
+                    self.addrs += [ a['addr'] ]
+
 
     def load_custom_table_names(self, c):
         cmd = 'SELECT value_text FROM "values" WHERE name=\'dev_table\' AND parent_id=2'
@@ -221,6 +232,38 @@ class db_process_t(object):
         except:
             return False
 
+    def _get_file_folders(self, folder, file_id, filename, exists_fn):
+        remote_filename = "%i.%s" % (file_id, filename)
+
+        folders = self.get_batch_folders(file_id)
+        remote_dir_v3 = os.path.join(folder, *folders)
+        remote_path = os.path.join(remote_dir_v3, remote_filename)
+        if exists_fn(remote_path):
+            return remote_path
+
+        folders = self.get_hash_folders(remote_filename)
+        remote_dir_v2 = os.path.join(folder, *folders)
+        remote_path = os.path.join(remote_dir_v2, remote_filename)
+        if exists_fn(remote_path):
+            return remote_path
+
+        remote_path = os.path.join(folder, remote_filename)
+        if exists_fn(remote_path):
+            return remote_path
+
+        print("File not found '%s'" % remote_filename)
+        print("Tried v3 folder : %s" % remote_dir_v3)
+        print("Tried v2 folder : %s" % remote_dir_v2)
+        return None
+
+    def is_self(self, hostname):
+        is_self = self.hostname_is_self.get(hostname, None)
+        if is_self is None:
+            ip_addr = socket.gethostbyname(hostname)
+            is_self = ip_addr in self.addrs
+            self.hostname_is_self[hostname] = is_self
+        return is_self
+
     def get_file(self, c, file_id):
 
         cmd = "SELECT file_store_protocols.name,\
@@ -248,21 +291,20 @@ class db_process_t(object):
         if isinstance(db_path, str):
             assert row[1] == "LOCALHOST"
             folder = os.path.join(db_path, "db_files")
-            folders = self.get_batch_folders(file_id)
-            remote_path = os.path.join(folder, *folders)
-            remote_path = os.path.join(remote_path, remote_filename)
-            if not os.path.exists(remote_path):
-                folders = self.get_hash_folders(remote_filename)
-                remote_path = os.path.join(folder, *folders)
-                remote_path = os.path.join(remote_path, remote_filename)
-                if not os.path.exists(remote_path):
-                    remote_path = os.path.join(folder, remote_filename)
 
-            assert os.path.exists(remote_path), remote_path
+            remote_path = self._get_file_folders(folder, file_id, filename, os.path.exists)
+            assert remote_path is not None, "Local db file fetch failed"
             return remote_path
-
         else:
             db_def = db_path
+
+            # Check if it's on this machine, if so, reference that.
+            if self.is_self(hostname):
+                username = db_def.get("sftp_user", getpass.getuser())
+                local_remote = "/home/%s/%s" % (username, folder)
+                remote_path = self._get_file_folders(local_remote, file_id, filename, os.path.exists)
+                if remote_path is not None:
+                    return remote_path
 
             temp_dir = db_def.get("temp_folder", "/tmp/")
             if not os.path.exists(temp_dir) or not os.path.isdir(temp_dir):
@@ -274,21 +316,9 @@ class db_process_t(object):
 
             sftp, ssh = self.get_ssh(hostname, c)
 
-            folders = self.get_batch_folders(file_id)
-            remote_dir_v3 = os.path.join(folder, *folders)
-            remote_path = os.path.join(remote_dir_v3, remote_filename)
-            if not self.remote_exists(sftp, remote_path):
-                folders = self.get_hash_folders(remote_filename)
-                remote_dir_v2 = os.path.join(folder, *folders)
-                remote_path = os.path.join(remote_dir_v2, remote_filename)
-                if not self.remote_exists(sftp, remote_path):
-                    remote_path = os.path.join(folder, remote_filename)
-
-            if not self.remote_exists(sftp, remote_path):
+            remote_path = self._get_file_folders(folder, file_id, filename, lambda p : self.remote_exists(sftp, p))
+            if remote_path is None:
                 print("Hostname : %s, User: %s" % (hostname, db_def.get("sftp_user", None)))
-                print("File not found '%s'" % remote_filename)
-                print("Tried v3 folder : %s" % remote_dir_v3)
-                print("Tried v2 folder : %s" % remote_dir_v2)
                 raise Exception("File download failed")
 
             sftp.get(remote_path, local_path)
