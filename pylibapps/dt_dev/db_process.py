@@ -306,7 +306,7 @@ class db_process_t(object):
                 if remote_path is not None:
                     return remote_path
 
-            temp_dir = db_def.get("temp_folder", "/tmp/")
+            temp_dir = db_def.get("temp_folder", "/tmp/%s_%s_cache" % (hostname, folder))
             if not os.path.exists(temp_dir) or not os.path.isdir(temp_dir):
                 os.mkdir(temp_dir)
 
