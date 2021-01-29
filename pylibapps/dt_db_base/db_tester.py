@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 class db_tester_machine(object):
     def __init__(self,
                  machine_id,
@@ -42,6 +44,19 @@ class db_tester_machine(object):
                         with open("/sys/class/net/%s/address" % parts[0]) as f2:
                             own_mac = f2.readline()
                             break
+            if own_mac is None:
+                # No default route, so just take first network device.
+                print("Warning: Machine has no default route.")
+                with open("/proc/net/route") as f:
+                    for line in f:
+                        parts = line.split()
+                        if parts[1] != "Destination":
+                            with open("/sys/class/net/%s/address" % parts[0]) as f2:
+                                own_mac = f2.readline()
+                                break
+            if own_mac is None:
+                print("Warning: Unable to find a MAC address for machine.")
+                return None
         except:
             # The machine doesn't have procfs or sysfs setup right.
             return None
