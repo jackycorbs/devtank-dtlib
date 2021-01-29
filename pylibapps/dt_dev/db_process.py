@@ -182,7 +182,7 @@ class db_process_t(object):
         if ssh_key in self.ssh_connections:
             sftp, ssh = self.ssh_connections[ssh_key]
         else:
-            hostnameremap = os.environ.get("DTDB_HOSTNAME_REMAP_" + hostname.upper(), None)
+            hostnameremap = os.environ.get("DTDB_HOSTNAME_REMAP_" + hostname.upper().replace(".","_"), None)
             port = 22
             if hostnameremap:
                 if hostnameremap.find(":") != -1:
