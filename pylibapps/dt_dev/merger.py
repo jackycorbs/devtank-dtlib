@@ -160,9 +160,6 @@ WHERE files.id IN (\
             md5 = hashlib.md5(open(filepath,'rb').read()).hexdigest()
             tupkey = (row[1], row[2], md5)
 
-            if row[4] > self.old_max_ts:
-                self.old_max_ts = row[4]
-
             new_file_id = self.file_dedupe.get(tupkey, None)
             if new_file_id is None:
                 file_store_id = self.get_rw_file_store(self.new_c)
