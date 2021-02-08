@@ -241,6 +241,7 @@ class base_run_context(object):
 
 
     def force_stop(self):
+        self.unfreeze_btn.set_visible(False)
         self.run_group_man.stop()
         self._stop_update()
 
