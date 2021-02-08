@@ -393,7 +393,7 @@ self.results_table, self.results_table, self.results_table,
                 file_store_id = self.get_rw_file_store(self.new_c)
                 cmd = "INSERT INTO files (file_store_id, filename, size, \
     modified_date, insert_time) VALUES (%u, '%s', %u, %u, %u)" % \
-    (file_store_id, *row)
+    (file_store_id, row[0], row[1], row[2], row[3])
                 self.new_c.execute(cmd)
                 new_file_id = self.new_c.lastrowid
                 folder = self.get_db_folder(self.new_c)
