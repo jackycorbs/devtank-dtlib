@@ -116,7 +116,7 @@ def get_test_properties(group_entry_id, db, sql, get_file_to_local):
             r[name] = row[3]
         elif not row[4] is None:
             filename = get_file_to_local(row[4])
-            r[name] = (file, db_std_str(filename), row[4])
+            r[name] = (dbfile, db_std_str(filename), row[4])
         else:
             r[name] = None
     return r
