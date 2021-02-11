@@ -424,7 +424,7 @@ class tester_database(object):
                         if file_id is None:
                             filename = os.path.abspath(os.path.join(folder, filename))
                             file_id = self._add_files(c, [filename])[0]
-                        test_args[arg_key] = (file, filename, file_id)
+                        test_args[arg_key] = (dbfile, filename, file_id)
             test_obj.pending_properties = test_args
             tests += [test_obj]
 
