@@ -8,7 +8,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GObject
 
-from .common import get_pass_fail_icon_name
+#from .common import get_pass_fail_icon_name
 
 
 class base_session_results_singlton(object):
@@ -137,7 +137,7 @@ class base_session_results_singlton(object):
 
         for session in sessions:
             stamp = datetime.datetime.fromtimestamp(session.time_of_tests)
-            icon = get_pass_fail_icon_name(session.pass_fail)
+            icon = session.get_pass_fail_icon_name(session.pass_fail)
             row = [str(stamp), session.group.name, icon, session]
             list_store.insert(0, row)
 

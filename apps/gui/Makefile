@@ -6,7 +6,7 @@ EXAMPLE_TESTER_PY_MODS := \
     $(OUTDIR)/build/dt_gui_base \
     $(OUTDIR)/build/example_lib \
     $(OUTDIR)/build/example_lib_gui \
-    $(OUTDIR)/lib/example_lib/resources.py
+    $(OUTDIR)/build/resources
 
 default: $(OUTDIR)/bin/example_tester_gui.sh
 
@@ -20,17 +20,23 @@ $(OUTDIR)/bin/example_tester_gui.py: example_tester_gui.py $(EXAMPLE_TESTER_PY_M
 	chmod +x $(OUTDIR)/bin/example_tester_gui.py
 
 $(OUTDIR)/build/example_lib : example_lib/*.py Makefile $(OUTDIR)/lib/libbase.so
+	mkdir -p $(OUTDIR)/build
 	mkdir -p $(OUTDIR)/lib/example_lib
 	cp -v example_lib/*.py $(OUTDIR)/lib/example_lib/
 	touch $(OUTDIR)/build/example_lib
 
 $(OUTDIR)/build/example_lib_gui : example_lib_gui/*.py Makefile
+	mkdir -p $(OUTDIR)/build
 	mkdir -p $(OUTDIR)/lib/example_lib_gui
 	cp -v example_lib_gui/*.py $(OUTDIR)/lib/example_lib_gui/
 	touch $(OUTDIR)/build/example_lib_gui
 
-$(OUTDIR)/lib/example_lib/resources.py: $(LIBDEVTANKROOT)/pylibapps/resource_builder.py resources/* $(LIBDEVTANKROOT)/pylibapps/resources/* Makefile
-	$(LIBDEVTANKROOT)/pylibapps/resource_builder.py $(OUTDIR)/lib/example_lib_gui/resources.py resources/* $(LIBDEVTANKROOT)/pylibapps/resources/*
+$(OUTDIR)/build/resources: resources/* $(LIBDEVTANKROOT)/pylibapps/resources/* Makefile
+	mkdir -p $(OUTDIR)/build
+	mkdir -p $(OUTDIR)/resources
+	cp -v resources/*   $(OUTDIR)/resources/
+	cp -v $(LIBDEVTANKROOT)/pylibapps/resources/*  $(OUTDIR)/resources/
+	touch $(OUTDIR)/build/resources
 
 local_db_push:
 	DB_OLD=`ls -1d old_db.* | wc -l`; \
