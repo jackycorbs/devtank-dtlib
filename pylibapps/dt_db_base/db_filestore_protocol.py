@@ -140,6 +140,10 @@ class sftp_connection(object):
     def mkdir(self, path):
         self.sftp_con.mkdir(path)
 
+    def close(self):
+        self.sftp_con.close()
+        self.ssh.close()
+
 
 class local_connection(object):
 
@@ -154,6 +158,9 @@ class local_connection(object):
 
     def mkdir(self, path):
         os.mkdir(path)
+
+    def close(self):
+        pass
 
 
 class sftp_transferer(object):
@@ -183,6 +190,7 @@ class sftp_transferer(object):
                 return
             else:
                 self._cache_con.pop(cache_key)
+                cache_entry[0].close()
 
         self._base_folder = file_store_folder
 
@@ -214,7 +222,11 @@ class sftp_transferer(object):
         return remote_filepath
 
     def clean(self):
-        pass
+        self._con = None
+        self._base_folder = None
+        for entry in self._cache_con.values():
+            entry[0].close()
+        self._cache_con = {}
 
     def upload(self, filepath, file_id):
         remote_filepath = self._get_remote_name(filepath, file_id, True)
