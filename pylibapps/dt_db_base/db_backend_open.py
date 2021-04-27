@@ -1,5 +1,6 @@
 from __future__ import print_function, absolute_import
 
+import os
 import sys
 
 def _open_sqlite_db(db_def):
@@ -26,11 +27,10 @@ def get_default_schema(context):
 
     r = ""
     with open(schema_base_path) as f:
-        r += f.readall()
+        r += f.read()
     r += ";"
-    with open(schema_base) as f:
-        r += f.readall()
-
+    with open(schema_path) as f:
+        r += f.read()
     return r
 
 

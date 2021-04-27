@@ -17,16 +17,15 @@ class base_context_object(object):
         self.on_exit_cbs = []
         self.tests_group = tests_group_creator(None)
         self._in_db_init = False
-        resource_dir = self.resource_dir()
-        self._resource_dir = resource_dir
+        self._resource_dir = self.resource_dir
+        resource_dir = self._resource_dir 
         assert "open_db_backend" in db_def
         assert "work_folder" in db_def
         assert "fn_get_dev" in db_def
 
     @property
     def resource_dir(self):
-        local = os.path.split(os.path.dirname(sys.argv[0]))[0]
-        return self._resource_dir
+        return os.path.join(os.path.split(os.path.dirname(sys.argv[0]))[0], "resources")
 
     def close_app(self):
         for cb in self.on_exit_cbs:

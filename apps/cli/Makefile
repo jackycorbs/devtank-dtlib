@@ -5,6 +5,7 @@ EXAMPLE_TESTER_PY_MODS := \
     $(OUTDIR)/build/dt_db_base \
     $(OUTDIR)/build/dt_cli_base \
     $(OUTDIR)/build/example_lib \
+    $(OUTDIR)/build/resources
 
 default: $(OUTDIR)/bin/example_tester_cli.sh
 
@@ -22,6 +23,12 @@ $(OUTDIR)/build/example_lib : example_lib/*.py Makefile $(OUTDIR)/lib/libbase.so
 	cp -v example_lib/*.py $(OUTDIR)/lib/example_lib/
 	touch $(OUTDIR)/build/example_lib
 
+$(OUTDIR)/build/resources: resources/* $(LIBDEVTANKROOT)/pylibapps/resources/* Makefile
+	mkdir -p $(OUTDIR)/build
+	mkdir -p $(OUTDIR)/resources
+	cp -v resources/*   $(OUTDIR)/resources/
+	cp -v $(LIBDEVTANKROOT)/pylibapps/resources/*  $(OUTDIR)/resources/
+	touch $(OUTDIR)/build/resources
 
 include $(LIBDEVTANKROOT)/pylibapps/Makefile.pylibapps
 
