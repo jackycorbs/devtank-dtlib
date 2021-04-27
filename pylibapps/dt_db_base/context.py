@@ -86,5 +86,8 @@ class base_context_object(object):
         print("Fail with database, %s" % str(e))
         import traceback
         traceback.print_exc()
+        if self.db:
+            for protocol_transferer in self.db.protocol_transferers.values():
+                protocol_transferer.clean()
         self.db = None
         self.db_error = True
