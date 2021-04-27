@@ -123,6 +123,8 @@ class db_inf(object):
                 import traceback
                 traceback.print_exc()
         self._db = None
+        self._current = None
+        self._cur_count = 0
         print("Bad DB : " + self.db_def['type'])
         if self.error_handler:
             self.error_handler(e)
