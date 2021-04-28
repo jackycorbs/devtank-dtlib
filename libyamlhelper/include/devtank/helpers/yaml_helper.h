@@ -39,6 +39,7 @@
  * 
  * @{
  */
+ #include <stdbool.h>
  
 /** \brief YAML loader object, stores current state as YAML is loaded. */
 typedef struct dt_yaml_loader_t dt_yaml_loader_t;
