@@ -8,9 +8,6 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GObject
 
-#from .common import get_pass_fail_icon_name
-
-
 class base_session_results_singlton(object):
     def __init__(self, context):
         self.context = context

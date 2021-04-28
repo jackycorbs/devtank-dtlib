@@ -18,13 +18,13 @@ parser.add_argument('--config', help='DB config file to use', type=str)
 parser.add_argument('command', help='command followed by arguments.', nargs='*')
 
 def fake_dev(context, cmd_args):
-    assert len(cmd_args) == 1, "fake_dev takes one argument, the fake device serial number"
+    assert len(cmd_args) == 1, "fake_dev takes one argument, the fake device <serial number>"
     serial_number = cmd_args[0]
     uuid = ("%02u:%02u:%02u:%02u:%02u:%02u" % (*[random.randint(0,255) for i in range(0,6)],))
     dev = example_lib.db_example_dev.create(context.db, serial_number, uuid)
 
 cmds = dt_cli_base.generic_cmds.copy()
-cmds["fake_dev"] = (fake_dev, "Make a fake device for debug.")
+cmds["fake_dev"] = (fake_dev, "Make a fake device for debug with <serial number>.")
 
 def main():
 

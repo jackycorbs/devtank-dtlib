@@ -5,7 +5,6 @@ import time
 import datetime
 import sys
 
-#from .common import get_pass_fail_icon_name
 from .notify_gui import open_notify_gui
 
 
