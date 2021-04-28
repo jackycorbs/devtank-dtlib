@@ -152,11 +152,7 @@ def add_fail(context, cmd_args):
 def dev_results(context, cmd_args):
     assert len(cmd_args) == 1, "dev_results takes one argument, the device's uuid."
     dev_uuid = cmd_args[0]
-    dev = context.db.get_dev(dev_uuid)
-    if not dev:
-        print("Failed to find dev '%s'" % dev_uuid)
-        sys.exit(-1)
-
+    dev = cli_get_device(context.db, dev_uuid)
     count = dev.get_session_count()
 
     for n in range(0, count, 10):
@@ -181,17 +177,66 @@ def show_group(context, cmd_args):
             print("Arg:",key, "value(%s):" % (str(type(value))), value)
 
 
+
+_ANSI_RED     = "\x1B[31m"
+_ANSI_GREEN   = "\x1B[32m"
+_ANSI_WARN    = "\x1B[33m"
+_ANSI_DEFAULT = "\x1B[39m"
+
+
+def print_line(colorcode, msg):
+    sys.stdout.write(colorcode + msg + _ANSI_DEFAULT)
+
+_debug_messages = False
+
+
+
+def run_group(context, cmd_args):
+    import gi
+    gi.require_version('GLib', '2.0')
+    from gi.repository import GLib
+
+    assert len(cmd_args) > 1, "run_group takes twos argument, the group name and device serial"
+    group_name = " ".join(cmd_args[0:-1])
+    db_dev = cli_get_device(context.db, cmd_args[-1])
+
+    context.devices = [db_dev]
+
+    db_group = context.db.get_group(group_name)
+    if not db_group:
+        print('Failed to find tests group "%s"' % group_name)
+        sys.exit(-1)
+    context.tests_group.populate_from(db_group)
+    loop = GLib.MainLoop()
+    run_group_man = dt_db_base.default_run_group_manager(context,
+                                                    lambda msg : print_line(_ANSI_GREEN, msg),
+                                                    lambda msg : print_line(_ANSI_RED, msg),
+                                                    lambda msg : print_line(_ANSI_DEFAULT, msg),
+                                                    lambda msg : print_line(_ANSI_DEFAULT, msg) if _debug_messages else None,
+                                                    lambda msg : print_line(_ANSI_WARN, msg) if _debug_messages else None,
+                                                    lambda msg : print_line(_ANSI_RED, msg) if _debug_messages else None,
+                                                    { "FINISHED" : lambda args: loop.quit() } )
+    print("=" * 72)
+    if run_group_man.start():
+        loop.run()
+        run_group_man.wait_for_end()
+    else:
+        print("Failed to start tests group.")
+    print("=" * 72)
+
+
 generic_cmds = {
     "update_tests" : (update_tests, "Update <groups yaml> in database."),
     "list_groups"  : (list_groups,  "List active groups."),
     "group_results": (group_results,"Get results for a <named> group."),
     "group_result" : (group_result, "Get result of a <named> group of <index>"),
     "group_dump"   : (group_dump,   "Get all results of <named> group (WARNING >all<)"),
-    "get_file"     : (get_file,     "Get a file by id."),
-    "dev_status"   : (dev_status,   "Get status of devices after given unix time."),
+    "get_file"     : (get_file,     "Get a file by <id>."),
+    "dev_status"   : (dev_status,   "Get status of devices after given <unix time>."),
     "add_fail"     : (add_fail,     "Get <device> a fail for <named> group."),
     "dev_results"  : (dev_results,  "Get <device> results."),
     "show_group"   : (show_group,   "Print information about a <test group ID>"),
+    "run_group"    : (run_group,    "Run group <name> on attached <device>."),
     }
 
 
@@ -201,7 +246,22 @@ def print_cmd_help(cmds):
         print("%s : %s" % ("%14s" % cmd, "%14s" % entry[1]))
 
 
+def cli_get_device(db, dev_str):
+    db_dev = db.get_dev(dev_str)
+    if not db_dev:
+        db_dev = db.get_dev_by_sn(dev_str)
+        if not db_dev:
+            print("Not found device :", dev_str)
+            sys.exit(-1)
+    return db_dev
+
+
 def execute_cmd(context, cmd, cmd_args, cmds):
+
+    if context.args['verbose'] or os.environ.get("DEBUG", ""):
+        global _debug_messages
+        dt_db_base.enable_info_msgs(True)
+        _debug_messages = True
 
     entry = cmds.get(cmd, None)
 

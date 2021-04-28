@@ -5,10 +5,6 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 
-def get_pass_fail_icon_name(passfail):
-    return "dialog-ok" if passfail else "dialog-error"
-
-
 def _update_desc(prop):
     widget_dict = prop["widget_dict"]
     prop["desc"] = widget_dict["desc"].get_text()

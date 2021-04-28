@@ -23,12 +23,6 @@ parser.add_argument('--config', help='DB config file to use', type=str)
 parser.add_argument('--freeze_on_fail', help='Freeze on a failure', action='store_true')
 
 
-def get_schema():
-    schema_base = example_lib_gui.resources["db_base.sql"]
-    schema = example_lib_gui.resources["db.sql"]
-
-    return schema_base + ";" + schema
-
 
 def db_load_extra(db):
     tests = db.get_all_tests()
@@ -47,10 +41,6 @@ def main():
     if args['verbose']:
         example_lib.enable_info_msgs(True)
 
-    builder = Gtk.Builder()
-    builder.add_from_string(example_lib_gui.resources['gui_base.glade'])
-    builder.add_from_string(example_lib_gui.resources['gui.glade'])
-
     if args['config']:
         db_def_file = args['config']
     else:
@@ -64,10 +54,9 @@ def main():
     db_def["fn_get_dev"] = example_lib.db_example_dev.get_by_uuid
     db_def["work_folder"] = os.path.abspath("files_cache")
     db_def["open_db_backend"] = example_lib.base_open_db_backend
-    db_def["fn_get_schema"] = get_schema
     db_def["fn_extra_load"] = db_load_extra
 
-    context = example_lib_gui.gui_context_object(args, db_def, builder)
+    context = example_lib_gui.gui_context_object(args, db_def, ["gui.glade"])
 
     example_lib_gui.init(context)
 

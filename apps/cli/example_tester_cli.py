@@ -6,6 +6,7 @@ import datetime
 import argparse
 import yaml
 import types
+import random
 
 import dt_db_base
 import dt_cli_base
@@ -16,9 +17,14 @@ parser.add_argument('-v','--verbose', help='Increase log information', action='s
 parser.add_argument('--config', help='DB config file to use', type=str)
 parser.add_argument('command', help='command followed by arguments.', nargs='*')
 
+def fake_dev(context, cmd_args):
+    assert len(cmd_args) == 1, "fake_dev takes one argument, the fake device <serial number>"
+    serial_number = cmd_args[0]
+    uuid = ("%02u:%02u:%02u:%02u:%02u:%02u" % (*[random.randint(0,255) for i in range(0,6)],))
+    dev = example_lib.db_example_dev.create(context.db, serial_number, uuid)
 
 cmds = dt_cli_base.generic_cmds.copy()
-
+cmds["fake_dev"] = (fake_dev, "Make a fake device for debug with <serial number>.")
 
 def main():
 
@@ -36,9 +42,6 @@ def main():
         dt_cli_base.print_cmd_help(cmds)
         sys.exit(-1)
 
-    if args['verbose']:
-        example_lib.enable_info_msgs(True)
-
     if args['config']:
         db_def_file = args['config']
     else:
@@ -50,10 +53,11 @@ def main():
 
     db_def['sql'] = example_lib.example_sql_common()
     db_def["fn_get_dev"] = example_lib.db_example_dev.get_by_uuid
+    db_def["fn_get_dev_by_sn"] = example_lib.db_example_dev.get_by_serial
     db_def["work_folder"] = os.path.abspath("../gui/files_cache")
     db_def["open_db_backend"] = example_lib.base_open_db_backend
 
-    context = dt_db_base.base_context_object(args, db_def)
+    context = example_lib.cli_context_object(args, db_def)
 
     context.db_init()
 

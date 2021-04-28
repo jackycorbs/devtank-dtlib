@@ -5,12 +5,12 @@ import time
 import datetime
 import sys
 
-from .common import get_pass_fail_icon_name
 from .notify_gui import open_notify_gui
+
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GLib, Pango
+from gi.repository import Gtk, Gdk, GLib, Pango, GdkPixbuf
 
 
 
@@ -29,13 +29,13 @@ class base_run_context(object):
         self.test_list = builder.get_object("RunTestsList")
         self.dev_list = builder.get_object("RunDevList")
 
-        self.dev_list.set_model(Gtk.ListStore(str, str))
+        self.dev_list.set_model(Gtk.ListStore(str, GdkPixbuf.Pixbuf))
         self.dev_list.append_column(Gtk.TreeViewColumn("Device", Gtk.CellRendererText(), text=0))
-        self.dev_list.append_column(Gtk.TreeViewColumn("Status", Gtk.CellRendererPixbuf(), icon_name=1))
+        self.dev_list.append_column(Gtk.TreeViewColumn("Status", Gtk.CellRendererPixbuf(), pixbuf=1))
 
-        self.test_list.set_model(Gtk.ListStore(str, str, object))
+        self.test_list.set_model(Gtk.ListStore(str, GdkPixbuf.Pixbuf, object))
         self.test_list.append_column(Gtk.TreeViewColumn("Test", Gtk.CellRendererText(), text=0))
-        self.test_list.append_column(Gtk.TreeViewColumn("Status", Gtk.CellRendererPixbuf(), icon_name=1))
+        self.test_list.append_column(Gtk.TreeViewColumn("Status", Gtk.CellRendererPixbuf(), pixbuf=1))
 
         self.run_cancel_btn = builder.get_object("run_cancel_btn")
         self.run_ok_btn = builder.get_object("run_ok_btn")
@@ -107,7 +107,6 @@ class base_run_context(object):
         selection.connect("changed", lambda sel : self.load_info())
 
         context.view_objs["RunGroupViewObj"] = self
-
 
     def show_view(self):
 
@@ -193,7 +192,7 @@ class base_run_context(object):
         test_list_store = test_list.get_model()
         treeiters = selection.get_selected_rows()[1]
         for treeiter in treeiters:
-            test_list_store[treeiter][1] = get_pass_fail_icon_name(passfail)
+            test_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
         self.test_time = 0
 
     def dev_status(self, passfail):
@@ -202,7 +201,7 @@ class base_run_context(object):
         dev_list_store = dev_list.get_model()
         treeiters = selection.get_selected_rows()[1]
         for treeiter in treeiters:
-            dev_list_store[treeiter][1] = get_pass_fail_icon_name(passfail)
+            dev_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
 
     def dev_set_uuid(self, new_uuid):
         dev_list = self.dev_list
@@ -323,10 +322,10 @@ class base_run_context(object):
         dev_list_store.clear()
 
         for test in self.context.tests_group.tests:
-            test_list_store.append([test.name, "", test])
+            test_list_store.append([test.name, None, test])
 
         for dev in self.context.devices:
-            dev_list_store.append([dev.uuid, ""])
+            dev_list_store.append([dev.uuid, None])
 
         self._run()
 
@@ -390,7 +389,7 @@ class base_run_context(object):
                 if pass_fail < 0:
                     test_result[1] = ""
                 else:
-                    test_result[1] = get_pass_fail_icon_name(pass_fail)
+                    test_result[1] = self.context.get_pass_fail_icon_name(pass_fail)
         else:
             for test_result in test_list_store:
                 test_result[1] = ""
@@ -425,7 +424,7 @@ class base_run_context(object):
         dev_list_store = self.dev_list.get_model()
         dev_list_store.clear()
         for uuid, dev_results in session.devices.items():
-            dev_list_store.append([uuid, get_pass_fail_icon_name(dev_results.pass_fail)])
+            dev_list_store.append([uuid, self.context.get_pass_fail_icon_name(dev_results.pass_fail)])
 
         test_list_store = self.test_list.get_model()
         test_list_store.clear()

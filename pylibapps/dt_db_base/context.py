@@ -17,9 +17,15 @@ class base_context_object(object):
         self.on_exit_cbs = []
         self.tests_group = tests_group_creator(None)
         self._in_db_init = False
+        self._resource_dir = self.resource_dir
+        resource_dir = self._resource_dir 
         assert "open_db_backend" in db_def
         assert "work_folder" in db_def
         assert "fn_get_dev" in db_def
+
+    @property
+    def resource_dir(self):
+        return os.path.join(os.path.split(os.path.dirname(sys.argv[0]))[0], "resources")
 
     def close_app(self):
         for cb in self.on_exit_cbs:
@@ -40,7 +46,7 @@ class base_context_object(object):
                     return False
 
         try:
-            db = self.db_def["open_db_backend"](self.db_def)
+            db = self.db_def["open_db_backend"](self)
         except Exception as e:
             print("ERROR database connection fail : %s" % str(e))
             import traceback
@@ -56,6 +62,7 @@ class base_context_object(object):
         self.tests_group.db = db
         self.tests_group.update_defaults()
         get_dev = self.db_def["fn_get_dev"]
+        get_dev_by_sn = self.db_def.get("fn_get_dev_by_sn", None)
         from types import MethodType
 
         db.db.error_handler = lambda e: self._db_fail(e)
@@ -63,9 +70,15 @@ class base_context_object(object):
         if sys.version_info[0] < 3:
             db.get_dev = MethodType(lambda db, uuid: \
                         get_dev(db, uuid), db, db.__class__)
+            if get_dev_by_sn:
+                db.get_dev_by_sn = MethodType(lambda db, serial_number: \
+                        get_dev_by_sn(db, serial_number), db, db.__class__)
         else:
             db.get_dev = MethodType(lambda db, uuid: \
                         get_dev(db, uuid), db)
+            if get_dev_by_sn:
+                db.get_dev_by_sn = MethodType(lambda db, serial_number: \
+                        get_dev_by_sn(db, serial_number), db)
         return True
 
     def db_init(self):
@@ -77,10 +90,10 @@ class base_context_object(object):
         return r
 
     def lock_bus(self):
-        raise Exception("Context lock_bus not implemented.");
+        raise NotImplementedError
 
     def release_bus(self):
-        raise Exception("Context release_bus not implemented.");
+        raise NotImplementedError
 
     def _db_fail(self, e):
         print("Fail with database, %s" % str(e))

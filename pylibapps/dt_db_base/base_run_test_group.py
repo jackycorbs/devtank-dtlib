@@ -56,10 +56,10 @@ class base_run_group_context(object):
         self.stdout_out.flush()
 
     def get_ready_devices(self, bus_con):
-        raise Exception("Unimplemented")
+        raise NotImplementedError
 
     def stop_devices(self):
-        raise Exception("Unimplemented")
+        raise NotImplementedError
 
     def finished(self, bus_con):
         self.send_cmd("FINISHED")
@@ -112,14 +112,19 @@ class base_run_group_context(object):
 
 
 def _thread_test(test_context):
-    bus = test_context.get_bus()
 
     lib_inf = test_context.lib_inf
 
+    info_enabled = lib_inf.info_msgs_is_enabled()
+
+    bus = test_context.get_bus()
+
     test_context.send_cmd("START_TESTS")
 
+    # Don't send this message to the detailed log ever, only causes issue with the command line rendering.
+    lib_inf.enable_info_msgs(False)
     lib_inf.output_normal("Starting test group: " + test_context.test_group)
-
+    lib_inf.enable_info_msgs(info_enabled)
 
     exec_map = {'exit': test_context.forced_exit,
                 'output_normal' : lib_inf.output_normal,
@@ -134,7 +139,13 @@ def _thread_test(test_context):
 
         ready_devices = test_context.get_ready_devices(bus_con)
 
+        if not len(ready_devices):
+            lib_inf.error_msg("No devices")
+
         full_stop=False
+
+        # Don't send the test announcement ever to info log
+        lib_inf.enable_info_msgs(False)
 
         for dev in ready_devices:
             results = {}
@@ -239,6 +250,8 @@ def _thread_test(test_context):
             if full_stop:
                 break
 
+        # Renable any debug logging for closing up bus.
+        lib_inf.enable_info_msgs(info_enabled)
         test_context.finished(bus_con)
 
 
@@ -463,11 +476,7 @@ class base_run_group_manager(object):
 
                 if self.logfile:
                     self.logfile.write(line)
-                elif not self.readonly:
-                    if ansi:
-                        sys.stderr.write(ansi + line + _ANSI_DEFAULT)
-                    else:
-                        sys.stderr.write(line)
+
             else:
                 if line.startswith("Good: "):
                     ansi = _ANSI_GREEN
@@ -480,11 +489,6 @@ class base_run_group_manager(object):
 
                 if self.outfile:
                     self.outfile.write(line)
-                elif not self.readonly:
-                    if ansi:
-                        sys.stderr.write(ansi + line + _ANSI_DEFAULT)
-                    else:
-                        sys.stderr.write(line)
 
         return True
 

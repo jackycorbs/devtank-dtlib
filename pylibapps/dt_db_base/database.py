@@ -548,4 +548,7 @@ class tester_database(object):
         return self.tester_machine
 
     def get_dev(self, dev_uuid):
-        raise Exception("Not implemented")
+        raise NotImplementedError
+
+    def get_dev_by_sn(self, serial_number):
+        raise NotImplementedError

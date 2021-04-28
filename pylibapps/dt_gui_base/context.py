@@ -1,17 +1,31 @@
 import gi
 import sys
+import os
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
 from dt_db_base import base_context_object
 
 class gui_context_object(base_context_object):
-    def __init__(self, args, db_def, builder):
+    def __init__(self, args, db_def, glade_files):
         base_context_object.__init__(self, args, db_def)
+
+        resource_dir = self.resource_dir
+
+        builder = Gtk.Builder()
+        builder.add_from_file(os.path.join(resource_dir, 'gui_base.glade'))
+        for glade_file in glade_files:
+            builder.add_from_file(os.path.join(resource_dir, glade_file))
+
         self.current_view = None
         self.builder = builder
+        self.good_icon = GdkPixbuf.Pixbuf.new_from_file(os.path.join(resource_dir, "good.svg")).scale_simple(20, 20, GdkPixbuf.InterpType.BILINEAR)
+        self.bad_icon  = GdkPixbuf.Pixbuf.new_from_file(os.path.join(resource_dir,  "bad.svg")).scale_simple(20, 20, GdkPixbuf.InterpType.BILINEAR)
         self.prev_view = []
         self.view_objs = {}
+
+    def get_pass_fail_icon_name(self, passfail):
+        return self.good_icon if passfail else self.bad_icon
 
     def force_view(self, name):
         builder = self.builder
