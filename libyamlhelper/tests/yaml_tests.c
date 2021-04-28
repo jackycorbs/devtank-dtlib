@@ -32,6 +32,8 @@
 
 bool root_entry_check_cb(dt_yaml_loader_t* loader UNUSED, const char* key, const char* value)
 {
+    info_msg("Map child '%s' with value '%s'", key, value);
+
     if (!strcmp(key, "my_int"))
     {
         if (!strcmp(value, "44"))
@@ -44,21 +46,52 @@ bool root_entry_check_cb(dt_yaml_loader_t* loader UNUSED, const char* key, const
             return true;
         return false;
     }
+    if (!strcmp(key, "my_list"))
+    {
+        unsigned * index = (unsigned*)dt_yaml_loader_get_userdata(loader);
+        unsigned child_int = strtoul(value, NULL, 10);
+
+        info_msg("Array %u with int %u", *index, child_int);
+
+        if (child_int != ((*index) + 2))
+            return false;
+
+        (*index) += 1;
+
+        return true;
+    }
     return false;
 }
 
-bool root_map_check_cb(dt_yaml_loader_t* loader UNUSED, const char* key UNUSED)
+bool root_map_check_cb(dt_yaml_loader_t* loader, const char* key UNUSED)
 {
+    unsigned array_index = 0;
+
+    dt_yaml_loader_set_userdata(loader, &array_index);
+
     return dt_yaml_loader_do(loader, NULL, NULL, root_entry_check_cb);
 }
 
 
 int main(int argc UNUSED, char* argv[] UNUSED)
-{    
+{
+    if (getenv("DEBUG"))
+    {
+        enable_info_msgs(true);
+        info_msg("Debug enabled");
+    }
+
     bool r = dt_yaml_save("/tmp/test.yaml", &(dt_yaml_element_t){
         type: DT_YAML_MAP, map_entries: (dt_yaml_map_entry_t[]){
             { key: "my_int", value: {type: DT_YAML_INTEGER, i_value: 44} },
             { key: "my_str", value: {type: DT_YAML_STRING, s_value: "hello"} },
+            { key: "my_list", value: {type: DT_YAML_ARRAY, array_entries:
+                (dt_yaml_element_t[]){
+                    { type: DT_YAML_INTEGER, i_value: 2 },
+                    { type: DT_YAML_INTEGER, i_value: 3 },
+                    { type: DT_YAML_INTEGER, i_value: 4 },
+                    { type: DT_YAML_NONE },
+                    } }},
             { NULL }
         }});
     expect_success(r, "Save YAML Test");

@@ -193,7 +193,6 @@ bool           dt_yaml_loader_do(dt_yaml_loader_t* loader, dt_yaml_loader_child_
                             if (!valid)
                                 warning_msg("Yaml scalar failed, key \"%s\" in file \"%s\" line:%u", key, loader->yaml_source_name, loader->current_line_num);
                         }
-                        key[0] = 0;
                     }
                 break;
             default: break;
