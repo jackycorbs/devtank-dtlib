@@ -23,9 +23,9 @@ $(OUTDIR)/build/libhw.so/%.o : $(LIBDEVTANKHW)/%.c $(LIBDEVTANKHW)/Makefile.libh
 	mkdir -p `dirname $@`
 	$(CC) $(LIBDEVTANKHW_CFLAGS) -fPIC -c $< -o $@
 
-$(OUTDIR)/lib/libhw.a : $(LIBDEVTANKHW_OBJS_STC)
+$(OUTDIR)/lib/libhw.a : $(LIBDEVTANKHW_OBJS_STC) $(OUTDIR)/lib/libyamlhelper.a
 	mkdir -p `dirname $@`
-	$(AR) rcs $@ $^
+	$(AR) rcs $@ $(LIBDEVTANKHW_OBJS_STC)
 
 $(OUTDIR)/lib/libhw.so : $(LIBDEVTANKHW_OBJS_DYN) $(OUTDIR)/lib/libyamlhelper.so
 	mkdir -p `dirname $@`
