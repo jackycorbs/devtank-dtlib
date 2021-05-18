@@ -30,7 +30,7 @@ $(OUTDIR)/build/resources: resources/* $(LIBDEVTANKROOT)/pylibapps/resources/* M
 	cp -v $(LIBDEVTANKROOT)/pylibapps/resources/*  $(OUTDIR)/resources/
 	touch $(OUTDIR)/build/resources
 
-COVERAGERUN=PYTHONPATH=output/lib LD_LIBRARY_PATH=output/lib python3-coverage run -a ./output/bin/example_tester_cli.py --config /tmp/dt_test.yaml
+COVERAGERUN=PYTHONPATH=output/lib LD_LIBRARY_PATH=output/lib python3-coverage run --include "output/*" -a ./output/bin/example_tester_cli.py --config /tmp/dt_test.yaml
 
 coverage: default
 	rm -rf /tmp/dt_test.db /tmp/dt_test_files
