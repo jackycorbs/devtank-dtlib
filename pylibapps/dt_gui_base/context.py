@@ -61,7 +61,7 @@ class gui_context_object(base_context_object):
 
     def close_app(self):
         base_context_object.close_app(self)
-        sys.exit(0)
+        Gtk.main_quit()
 
     def push_view(self):
         self.prev_view += [ self.current_view ]
@@ -76,4 +76,3 @@ class gui_context_object(base_context_object):
 
     def clear_view_stack(self):
         self.prev_view = []
-
