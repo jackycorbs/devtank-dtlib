@@ -30,6 +30,11 @@ $(OUTDIR)/build/resources: resources/* $(LIBDEVTANKROOT)/pylibapps/resources/* M
 	cp -v $(LIBDEVTANKROOT)/pylibapps/resources/*  $(OUTDIR)/resources/
 	touch $(OUTDIR)/build/resources
 
+coverage: default
+	PYTHONPATH=output/lib LD_LIBRARY_PATH=output/lib python3-coverage run ./output/bin/example_tester_cli.py run_group "Example Group" 04
+	python3-coverage html
+	sensible-browser htmlcov/index.html
+
 include $(LIBDEVTANKROOT)/pylibapps/Makefile.pylibapps
 
 include $(LIBDEVTANKROOT)/libbase/Makefile.libbase
