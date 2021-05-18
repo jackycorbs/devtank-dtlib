@@ -60,24 +60,6 @@ def add_value(add_files, c, sql, prop_name, prop_value, valid_from, is_result=Fa
     return c.insert(sql.add_value(prop_name, prop_type, prop_value, valid_from, is_result))
 
 
-def get_test_properties(group_entry_id, db, sql, get_file_to_local):
-    r = {}
-    cmd = sql.get_test_properties(group_entry_id)
-    rows = db.query(cmd)
-    for row in rows:
-        name = db_std_str(row[0])
-        if not row[1] is None:
-            r[name] = db_std_str(row[1])
-        elif not row[2] is None:
-            r[name] = row[2]
-        elif not row[3] is None:
-            r[name] = row[3]
-        elif not row[4] is None:
-            filename = get_file_to_local(row[4])
-            r[name] = (dbfile, db_std_str(filename), row[4])
-        else:
-            r[name] = None
-    return r
 
 
 def set_defaults(add_files, args, c, sql, now):

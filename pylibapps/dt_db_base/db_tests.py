@@ -43,14 +43,26 @@ class test_script_obj(object):
 
     def load_properties(self):
         if self.group_entry_id is None:
-            return {}
+            return
 
-        r = db_values.get_test_properties( self.group_entry_id,
-                                           self.db.db,
-                                           self.db.sql,
-                                           self.db.get_file_to_local)
+        c = self.db.db.cursor()
+        r = {}
+        cmd = self.db.sql.get_test_properties(self.group_entry_id)
+        rows = c.query(cmd)
+        for row in rows:
+            name = db_std_str(row[0])
+            if not row[1] is None:
+                r[name] = db_std_str(row[1])
+            elif not row[2] is None:
+                r[name] = row[2]
+            elif not row[3] is None:
+                r[name] = row[3]
+            elif not row[4] is None:
+                filename = self.db.get_file_to_local(row[4])
+                r[name] = (dbfile, db_std_str(filename), row[4])
+            else:
+                r[name] = None
         self.pending_properties = r
-        return r
 
     def remove(self, db_cursor=None, now=None):
         if now is None:
