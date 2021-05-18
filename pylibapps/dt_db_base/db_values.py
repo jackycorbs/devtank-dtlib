@@ -2,22 +2,8 @@ from __future__ import print_function, absolute_import
 
 import os
 import sys
-import decimal
 
 from .db_common import *
-
-
-def get_float_prop_digits(entry):
-    if 'value' in entry:
-        extra = [ entry['value'] ]
-    elif 'default' in entry:
-        extra = [ entry['default'] ]
-    else:
-        extra = []
-    return min([ decimal.Decimal(str(f)).as_tuple().exponent for f in
-                [ entry[k] for k in ['min','max','step']]
-                + extra
-                ]) * -1
 
 
 def get_db_version(db, sql):

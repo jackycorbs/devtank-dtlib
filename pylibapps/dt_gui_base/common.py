@@ -1,9 +1,23 @@
-from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits, dbfile
+import decimal
+
+from dt_db_base import get_test_doc, get_args_in_src, dbfile
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
+
+def get_float_prop_digits(entry):
+    if 'value' in entry:
+        extra = [ entry['value'] ]
+    elif 'default' in entry:
+        extra = [ entry['default'] ]
+    else:
+        extra = []
+    return min([ decimal.Decimal(str(f)).as_tuple().exponent for f in
+                [ entry[k] for k in ['min','max','step']]
+                + extra
+                ]) * -1
 
 def _update_desc(prop):
     widget_dict = prop["widget_dict"]
