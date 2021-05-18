@@ -17,8 +17,7 @@ from .db_filestore_protocol import smb_transferer, sftp_transferer
 from .db_common import *
 from .db_tests import test_script_obj, test_group_obj, test_group_sessions
 
-from .db_values import get_settings_tree   as values_get_settings_tree,   \
-                       set_defaults        as values_set_defaults
+from .db_values import validate_args_definitions, value_obj_t
 from .tests_group import tests_group_creator
 from .db_tester import db_tester_machine
 
@@ -66,6 +65,10 @@ class tester_database(object):
         if not os.path.exists(work_folder):
             os.mkdir(work_folder)
         self.tester_machine = None
+        self.settings = value_obj_t.get_settings_root(self)
+        self.test_props = value_obj_t.get_test_props_root(self)
+        self.result_values = value_obj_t.get_result_props_root(self)
+        self.props_defaults = self.settings.get_child("defaults")
 
     def clean(self):
         for protocol_transferer in self.protocol_transferers.values():
@@ -183,10 +186,15 @@ class tester_database(object):
 
         return r
 
-    def add_files(self, filepaths):
+    def add_files(self, filepaths, db_cursor=None, now=None):
         db = self.db
-        r = self._add_files(db.cursor(), filepaths)
-        db.commit()
+        if db_cursor is None:
+            c = db.cursor()
+        else:
+            c = db_cursor
+        r = self._add_files(c, filepaths, now)
+        if db_cursor is None:
+            db.commit()
         return r
 
     def get_file_to_local(self, file_id):
@@ -223,9 +231,6 @@ class tester_database(object):
 
         return local_file
 
-    def get_settings(self):
-        return values_get_settings_tree(self.db, self.sql, db_ms_now())
-
     def get_resource_files(self):
         rows = self.db.query(self.sql.get_resource_files())
         return dict([ row for row in rows ])
@@ -248,14 +253,8 @@ class tester_database(object):
         return row[0]
 
     def set_defaults(self, args, db_cursor=None, now=None):
-        db = self.db
-        c = db_cursor
-        if c is None:
-            c = db.cursor()
-        if now is None:
-            now = db_ms_now()
-        values_set_defaults(self.add_files, args, c, self.sql, now)
-        db.commit()
+        validate_args_definitions(args)
+        self.props_defaults.set_dict_tree(args, db_cursor, now)
 
     def get_test_by_name(self, test_name, db_cursor=None, now=None):
         if now is None:

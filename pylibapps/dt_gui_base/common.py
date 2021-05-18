@@ -390,7 +390,7 @@ def populate_test_properties(context, test_props, filename, properties):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         test_props.add(box)
 
-        props_defaults = context.db.get_settings()['defaults']
+        props_defaults = context.db.props_defaults.get_as_dict_tree()
 
         all_files = context.db.get_resource_files()
 
