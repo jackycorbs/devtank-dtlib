@@ -429,7 +429,7 @@ class base_run_context(object):
         test_list_store = self.test_list.get_model()
         test_list_store.clear()
         for name in session.tests:
-            test_list_store.append([name, "", None])
+            test_list_store.append([name, None, None])
 
         selector = self.dev_list.get_selection()
         for dev_uuid in dev_list_store:
