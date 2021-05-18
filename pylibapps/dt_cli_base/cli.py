@@ -191,7 +191,7 @@ _debug_messages = False
 
 
 
-def run_group(context, cmd_args):
+def run_group(context, cmd_args, submit=True):
     import gi
     gi.require_version('GLib', '2.0')
     from gi.repository import GLib
@@ -223,6 +223,12 @@ def run_group(context, cmd_args):
     else:
         print("Failed to start tests group.")
     print("=" * 72)
+    if submit:
+        run_group_man.submit()
+
+
+def dry_run_group(context, cmd_args):
+    run_group(context, cmd_args, False)
 
 
 generic_cmds = {
@@ -236,6 +242,7 @@ generic_cmds = {
     "add_fail"     : (add_fail,     "Get <device> a fail for <named> group."),
     "dev_results"  : (dev_results,  "Get <device> results."),
     "show_group"   : (show_group,   "Print information about a <test group ID>"),
+    "dry_run_group": (dry_run_group,"Dry run (no DB commit) group <name> on attached <device>."),
     "run_group"    : (run_group,    "Run group <name> on attached <device>."),
     }
 
