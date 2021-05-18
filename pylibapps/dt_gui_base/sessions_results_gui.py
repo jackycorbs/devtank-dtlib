@@ -6,7 +6,8 @@ import sys
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GLib, GObject
+from gi.repository import Gtk, Gdk, GLib, GObject, GdkPixbuf
+
 
 class base_session_results_singlton(object):
     def __init__(self, context):
@@ -16,7 +17,7 @@ class base_session_results_singlton(object):
         self.session_results_scroll = context.builder.get_object("session_results_scroll")
         self.session_results_pos = context.builder.get_object("session_results_pos")
 
-        self.session_list_store = Gtk.ListStore(str, str, str, object)
+        self.session_list_store = Gtk.ListStore(str, str, GdkPixbuf.Pixbuf, object)
 
         self.columns = [ Gtk.TreeViewColumn("Session",
                                             Gtk.CellRendererText(),
@@ -26,7 +27,7 @@ class base_session_results_singlton(object):
                                             text=1),
                          Gtk.TreeViewColumn("Status",
                                              Gtk.CellRendererPixbuf(),
-                                             icon_name=2) ]
+                                             pixbuf=2) ]
 
         self.session_list.set_model(self.session_list_store)
         self.session_list.append_column(self.columns[0])
@@ -134,7 +135,7 @@ class base_session_results_singlton(object):
 
         for session in sessions:
             stamp = datetime.datetime.fromtimestamp(session.time_of_tests)
-            icon = session.get_pass_fail_icon_name(session.pass_fail)
+            icon = self.context.get_pass_fail_icon_name(session.pass_fail)
             row = [str(stamp), session.group.name, icon, session]
             list_store.insert(0, row)
 
