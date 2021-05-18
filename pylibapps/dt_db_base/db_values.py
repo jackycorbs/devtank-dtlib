@@ -7,16 +7,6 @@ import decimal
 from .db_common import *
 
 
-def to_type_from_str(value_str):
-    if value_str.count(".") == 1:
-        if min([c.isdigit() or c in '-.+' for c in value_str]):
-            return float(value_str)
-    else:
-        if min([c.isdigit() or c in '-+' for c in value_str]):
-            return int(value_str)
-    return value_str
-
-
 def get_float_prop_digits(entry):
     if 'value' in entry:
         extra = [ entry['value'] ]
