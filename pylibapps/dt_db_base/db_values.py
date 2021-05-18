@@ -6,24 +6,6 @@ import sys
 from .db_common import *
 
 
-def get_db_version(db, sql):
-    rows = db.query(sql.get_version())
-    if len(rows) != 1:
-        raise Exception("Should be one entry for version, got %i" % len(rows))
-    if rows[0][0] != "version" or rows[0][1] < 3:
-        raise Exception("Database and code version mismatch.")
-    return rows[0][1]
-
-
-def get_result_props_id(db, sql):
-    rows = db.query(sql.get_result_values_parent_id())
-    if not len(rows):
-        return None
-    if len(rows) != 1:
-        raise Exception("Should be one entry for results values parent.")
-    return int(rows[0][0])
-
-
 def _get_value_tree(c, sql, parent_id, now):
     r = {}
     value_entries = c.query(sql.get_value(parent_id, now))

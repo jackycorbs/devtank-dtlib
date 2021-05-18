@@ -27,6 +27,16 @@ class sql_common(object):
         self.settings_id = 2
         self.test_props_id = 4
         self.result_props_id = None
+
+    def setup(self, db):
+        cmd = self.get_dynamic_table_info()
+        row = db.query_one(cmd)
+        assert row, "Nothing returned for dynamic table names."
+        self.use_dynamic_table_info(row)
+        rows = db.query(self.get_result_values_parent_id())
+        if rows:
+            assert len(rows) == 1, "Should be one entry for results values parent."
+            self.result_props_id = rows[0][0]
     """
     ====================================================================
 

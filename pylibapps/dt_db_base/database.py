@@ -17,9 +17,7 @@ from .db_filestore_protocol import smb_transferer, sftp_transferer
 from .db_common import *
 from .db_tests import test_script_obj, test_group_obj, test_group_sessions
 
-from .db_values import get_db_version      as values_get_db_version,      \
-                       get_result_props_id as values_get_result_props_id, \
-                       get_settings_tree   as values_get_settings_tree,   \
+from .db_values import get_settings_tree   as values_get_settings_tree,   \
                        set_defaults        as values_set_defaults
 from .tests_group import tests_group_creator
 from .db_tester import db_tester_machine
@@ -56,8 +54,8 @@ class tester_database(object):
     def __init__(self, db, sql, work_folder):
         self.db = db
         self.sql = sql
-        self.version = values_get_db_version(db, sql)
-        sql.result_props_id = values_get_result_props_id(db, sql)
+        sql.setup(db)
+        self.version = sql.db_version
 
         self.work_folder = work_folder
         self._known_objs = {}
@@ -67,14 +65,7 @@ class tester_database(object):
         self._new_tests_cache = (None, {})
         if not os.path.exists(work_folder):
             os.mkdir(work_folder)
-        self.init_dynamic_tables()
         self.tester_machine = None
-
-    def init_dynamic_tables(self):
-        cmd = self.sql.get_dynamic_table_info()
-        row = self.db.query_one(cmd)
-        assert row, "Nothing returned for dynamic table names."
-        self.sql.use_dynamic_table_info(row)
 
     def clean(self):
         for protocol_transferer in self.protocol_transferers.values():
