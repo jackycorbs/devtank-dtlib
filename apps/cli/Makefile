@@ -37,8 +37,11 @@ coverage: default
 	echo "{ type: sqlite, filename: /tmp/dt_test.db, db_files: /tmp/dt_test_files }" > /tmp/dt_test.yaml
 	python3-coverage erase
 	$(COVERAGERUN) update_tests tests/groups.yaml
+	$(COVERAGERUN) update_tests tests/groups.yaml
+	$(COVERAGERUN) list_groups
 	$(COVERAGERUN) fake_dev 04
 	$(COVERAGERUN) run_group "Example Group" 04
+	$(COVERAGERUN) group_dump "Example Group"
 	python3-coverage html
 	sensible-browser htmlcov/index.html
 
