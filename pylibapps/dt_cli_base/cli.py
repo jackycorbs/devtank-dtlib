@@ -136,6 +136,8 @@ def dev_status(context, cmd_args):
 def add_fail(context, cmd_args):
     assert len(cmd_args) >= 2, "Wrong argument count."
     uid = cmd_args[0]
+    dev = cli_get_device(context.db, uid)
+    uid = dev.uuid
     group_name = " ".join(cmd_args[1:])
     db_group = context.db.get_group(group_name)
     if not db_group:

@@ -57,6 +57,7 @@ local_db_clean:
 coverage: default
 	python3-coverage erase
 	PYTHONPATH=output/lib LD_LIBRARY_PATH=output/lib python3-coverage run --include "output/*" ./output/bin/example_tester_gui.py --desktop
+	python3-coverage combine
 	python3-coverage html
 	sensible-browser htmlcov/index.html
 
