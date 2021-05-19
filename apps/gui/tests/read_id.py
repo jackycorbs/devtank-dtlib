@@ -1,6 +1,6 @@
 '''Example test script.
 
-This test programs the device with a provided executable.
+Update UUID of database version of device from hardware.
 
 Input Variables:
 
@@ -10,16 +10,12 @@ Input Variables:
   name    - Name of test being run.
   results - Results map of all tests.
 
-Test Specific Arguments:
-  args["my_test_var"] - Test variable
-
 '''
 
 output_normal("Original UUID : " + dev.uuid)
-output_good("I'm happy")
-output_bad("I'm sad")
-test_check (args["my_test_var"] == 4, "Variable check")
 
 dev.update_uuid_from_hw()
 
 output_normal("New UUID : " + dev.uuid)
+
+output_bad("Device might be hot!")
