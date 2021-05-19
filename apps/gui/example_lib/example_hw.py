@@ -86,7 +86,7 @@ class example_dev(object):
         self.exact_check(r, True, "Firmware Programmed")
 
     def reset(self):
-            dt_db_base.info_msg("Device reset")
+        dt_db_base.info_msg("Device reset")
 
 
 ## Open connection to a Example bus.
