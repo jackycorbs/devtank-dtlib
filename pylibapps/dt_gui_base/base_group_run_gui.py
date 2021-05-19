@@ -387,12 +387,12 @@ class base_run_context(object):
                 test = test_result[0]
                 pass_fail = self.run_group_man.is_pass(dev, test)
                 if pass_fail < 0:
-                    test_result[1] = ""
+                    test_result[1] = None
                 else:
                     test_result[1] = self.context.get_pass_fail_icon_name(pass_fail)
         else:
             for test_result in test_list_store:
-                test_result[1] = ""
+                test_result[1] = None
         self.load_info()
 
     def load_info(self):
