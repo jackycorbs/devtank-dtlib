@@ -40,8 +40,10 @@ coverage: default
 	$(COVERAGERUN) update_tests tests/groups.yaml
 	$(COVERAGERUN) list_groups
 	$(COVERAGERUN) fake_dev 04
-	$(COVERAGERUN) run_group "Example Group" 04
-	$(COVERAGERUN) group_dump "Example Group"
+	$(COVERAGERUN) run_group "Sunny Day" 04
+	$(COVERAGERUN) group_dump "Sunny Day"
+	$(COVERAGERUN) run_group "Rainy Day" 04
+	$(COVERAGERUN) group_dump "Rainy Day"
 	python3-coverage html
 	sensible-browser htmlcov/index.html
 
