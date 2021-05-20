@@ -154,7 +154,7 @@ def _add_arg(context, tests_group, test, arg, box, all_files):
         cell = Gtk.CellRendererText()
         files_drop.pack_start(cell, True)
         files_drop.add_attribute(cell, "text", 0)
-        all_file_ids = all_files.keys()
+        all_file_ids = list(all_files.keys())
         for file_id in all_file_ids:
             filename = all_files[file_id]
             files_store.append(["%i:%s" % (file_id, filename), file_id])
