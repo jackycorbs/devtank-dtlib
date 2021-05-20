@@ -8,7 +8,6 @@ import os
 import sys
 import copy
 import yaml
-import hashlib
 
 
 from .test_file_extract import get_args_in_src
@@ -17,36 +16,10 @@ from .db_filestore_protocol import smb_transferer, sftp_transferer
 from .db_common import *
 from .db_tests import test_script_obj, test_group_obj, test_group_sessions
 
-from .db_values import validate_args_definitions, value_obj_t
+from .db_values import value_obj_t
 from .tests_group import tests_group_creator
 from .db_tester import db_tester_machine
 
-
-
-def _get_defaults(local_folder):
-    r = {"exit_on_fail": { 'desc'   : 'Exit on Fail',
-                           'type'   : 'bool',
-                           'default': True }}
-    defaults_file = os.path.join(local_folder, "args.yaml")
-    if os.path.exists(defaults_file):
-        with open(defaults_file) as f:
-            defaults_gen=yaml.safe_load_all(f)
-            r.update([root for root in defaults_gen][0])
-    return r
-
-def _extract_defaults(test_file, default_args):
-    args = get_args_in_src(test_file)
-    for key in args:
-        args[key] = default_args[key]
-    return args
-
-
-def filename_sha256(filename):
-    m = hashlib.sha256()
-    with open(filename, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            m.update(chunk)
-    return str(m.hexdigest())
 
 
 class tester_database(object):
@@ -252,9 +225,55 @@ class tester_database(object):
             return None
         return row[0]
 
-    def set_defaults(self, args, db_cursor=None, now=None):
-        validate_args_definitions(args)
-        self.props_defaults.set_dict_tree(args, db_cursor, now)
+    @staticmethod
+    def _validate_args_definitions(args):
+        for prop, prop_values in args.items():
+            assert isinstance(prop, str), "Arg name not string"
+            used = ['type', 'desc']
+            prop_type = prop_values.get('type', None)
+            assert prop_type is not None, "Arg has no type"
+            if isinstance(prop_type, type):
+                prop_pytype = prop_type
+                prop_type = db_type_from_py_type(prop_type)
+                assert prop_type is not None, "Arg has unknown type"
+            else:
+                prop_pytype = py_type_from_db_type(prop_type)
+                assert prop_pytype is not None, "Arg has unknown type"
+            desc = prop_values.get('desc', None)
+            assert isinstance(desc, str), "Arg desc not string"
+
+            default_value = prop_values.get('value', ValueError)
+            if default_value is not ValueError:
+                prop_values['default'] = prop_values.pop('value')
+            else:
+                default_value = prop_values.get('default', ValueError)
+
+            if default_value is not ValueError:
+                if prop_type == "float":
+                    assert isinstance(default_value, float) or isinstance(default_value, int), "Arg default not of own type"
+                elif prop_type == "bool":
+                    assert isinstance(default_value, bool) or isinstance(default_value, int), "Arg default not of own type"
+                    prop_values['default'] = bool(default_value)
+                else:
+                    assert isinstance(default_value, prop_pytype), "Arg default not of own type"
+                used += ['default']
+
+            if prop_type == "int" or prop_type == "float":
+                for param in ["min", "max", "step"]:
+                    v = prop_values.get(param, None)
+                    if prop_type == "float":
+                        assert isinstance(v, float) or isinstance(v, int), "Arg int/float min/max/step wrong"
+                    else:
+                        assert isinstance(v, prop_pytype), "Arg int/float min/max/step wrong"
+                used += ["min", "max", "step"]
+            used.sort()
+            prop_values = list(prop_values.keys())
+            prop_values.sort()
+            assert used == prop_values, "Arg unknown properties"
+
+    def add_defaults(self, args, db_cursor=None, now=None):
+        self._validate_args_definitions(args)
+        self.props_defaults.add_dict_tree(args, db_cursor, now)
 
     def get_test_by_name(self, test_name, db_cursor=None, now=None):
         if now is None:
@@ -281,7 +300,7 @@ class tester_database(object):
             return None
         return self._new_test_obj( row[0], row[1], row[2])
 
-    def add_test(self, local_file, args, db_cursor=None, now=None, test_name=None):
+    def add_test(self, local_file, test_arg_defs, db_cursor=None, now=None, test_name=None, default_args=None):
         if now is None:
             now = db_ms_now()
         db = self.db
@@ -306,7 +325,7 @@ class tester_database(object):
         if test_id is None:
             file_id = self._add_files(c, [local_file])[0] # Look up again if need be
             test_id = c.insert(self.sql.add_test(file_id, now))
-            self.set_defaults(args, c, now)
+            self.add_defaults(test_arg_defs, c, now)
             if db_cursor is None:
                 db.commit()
             tests_id_cache[(test_name, local_file)] = (test_id, file_id)
@@ -323,55 +342,24 @@ class tester_database(object):
             group.updated_db(db_cursor, now)
 
 
-    def update_tests_in_folder(self, local_folder, db_cursor=None, now=None):
-
-        if now is None:
-            now = db_ms_now()
-        db = self.db
-        if db_cursor is None:
-            c = db.cursor()
-        else:
-            c = db_cursor
-
-        db_groups = self.get_groups()
-
-        groups = [ tests_group_creator(self, db_group) \
-                   for db_group in db_groups ]
-
-        tests = self.get_all_tests()
-        tests_map = dict([(test.filename, test) for test in tests])
-
-        default_args = _get_defaults(local_folder)
-
-        all_files = os.listdir(local_folder)
-        for filename in all_files:
-            if filename.endswith(".py"):
-                new_test_file = os.path.join(local_folder, filename)
-                if filename in tests_map:
-                    test = tests_map[filename]
-                    local_test_file = test.get_file_to_local()
-                    test_filehash = filename_sha256(local_test_file)
-                    new_file_hash = filename_sha256(new_test_file)
-                    if test_filehash != new_file_hash:
-                        print('Updating test "%s"' % filename)
-                        test.remove(c, now)
-                        args = _extract_defaults(new_test_file,
-                                                 default_args)
-                        new_test = self.add_test(new_test_file, args, c,
-                                                 now)
-                        self._update_groups_with_new_test(groups,
-                                                          test,
-                                                          new_test, c, now)
-                else:
-                    args = _extract_defaults(new_test_file,
-                                             default_args)
-                    new_test = self.add_test(new_test_file, args, c,
-                                             now)
-        if db_cursor is None:
-            db.commit()
-
-    def add_tests_folder(self, local_folder, db_cursor=None, now=None):
-        self.update_tests_in_folder(local_folder, db_cursor, now)
+    def _get_default_args(self, local_folder, db_cursor=None, now=None):
+        r = {"exit_on_fail": { 'desc'   : 'Exit on Fail',
+                               'type'   : 'bool',
+                               'default': True }}
+        defaults_file = os.path.join(local_folder, "args.yaml")
+        org = self.props_defaults.get_as_dict_tree(db_cursor, now)
+        r.update(org)
+        if os.path.exists(defaults_file):
+            with open(defaults_file) as f:
+                defaults_gen=yaml.safe_load_all(f)
+                new_args = [root for root in defaults_gen][0]
+                for arg, arg_body in new_args.items():
+                    old_arg = org.get(arg, None)
+                    if old_arg:
+                        # We can let something things change, but not type.
+                        assert old_arg['type'] == arg_body['type'], "Type change of default arg."
+                r.update(new_args)
+        return r
 
     def group_from_dict(self, group_data, folder, db_cursor=None, now=None):
         if now is None:
@@ -382,7 +370,7 @@ class tester_database(object):
         else:
             c = db_cursor
 
-        default_args = _get_defaults(folder)
+        default_args = self._get_default_args(folder, c, now)
         tests = []
         for test_name, test_args in group_data["tests"]:
             if 'exit_on_fail' not in test_args:
@@ -403,8 +391,11 @@ class tester_database(object):
             if not test_obj:
                 if not os.path.exists(test_filename):
                     raise Exception("Test file '%s' not found" % test_filename)
-                args = _extract_defaults(test_filename, default_args)
-                test_obj = self.add_test(test_filename, args, c, now, test_name)
+                file_args = get_args_in_src(test_filename)
+                test_arg_defs = {}
+                for arg in file_args:
+                    test_arg_defs[arg] = default_args[arg]
+                test_obj = self.add_test(test_filename, test_arg_defs, c, now, test_name)
             for arg_key in test_args:
                 arg_details = default_args[arg_key]
                 if arg_details['type'] == 'file':

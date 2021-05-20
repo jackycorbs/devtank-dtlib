@@ -21,7 +21,7 @@ def _clicked_ok(window, context):
     for value in _properties.values():
         value.pop("widget_dict")
 
-    context.db.set_defaults(_properties)
+    context.db.add_defaults(_properties)
 
     _clicked_cancel(window, context)
 

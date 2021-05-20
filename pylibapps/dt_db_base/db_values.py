@@ -94,7 +94,13 @@ class value_obj_t(object):
         return self._get_value_tree(c, self.db.sql, self.id, now)
 
 
+    def add_dict_tree(self, d, db_cursor=None, now=None):
+        self._set_dict_tree(d, True, db_cursor, now)
+
     def set_dict_tree(self, d, db_cursor=None, now=None):
+        self._set_dict_tree(d, False, db_cursor, now)
+
+    def _set_dict_tree(self, d, append, db_cursor=None, now=None):
         if now is None:
             now = db_ms_now()
         c = db_cursor
@@ -110,7 +116,7 @@ class value_obj_t(object):
             else:
                 if isinstance(value, dict):
                     if child.value is None:
-                        child.set_dict_tree(value, c, now)
+                        child._set_dict_tree(value, append, c, now)
                     else:
                         child.remove()
                         self.add_child(name, value, c, now)
@@ -119,9 +125,10 @@ class value_obj_t(object):
                     child.remove()
                     self.add_child(name, value, c, now)
 
-        # Remove anything left in old children array
-        for old_child in old_children.values():
-            old_child.remove(c, now)
+        if not append:
+            # Remove anything left in old children array
+            for old_child in old_children.values():
+                old_child.remove(c, now)
 
         if db_cursor is None:
             self.db.db.commit()
@@ -186,41 +193,3 @@ class value_obj_t(object):
             self.db.db.commit()
 
         return r
-
-
-def validate_args_definitions(args):
-    for prop, prop_values in args.items():
-        assert isinstance(prop, str), "Arg name not string"
-        used = ['type', 'desc']
-        prop_type = prop_values.get('type', None)
-        assert prop_type is not None, "Arg has no type"
-        if isinstance(prop_type, type):
-            prop_pytype = prop_type
-            prop_type = db_type_from_py_type(prop_type)
-            assert prop_type is not None, "Arg has unknown type"
-        else:
-            prop_pytype = py_type_from_db_type(prop_type)
-            assert prop_pytype is not None, "Arg has unknown type"
-        desc = prop_values.get('desc', None)
-        assert isinstance(desc, str), "Arg desc not string"
-
-        default_value = prop_values.get('default', ValueError)
-        if default_value is ValueError:
-            default_value = prop_values.get('value', ValueError)
-            if default_value is not ValueError:
-                used += ['value']
-        else:
-            used += ['default']
-
-        if default_value is not ValueError:
-            assert isinstance(default_value, prop_pytype), "Arg default not of own type"
-
-        if prop_type == "int" or prop_type == "float":
-            for param in ["min", "max", "step"]:
-                v = prop_values.get(param, None)
-                assert isinstance(v, float) or isinstance(v, int), "Arg int/float min/max/step wrong"
-            used += ["min", "max", "step"]
-        used.sort()
-        prop_values = list(prop_values.keys())
-        prop_values.sort()
-        assert used == prop_values, "Arg unknown properties"

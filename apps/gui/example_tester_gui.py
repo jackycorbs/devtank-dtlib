@@ -28,7 +28,6 @@ def db_load_extra(db):
     tests = db.get_all_tests()
     if not len(tests):
         print("Import tests")
-        db.add_tests_folder(os.path.abspath("tests"))
         db.load_groups(os.path.abspath("tests/groups.yaml"))
 
 
