@@ -30,7 +30,12 @@ def _add_new_test(context, file_btn, properties):
     for value in properties.values():
         value.pop("widget_dict", None)
 
-    context.db.add_test(filename, properties)
+    now = db_ms_now()
+
+    with context.db.db as c:
+        context.db.add_defaults(properties, c, now)
+        context.db.add_test(filename, c, now)
+
     file_btn.set_filename("")
     test_props = context.builder.get_object("NewTestProps")
     old_props = test_props.get_children()

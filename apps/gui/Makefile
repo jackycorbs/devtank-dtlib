@@ -54,6 +54,12 @@ local_db_pop:
 local_db_clean:
 	rm -rf files_cache test.db test.db-journal db_files
 
+coverage: default
+	python3-coverage erase
+	PYTHONPATH=output/lib LD_LIBRARY_PATH=output/lib python3-coverage run --include "output/*" ./output/bin/example_tester_gui.py --desktop
+	python3-coverage combine
+	python3-coverage html
+	sensible-browser htmlcov/index.html
 
 include $(LIBDEVTANKROOT)/pylibapps/Makefile.pylibapps
 

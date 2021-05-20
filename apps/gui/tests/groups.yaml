@@ -1,33 +1,25 @@
 {
     groups : [
         {
-            name : "Example Group",
-            desc : "Example Test Group",
-            note : "As Imported",
+            name : "Sunny Day",
+            desc : "Sunny Day Example Test Group",
+            note : "Hand written version",
             tests:
             [
-                [
-                    "test.py",
-                    {
-                        "my_test_var"    : 4
-                    }
-                ],
-                [
-                    "test2.py",
-                    {
-                        "my_test_str"    : "hello world"
-                    }
-                ],
-                [
-                    [ "test2-again.py", "test2.py" ],
-                    {
-                        "my_test_str"    : "goodbye world",
-                        "exit_on_fail"   : False
-                    }
-                ],
-                [
-                    "test3.py", {}
-                ]
+                [ "basics.py",  { "hw_rev" : 101 } ],
+                [ "program.py", { "firmware" : "fw.img", "serial" : "Hello World", "write_enable" : True } ],
+                [ "read_id.py", {} ]
+            ]
+        },
+        {
+            name : "Rainy Day",
+            desc : "Rainy Day Example Test Group",
+            note : "Hand written version",
+            tests:
+            [
+                [ "basics.py",  { "hw_rev" : 102, "exit_on_fail" : False} ],
+                [ "program.py", { "firmware" : "fw.img", "serial" : "Morning World", "write_enable" : False, "exit_on_fail" : False } ],
+                [ "read_id.py", { "exit_on_fail" : False} ]
             ]
         },
     ]

@@ -30,6 +30,29 @@ $(OUTDIR)/build/resources: resources/* $(LIBDEVTANKROOT)/pylibapps/resources/* M
 	cp -v $(LIBDEVTANKROOT)/pylibapps/resources/*  $(OUTDIR)/resources/
 	touch $(OUTDIR)/build/resources
 
+COVERAGERUN=PYTHONPATH=output/lib LD_LIBRARY_PATH=output/lib python3-coverage run --include "output/*" -a ./output/bin/example_tester_cli.py --config /tmp/dt_test.yaml
+coverage: default
+	rm -rf /tmp/dt_test.db /tmp/dt_test_files
+	echo "{ type: sqlite, filename: /tmp/dt_test.db, db_files: /tmp/dt_test_files }" > /tmp/dt_test.yaml
+	python3-coverage erase
+	$(COVERAGERUN) update_tests tests/groups.yaml
+	$(COVERAGERUN) update_tests tests/groups.yaml
+	$(COVERAGERUN) list_groups
+	$(COVERAGERUN) fake_dev 04
+	$(COVERAGERUN) show_group 1
+	$(COVERAGERUN) run_group "Sunny Day" 04
+	$(COVERAGERUN) group_dump "Sunny Day"
+	$(COVERAGERUN) run_group "Rainy Day" 04
+	$(COVERAGERUN) group_dump "Rainy Day"
+	$(COVERAGERUN) dev_results 04
+	$(COVERAGERUN) dev_status 0
+	$(COVERAGERUN) group_results "Sunny Day"
+	$(COVERAGERUN) group_result "Sunny Day" 0
+	$(COVERAGERUN) add_fail 04 "Sunny Day"
+	python3-coverage combine
+	python3-coverage html
+	sensible-browser htmlcov/index.html
+
 include $(LIBDEVTANKROOT)/pylibapps/Makefile.pylibapps
 
 include $(LIBDEVTANKROOT)/libbase/Makefile.libbase

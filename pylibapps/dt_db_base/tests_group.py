@@ -24,7 +24,7 @@ class tests_group_creator:
 
 
     def update_defaults(self):
-        self.props_defaults = self.db.get_settings()['defaults']
+        self.props_defaults = self.db.props_defaults.get_as_dict_tree()
         for key, val in self.props_defaults.items():
             assert 'type' in val
             assert 'desc' in val

@@ -8,9 +8,9 @@ from .query_gui import open_query_gui
 from .notify_gui import open_notify_gui
 from .group_naming_gui import open_test_group_naming
 from .barcode_scan_gui import scan_box_base
+from .common import get_float_prop_digits
 
-
-from dt_db_base import get_test_doc, get_args_in_src, get_float_prop_digits, db_is_str_class, dbfile
+from dt_db_base import get_test_doc, get_args_in_src, db_is_str_class, dbfile
 
 import gi
 gi.require_version('Gtk', '3.0')

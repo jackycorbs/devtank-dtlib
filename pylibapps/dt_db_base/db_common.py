@@ -49,7 +49,7 @@ def py_type_from_db_type(db_type):
                 "float": float,
                 "text": str,
                 "bool": bool}
-    return py_types[db_type]
+    return py_types.get(db_type, None)
 
 
 def db_type_from_py_type(py_type):
@@ -58,4 +58,4 @@ def db_type_from_py_type(py_type):
                 float : "float:",
                 dbfile : "file",
                 str : "text"}
-    return db_types[py_type]
+    return db_types.get(py_type, None)

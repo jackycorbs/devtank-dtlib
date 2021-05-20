@@ -27,6 +27,16 @@ class sql_common(object):
         self.settings_id = 2
         self.test_props_id = 4
         self.result_props_id = None
+
+    def setup(self, db):
+        cmd = self.get_dynamic_table_info()
+        row = db.query_one(cmd)
+        assert row, "Nothing returned for dynamic table names."
+        self.use_dynamic_table_info(row)
+        rows = db.query(self.get_result_values_parent_id())
+        if rows:
+            assert len(rows) == 1, "Should be one entry for results values parent."
+            self.result_props_id = rows[0][0]
     """
     ====================================================================
 
@@ -460,26 +470,23 @@ WHERE parent_id=%i AND valid_from<=%i AND \
 
     def get_value_by_name(self, parent_id, name, now):
         return "\
-SELECT id FROM \"values\" \
+SELECT id, name, value_text, value_int, value_real, value_file_id \
+FROM \"values\" \
 WHERE parent_id=%i AND valid_from<=%i AND \
 (valid_to IS NULL OR valid_to>%i) AND \
 name='%s'" % (parent_id, now, now, db_safe_str(name))
 
-    def add_null_value(self, name, valid_from, is_result=False):
+    def add_null_value(self, name, valid_from, parent_id):
         return "\
 INSERT INTO \"values\" (name, parent_id, valid_from) \
 VALUES('%s', %i, %i)" % \
-(db_safe_str(name),
-self.result_props_id if is_result else self.test_props_id, valid_from)
+(db_safe_str(name), parent_id, valid_from)
 
-    def add_value(self, name, value_column, value, valid_from,
-                  is_result=False):
+    def add_value(self, name, value_column, value, valid_from, parent_id):
         return "\
 INSERT INTO \"values\" (name, %s, parent_id, valid_from) \
 VALUES('%s',%s, %i, %i)" % \
-(db_safe_name(value_column), db_safe_str(name), value,
-self.result_props_id if is_result else self.test_props_id,
-valid_from)
+(db_safe_name(value_column), db_safe_str(name), value, parent_id, valid_from)
 
     def get_result_values_parent_id(self):
         return "SELECT id FROM \"values\" WHERE parent_id IS NULL AND \
@@ -489,6 +496,10 @@ name='results_values'"
         return "\
 UPDATE \"values\" SET valid_to=%i WHERE name='%s' AND parent_id=%i" % \
 (now, name, parent_id)
+
+    def disable_value(self, value_id, now):
+        return "\
+UPDATE \"values\" SET valid_to=%i WHERE id=%i" % (now, value_id)
 
     def get_test_properties(self, group_entry_id):
         return "\

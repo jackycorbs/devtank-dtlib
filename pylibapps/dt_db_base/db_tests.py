@@ -43,14 +43,26 @@ class test_script_obj(object):
 
     def load_properties(self):
         if self.group_entry_id is None:
-            return {}
+            return
 
-        r = db_values.get_test_properties( self.group_entry_id,
-                                           self.db.db,
-                                           self.db.sql,
-                                           self.db.get_file_to_local)
+        c = self.db.db.cursor()
+        r = {}
+        cmd = self.db.sql.get_test_properties(self.group_entry_id)
+        rows = c.query(cmd)
+        for row in rows:
+            name = db_std_str(row[0])
+            if not row[1] is None:
+                r[name] = db_std_str(row[1])
+            elif not row[2] is None:
+                r[name] = row[2]
+            elif not row[3] is None:
+                r[name] = row[3]
+            elif not row[4] is None:
+                filename = self.db.get_file_to_local(row[4])
+                r[name] = (dbfile, db_std_str(filename), row[4])
+            else:
+                r[name] = None
         self.pending_properties = r
-        return r
 
     def remove(self, db_cursor=None, now=None):
         if now is None:
@@ -127,16 +139,18 @@ class test_group_obj(object):
             order_pos = 0
         if now is None:
             now = _ms_now()
+        test_props = self.db.test_props
         cmd=sql.add_test_group_test(self.id, test.id, test.name, order_pos, now)
         test.group_entry_id = c.insert(cmd)
         if "exit_on_fail" not in test.pending_properties:
             test.pending_properties["exit_on_fail"] = True
         for prop in test.pending_properties:
             prop_value = test.pending_properties[prop]
-            value_id = db_values.add_value(self.db._add_files, c, sql,
-                                           prop, prop_value, now)
+
+            value = test_props.add_child(prop, prop_value, c, now)
+
             c.insert(sql.add_test_group_value(test.group_entry_id,
-                                              value_id))
+                                              value.id))
         if db_cursor is None:
             db.commit()
 
@@ -223,6 +237,8 @@ class test_group_obj(object):
         cmd = sql.add_test_group_results(self.id, machine_id, now)
         results_id = c.insert(cmd)
 
+        result_values = self.db.result_values
+
         for dev_uuid, uuid_results in results.items():
             uuid_test_results = uuid_results['tests']
             old_uuid = uuid_results.get('old_uuid', None)
@@ -273,9 +289,8 @@ class test_group_obj(object):
                     if values:
                         if sql.dev_result_values_table_name:
                             for test_value_name, test_value_data in values.items():
-                                value_id = db_values.add_value(self.db._add_files, c, sql,
-                                                               test_value_name, test_value_data, now, True)
-                                c.insert(sql.add_test_value(result_id, value_id))
+                                value = result_values.add_child(test_value_name, test_value_data, c, now)
+                                c.insert(sql.add_test_value(result_id, value.id))
                         else:
                             print("Stored value but no table to put it.")
                 else:
