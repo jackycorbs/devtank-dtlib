@@ -1,9 +1,7 @@
 import os
 import time
 import shutil
-import paramiko
 import hashlib
-import smbc
 from shutil import copyfile
 
 
@@ -64,6 +62,7 @@ class smb_transferer(object):
             else:
                 self._cache_con.pop(cache_key)
 
+        import smbc
         self._ctx = smbc.Context(auth_fn=self._do_auth)
         self._host = file_store_host
         self._base_folder = file_store_folder
@@ -108,6 +107,7 @@ class smb_transferer(object):
 
 class sftp_connection(object):
     def __init__(self, file_store_host, db_def):
+        import paramiko
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
