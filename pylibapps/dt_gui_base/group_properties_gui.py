@@ -50,7 +50,7 @@ class _prop_scan(scan_box_base):
 
 
 
-class group_properties_class(object):
+class group_properties_singleton(object):
     def __init__(self, context):
         self.context = context
         self._next_view_cb = None
@@ -347,4 +347,4 @@ def open_tests_properties(context, next_view_cb=None, allow_unset=True, only_uns
 
 def init_tests_properties(context):
     global _singleton
-    _singleton = group_properties_class(context)
+    _singleton = group_properties_singleton(context)

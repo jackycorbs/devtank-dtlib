@@ -3,7 +3,7 @@
 _singleton = None
 
 
-class notify_object(object):
+class notify_object_singleton(object):
     def __init__(self, context):
         self.context = context
         self._exit_cb = None
@@ -32,4 +32,4 @@ def open_notify_gui(context, msg, cancel_btn=False, exit_cb=None):
 
 def init_notify_gui(context):
     global _singleton
-    _singleton = notify_object(context)
+    _singleton = notify_object_singleton(context)
