@@ -5,7 +5,7 @@ import sys
 import parser
 
 from .group_selector_gui import open_test_group_selector
-
+from .common import create_list_store
 
 import gi
 gi.require_version('Gtk', '3.0')

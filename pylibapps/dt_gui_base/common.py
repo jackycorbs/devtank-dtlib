@@ -7,6 +7,20 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 
+
+def create_list_store(list_obj, sort_list=False, text_scale=1):
+    if not len(list_obj.get_columns()):
+        store_list = Gtk.ListStore(str, object)
+        list_obj.set_model(store_list)
+        cell_renderer = Gtk.CellRendererText()
+        cell_renderer.set_property("scale", text_scale)
+        list_obj.append_column(Gtk.TreeViewColumn("Test", cell_renderer, text=0))
+        if sort_list:
+            store_list.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+        return store_list
+    return list_obj.get_model()
+
+
 def get_float_prop_digits(entry):
     if 'value' in entry:
         extra = [ entry['value'] ]

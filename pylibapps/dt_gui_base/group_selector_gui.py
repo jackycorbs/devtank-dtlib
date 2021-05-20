@@ -4,9 +4,11 @@ import os
 import sys
 import parser
 
+from dt_db_base import get_test_doc
 
-from .group_properties_gui import *
+from .group_properties_gui import open_tests_properties
 from .new_test_gui import *
+from .common import create_list_store
 from .edit_test_gui import *
 
 
