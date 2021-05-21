@@ -26,6 +26,14 @@ class value_obj_t(object):
             filename = db.get_file_to_local(value_file_id)
             self.value = (dbfile, filename, value_file_id)
 
+    def get_value_file(self):
+        if isinstance(self.value, tuple) and self.value[0] == dbfile:
+            return self.value[1]
+
+    def get_value_file_id(self):
+        if isinstance(self.value, tuple) and self.value[0] == dbfile:
+            return self.value[2]
+
     @staticmethod
     def get_settings_root(db):
         return value_obj_t(None, db, db.sql.settings_id, "settings")
