@@ -9,10 +9,19 @@ class null_safe_ref(object):
         return self._obj() if self._obj else None
 
 
-class db_child(object):
-    def __init__(self, db, db_id=None, db_serial=None, db_extras=None):
+class db_obj(object):
+    def __init__(self, db, db_id):
         self._db = null_safe_ref(db)
         self.id = db_id
+
+    @property
+    def db(self):
+        return self._db.get()
+
+
+class db_child(db_obj):
+    def __init__(self, db, db_id=None, db_serial=None, db_extras=None):
+        db_obj.__init__(self, db, db_id)
         self.serial_number = db_serial
         db_obj_type = type(self)
         db_obj_type_maps = db_child._get_db_obj_type_maps(db, db_obj_type)
@@ -35,10 +44,6 @@ class db_child(object):
             key_cache_map[value] = ref_link
 
         db._known_objs[db_obj_type] = db_obj_type_maps
-
-    @property
-    def db(self):
-        return self._db.get()
 
     @staticmethod
     def _get_db_obj_type_maps(db, db_obj_type):

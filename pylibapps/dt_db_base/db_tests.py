@@ -2,14 +2,14 @@ from __future__ import print_function, absolute_import
 
 import sys
 
+from .db_obj import db_obj
 from .db_common import *
 from . import db_values
 
 
-class test_script_obj(object):
-    def __init__(self, db, id, filename, file_id, name=None, group_entry_id=None, duration=None):
-        self.db = db
-        self.id = id
+class test_script_obj(db_obj):
+    def __init__(self, db, db_id, filename, file_id, name=None, group_entry_id=None, duration=None):
+        db_obj.__init__(self, db, db_id)
         self.name = name if name else filename
         self.filename = filename
         self.file_id = file_id
@@ -89,10 +89,9 @@ class test_script_obj(object):
             db.commit()
 
 
-class test_group_obj(object):
-    def __init__(self, db, id, name, desc):
-        self.db = db
-        self.id = id
+class test_group_obj(db_obj):
+    def __init__(self, db, db_id, name, desc):
+        db_obj.__init__(self, db, db_id)
         self.name = name
         self.desc = desc
         self._note = 0 if self.db.version >= 5 else None

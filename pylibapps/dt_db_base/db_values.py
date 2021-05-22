@@ -4,16 +4,16 @@ import os
 import sys
 import weakref
 
+from .db_obj import db_obj
 from .db_common import *
 
 
 
-class value_obj_t(object):
+class value_obj_t(db_obj):
     def __init__(self, parent_obj, db, value_id, value_name, value_text=None, value_int=None, value_real=None, value_file_id=None):
+        db_obj.__init__(self, db, value_id)
         self._parent = weakref.ref(parent_obj) if parent_obj else None
-        self.id = value_id
         self.name = db_std_str(value_name)
-        self._db =  weakref.ref(db)
         self.value = None
 
         if not value_text is None:
@@ -49,10 +49,6 @@ class value_obj_t(object):
             return None
         assert len(rows) == 1, "Should be one entry for results values parent."
         return value_obj_t(None, db, rows[0][0], "results_values")
-
-    @property
-    def db(self):
-        return self._db()
 
     @property
     def parent(self):
