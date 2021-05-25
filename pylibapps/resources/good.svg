@@ -15,7 +15,7 @@
    width="480"
    version="1.0"
    sodipodi:docname="good.svg"
-   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15)"
    inkscape:export-filename="/home/jabjoe/Work/Data/Autoheat/mockup/images/usb_good.png"
    inkscape:export-xdpi="6.6373825"
    inkscape:export-ydpi="6.6373825"><sodipodi:namedview
@@ -27,17 +27,18 @@
    guidetolerance="10"
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
-   inkscape:window-width="1920"
-   inkscape:window-height="1176"
+   inkscape:window-width="3840"
+   inkscape:window-height="2093"
    id="namedview824"
    showgrid="false"
-   inkscape:zoom="1.2215446"
-   inkscape:cx="64.241267"
-   inkscape:cy="120.23191"
-   inkscape:window-x="1920"
-   inkscape:window-y="0"
+   inkscape:zoom="2.4430892"
+   inkscape:cx="157.56534"
+   inkscape:cy="144.82932"
+   inkscape:window-x="0"
+   inkscape:window-y="43"
    inkscape:window-maximized="1"
-   inkscape:current-layer="Layer_1" /><metadata
+   inkscape:current-layer="Layer_1"
+   inkscape:document-rotation="0" /><metadata
    id="metadata865"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
          rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
@@ -59,6 +60,10 @@
      xlink:href="#linearGradient873" /></defs>
 
 <path
+   style="fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+   d="m 47.69835,212.27386 c 39.9196,26.07807 70.5892,60.54158 95.66733,101.42019 C 197.06805,187.47173 309.65837,83.650188 434.94611,8.9281113 L 465.69208,61.800631 C 296.42984,158.98007 201.57254,300.65922 148.70711,462.90839 107.79011,369.90677 89.228388,320.32372 8.2803078,257.32086 Z"
+   id="path1499"
+   sodipodi:nodetypes="ccccccc" /><path
    id="path867"
    d="m 27.96796,234.56443 c 39.604256,33.87379 79.29312,63.43934 117.8852,148.85069 C 214.13231,201.72801 359.66798,86.890843 450.24572,34.347143"
    style="fill:none;fill-rule:evenodd;stroke:url(#linearGradient875);stroke-width:61.15446854;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.78431373" /></svg>
