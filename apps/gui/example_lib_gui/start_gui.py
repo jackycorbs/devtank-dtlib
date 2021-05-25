@@ -62,7 +62,7 @@ class _start_double_scan(scan_box_base):
                 return
 
         if context.args['production']:
-            db_test_group = context.db.get_group("Example Group")
+            db_test_group = context.db.get_group("Sunny Day")
             context.tests_group.populate_from(db_test_group)
             from .group_run_gui import open_run_group
             next_view = open_run_group
