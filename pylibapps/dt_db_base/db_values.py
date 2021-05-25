@@ -68,6 +68,8 @@ class value_obj_t(db_obj):
             now = db_ms_now()
         cmd = self.db.sql.get_value_by_name(self.id, name, now)
         row = self.db.db.query_one(cmd)
+        if row is None:
+            return None
         return value_obj_t(self, self.db, *row)
 
     @staticmethod
