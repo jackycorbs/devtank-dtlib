@@ -14,6 +14,7 @@ Input Variables:
 
 output_normal("Original UUID : " + dev.uuid)
 
+output_normal("Read unique ID and set as database ID.")
 dev.update_uuid_from_hw()
 
 output_normal("New UUID : " + dev.uuid)
