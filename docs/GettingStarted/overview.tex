@@ -1,0 +1,137 @@
+\documentclass[a4paper,12pt, notitlepage]{article}
+
+\usepackage[top=25mm,bottom=25mm,left=25mm,right=25mm]{geometry}
+%\usepackage{amsmath} 
+\usepackage{graphicx}
+%\usepackage{epstopdf}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{url}
+\usepackage{setspace} 
+%\usepackage[square, numbers]{natbib}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[ddmmyyyy]{datetime}
+
+\setstretch{1.44}
+\setlength{\columnsep}{6mm}
+\titleformat{\section}{\bfseries\large\scshape\filright}{\thesection}{1em}{}
+\titleformat{\subsection}{\bfseries\normalsize\scshape\filright}{\thesubsection}{1em}{}
+
+
+\renewcommand{\abstractname}{}
+\newcommand{\captionfonts}{\footnotesize}
+\renewcommand\thesection{\arabic{section}.}
+\renewcommand\thesubsection{\arabic{section}.\arabic{subsection}}
+
+\makeatletter
+\long\def\@makecaption#1#2{
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{{\captionfonts #1: #2}}
+  \ifdim \wd\@tempboxa >\hsize
+    {\captionfonts #1: #2\par}
+  \else
+    \hbox to\hsize{\hfil\box\@tempboxa\hfil}
+  \fi
+  \vskip\belowcaptionskip}
+    
+\makeatother
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+	language=python,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	numberstyle=\tiny\color{gray},
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{mauve},
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=3
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Getting Started: Overview}
+\lhead{\includegraphics[height=1cm]{./Images/logo.pdf}}
+\rfoot{Page \thepage}
+\lfoot{}
+
+\renewcommand{\dateseparator}{.}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{\textbf{\large{Getting Started with the HILTOP: Overview}}}
+
+\author{\normalsize{Devtank Ltd.} \\
+        \small\textit{
+        Harry Geyer}}
+\date{\today}
+
+\maketitle 
+\thispagestyle{fancy}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract} 
+\noindent
+This is an overview of getting started with the HILTOP. If more detailed required, use the more specialised documentation attached.
+\end{abstract}
+\vspace{11mm}
+
+\newpage
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Prerequisites}
+\label{sec: prereq}
+
+\textbf{Hardware:}
+
+\begin{enumerate}
+  \item HILTOP
+  \item Multimeter
+  \item Linux machine to work with (Suggested)
+\end{enumerate}
+
+\noindent
+\textbf{Software:}
+
+\begin{enumerate}
+  \item HILTOP development image
+  \item libdevtankreborn library
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Starting}
+\label{sec: start}
+
+\subsection{Renaming}
+\label{renameStart}
+
+First to rename your files, directories and contents of files to your project name, use the bash script in the base directory: \lstinline!./rename.sh <your_project_name>!. Ensure name does cannot be interpretted as a function i.e. ``print" is a bad name. As long as every project name is unique, renaming can be repeated if a name change is needed. In these documents, it is assumed this step has not been taken so nomenclature will be simple: replace ``example" with your project name.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\small{
+\begin{thebibliography}{99}
+
+\setlength{\itemsep}{-2mm}
+
+\bibitem{Webpage} Page Title,
+                  Author {\url{https://www.url.org/}} {Accessed: dd.mm.yy}.
+\bibitem{Book} Author, 
+                  {\em Book Name}. Publisher {\bf Edition}, Pages (Publish Year).
+
+\end{thebibliography}
+}
+
+\end{document}
