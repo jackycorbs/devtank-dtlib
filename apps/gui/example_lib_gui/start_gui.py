@@ -80,12 +80,6 @@ class _start_double_scan(scan_box_base):
         self.start_scan_status_lab.set_text(msg)
 
 
-def _poweroff(yes_no):
-    if yes_no:
-        os.system("systemctl poweroff")
-
-
-
 class _start_singleton(object):
     def __init__(self, context):
         self.context = context
@@ -116,24 +110,14 @@ class _start_singleton(object):
         return True
 
     def show_view(self):
-
         self.context.force_view("Start")
-
-        if self.context.args['production']:
-            self.quit_btn.set_label("Shutdown")
-        else:
-            self.quit_btn.set_label("Quit")
-
         self.scan_view.reset_scan()
         self._refresh()
-
+        if self.context.args['production']:
+            self.quit_btn.hide()
 
     def _clicked_quit(self):
-        if self.context.args['production']:
-            open_query_gui("Clicked Power Off\nAre you sure?",
-                           lambda yes_no: _poweroff(yes_no))
-        else:
-            self.context.close_app()
+        self.context.close_app()
 
 
 def open_start_page(context):

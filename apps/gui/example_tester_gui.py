@@ -59,10 +59,6 @@ def main():
 
     example_lib_gui.init(context)
 
-    example_lib_gui.open_start_page(context)
-    if args['admin']:
-        example_lib_gui.open_groups_list(context)
-
     main_window = context.builder.get_object("main_window")
 
     main_window.connect("destroy", lambda x: context.close_app())
@@ -71,6 +67,10 @@ def main():
         context.fullscreen()
 
     main_window.show()
+
+    example_lib_gui.open_start_page(context)
+    if args['admin']:
+        example_lib_gui.open_groups_list(context)
 
     if args['production'] and not args['desktop']:
         cursor = Gdk.Cursor(Gdk.CursorType.BLANK_CURSOR)
