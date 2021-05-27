@@ -85,10 +85,7 @@ class _start_singleton(object):
         self.context = context
         builder = context.builder
         self.scan_view = _start_double_scan(context)
-        self.quit_btn = builder.get_object("start_quit_btn")
         self.scan_view.open()
-
-        self.quit_btn.connect("clicked", lambda x: self._clicked_quit())
 
         context.view_objs["StartViewObj"] = self
 
@@ -113,11 +110,7 @@ class _start_singleton(object):
         self.context.force_view("Start")
         self.scan_view.reset_scan()
         self._refresh()
-        if self.context.args['production']:
-            self.quit_btn.hide()
 
-    def _clicked_quit(self):
-        self.context.close_app()
 
 
 def open_start_page(context):
