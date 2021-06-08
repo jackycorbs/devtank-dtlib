@@ -50,11 +50,19 @@ def update_tests(context, cmd_args):
 def group_results(context, cmd_args):
     assert len(cmd_args) > 0, "group_results takes one argument, the group name."
     group_name = " ".join(cmd_args)
-    db_group = context.db.get_group(group_name)
+    if group_name.isnumeric():
+        group_name = int(group_name)
+        db_group = context.db.get_group_by_id(group_name)
+    else:
+        db_group = context.db.get_group(group_name)
     if not db_group:
         print('No group of name "%s" found.' % group_name)
         sys.exit(-1)
-    print("Group has %u result sessions." % db_group.get_all_sessions_count())
+    if isinstance(group_name, int):
+        count = db_group.get_sessions_count()
+    else:
+        count = db_group.get_all_sessions_count()
+    print("Group has %u result sessions." % count)
 
 
 def print_session(session):
@@ -62,6 +70,9 @@ def print_session(session):
     print("Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S'))
     print("Overall :", "passed" if session.pass_fail else "FAILED")
     print("Session :", session.id)
+    machine = session.get_tester_line_str()
+    if machine:
+        print("Tester :", machine)
     for dev_uuid, dev_results in session.devices.items():
         dev = session.db.get_dev(dev_uuid)
         if dev_uuid != dev.serial_number:
@@ -81,12 +92,19 @@ def print_session(session):
 def group_result(context, cmd_args):
     assert len(cmd_args) > 0, "group_result takes two arguments, the group name, followed by the session index."
     group_name = " ".join(cmd_args[:-1])
-    db_group = context.db.get_group(group_name)
+    if group_name.isnumeric():
+        group_name = int(group_name)
+        db_group = context.db.get_group_by_id(group_name)
+    else:
+        db_group = context.db.get_group(group_name)
     if not db_group:
         print('No group of name "%s" found.' % group_name)
         sys.exit(-1)
     session_index = int(cmd_args[-1])
-    sessions = db_group.get_all_sessions(session_index, 1)
+    if isinstance(group_name, int):
+        sessions = db_group.get_sessions(session_index, 1)
+    else:
+        sessions = db_group.get_all_sessions(session_index, 1)
     if not sessions:
         print("Result session not found of index %u" % session_index)
         sys.exit(-1)
@@ -236,8 +254,8 @@ def dry_run_group(context, cmd_args):
 generic_cmds = {
     "update_tests" : (update_tests, "Update <groups yaml> in database."),
     "list_groups"  : (list_groups,  "List active groups."),
-    "group_results": (group_results,"Get results for a <named> group."),
-    "group_result" : (group_result, "Get result of a <named> group of <index>"),
+    "group_results": (group_results,"Get results for a <named/id> group."),
+    "group_result" : (group_result, "Get result of a <named/id> group of <index>"),
     "group_dump"   : (group_dump,   "Get all results of <named> group (WARNING >all<)"),
     "get_file"     : (get_file,     "Get a file by <id>."),
     "dev_status"   : (dev_status,   "Get status of devices after given <unix time>."),

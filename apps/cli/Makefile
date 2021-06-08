@@ -48,6 +48,8 @@ coverage: default
 	$(COVERAGERUN) dev_status 0
 	$(COVERAGERUN) group_results "Sunny Day"
 	$(COVERAGERUN) group_result "Sunny Day" 0
+	$(COVERAGERUN) group_results 3
+	$(COVERAGERUN) group_result 3 0
 	$(COVERAGERUN) add_fail 04 "Sunny Day"
 	python3-coverage combine
 	python3-coverage html

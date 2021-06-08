@@ -55,7 +55,7 @@ class db_base_dev(db_child):
         cmd = self.db.sql.get_dev_sessions(self.id, offset, count)
         rows = self.db.db.query(cmd)
         return [ test_group_sessions(self.db.get_group_by_id(row[2]),
-                                     self.db, row[0], row[1]) \
+                                     self.db, row[0], row[1], row[3], row[4]) \
                  for row in rows ]
 
     def update_uuid(self, new_uuid):

@@ -87,9 +87,11 @@ WHERE %s.%s=%u" % (self.dev_result_table_name,
         return "\
 SELECT DISTINCT test_group_results.id, \
       test_group_results.time_of_tests, \
-      test_group_results.group_id \
+      test_group_results.group_id, \
+      mac, hostname \
 FROM %s \
 JOIN test_group_results ON test_group_results.id = group_result_id \
+LEFT JOIN tester_machines ON tester_machines.id = tester_machine_id \
 WHERE %s.%s=%u ORDER BY test_group_results.time_of_tests DESC LIMIT %u OFFSET %u" \
 % (self.dev_result_table_name,
    self.dev_result_table_name,
@@ -342,21 +344,27 @@ db_safe_str(group_name)
 
     def get_test_group_results(self, group_id, offset, count):
         return "\
-SELECT id, Time_Of_tests FROM test_group_results WHERE group_id=%i \
+SELECT test_group_results.id, Time_Of_tests, mac, hostname \
+FROM test_group_results \
+LEFT JOIN tester_machines ON tester_machines.id = test_group_results.tester_machine_id \
+WHERE group_id=%i \
 ORDER BY Time_Of_tests DESC LIMIT %u OFFSET %u" % (group_id, count, offset)
 
     def get_test_group_results_by_name(self, group_name, offset, count):
         return "\
-SELECT test_group_results.id, Time_Of_tests, group_id FROM test_group_results \
+SELECT test_group_results.id, Time_Of_tests, group_id, mac, hostname \
+FROM test_group_results \
 JOIN test_groups ON test_groups.id = test_group_results.group_id \
+LEFT JOIN tester_machines ON tester_machines.id = test_group_results.tester_machine_id \
 WHERE test_groups.name='%s' \
 ORDER BY Time_Of_tests DESC LIMIT %u OFFSET %u" % (db_safe_str(group_name), count, offset)
 
     def get_sessions(self, session_ids):
         return "\
 SELECT test_group_results.id, Time_Of_tests, \
-    group_id, name, description \
+    group_id, name, description, mac, hostname \
 FROM test_group_results JOIN test_groups ON test_groups.id = group_id \
+LEFT JOIN tester_machines ON tester_machines.id = test_group_results.tester_machine_id \
 WHERE test_group_results.id IN (%s) ORDER BY Time_Of_tests DESC" % \
 ",".join([str(session_id) for session_id in session_ids])
 

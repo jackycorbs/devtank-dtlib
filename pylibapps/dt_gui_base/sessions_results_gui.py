@@ -17,7 +17,7 @@ class base_session_results_singlton(object):
         self.session_results_scroll = context.builder.get_object("session_results_scroll")
         self.session_results_pos = context.builder.get_object("session_results_pos")
 
-        self.session_list_store = Gtk.ListStore(str, str, GdkPixbuf.Pixbuf, object)
+        self.session_list_store = Gtk.ListStore(str, str, GdkPixbuf.Pixbuf, str, object)
 
         self.columns = [ Gtk.TreeViewColumn("Session",
                                             Gtk.CellRendererText(),
@@ -27,12 +27,15 @@ class base_session_results_singlton(object):
                                             text=1),
                          Gtk.TreeViewColumn("Status",
                                              Gtk.CellRendererPixbuf(),
-                                             pixbuf=2) ]
+                                             pixbuf=2),
+                         Gtk.TreeViewColumn("Test Machine",
+                                            Gtk.CellRendererText(),
+                                            text=3),
+                          ]
 
         self.session_list.set_model(self.session_list_store)
-        self.session_list.append_column(self.columns[0])
-        self.session_list.append_column(self.columns[1])
-        self.session_list.append_column(self.columns[2])
+        for column in self.columns:
+            self.session_list.append_column(column)
 
         self.line_height = self.columns[0].cell_get_size().height
         self.header_height = max([size.height for size in
@@ -50,7 +53,7 @@ class base_session_results_singlton(object):
         ok_btn.connect("clicked", lambda btn: self._on_ok())
 
         self.session_list.connect("row-activated", lambda treeview, path, column: \
-            self._on_row_double_click(treeview.get_model()[path][3]))
+            self._on_row_double_click(treeview.get_model()[path][-1]))
 
         self._size = None
         self.session_results_scroll.connect("size-allocate", lambda w, r : self._on_resize(r))
@@ -68,7 +71,7 @@ class base_session_results_singlton(object):
         model = self.session_list.get_model()
         treeiters = selection.get_selected_rows()[1]
         for treeiter in treeiters:
-            self._on_row_double_click(model[treeiter][3])
+            self._on_row_double_click(model[treeiter][-1])
             return
 
     def _on_row_double_click(self, session):
@@ -137,7 +140,9 @@ class base_session_results_singlton(object):
         for session in sessions:
             stamp = datetime.datetime.fromtimestamp(session.time_of_tests)
             icon = self.context.get_pass_fail_icon_name(session.pass_fail)
-            row = [str(stamp), session.group.name, icon, session]
+            machine = session.get_tester_line_str()
+
+            row = [str(stamp), session.group.name, icon, machine, session]
             list_store.insert(0, row)
 
 

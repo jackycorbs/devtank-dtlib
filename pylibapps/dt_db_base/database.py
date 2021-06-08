@@ -501,7 +501,7 @@ class tester_database(object):
         r = []
         for row in self.db.query(cmd):
             group = self._new_test_group( row[2], row[3], row[4])
-            r += [ test_group_sessions(group, self, row[0], row[1]) ]
+            r += [ test_group_sessions(group, self, row[0], row[1], row[5], row[6]) ]
         return r
 
     def load_filestores(self, db_def):

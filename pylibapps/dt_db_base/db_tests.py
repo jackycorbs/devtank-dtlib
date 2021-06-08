@@ -319,7 +319,7 @@ class test_group_obj(db_obj):
         r = []
         other_groups = {}
         for row in rows:
-            session_id, session_time, group_id = row
+            session_id, session_time, group_id, tester_mac, tester_hostname = row
             if self.id == group_id:
                 group = self
             else:
@@ -327,7 +327,8 @@ class test_group_obj(db_obj):
                 if not group:
                     group = self.db.get_group_by_id(group_id)
                     other_groups[group_id] = group
-            r += [ test_group_sessions(group, self.db, session_id, session_time) ]
+            r += [ test_group_sessions(group, self.db, session_id, session_time,
+                                       tester_mac, tester_hostname) ]
         return r
 
     def get_dev_last_pass_fail(self, dev_id):
@@ -349,12 +350,14 @@ class dev_results_builder(object):
 
 
 class test_group_sessions(object):
-    def __init__(self, group, db, id, db_time_of_tests):
+    def __init__(self, group, db, id, db_time_of_tests, tester_mac=None, tester_hostname=None):
         self.group = group
         self.db = db
         self.id = id
         self.time_of_tests = db2py_time(db_time_of_tests)
         self.pass_fail = True
+        self.tester_mac = tester_mac
+        self.tester_hostname = tester_hostname
 
         cmd = self.db.sql.get_dev_results(self.id)
         rows = self.db.db.query(cmd)
@@ -404,3 +407,14 @@ class test_group_sessions(object):
             all_tests += [None] * (order_pos - len(all_tests) + 1)
             all_tests[order_pos] = test_name
         self.tests = all_tests
+
+    def get_tester_line_str(self):
+        if self.tester_mac:
+            if self.tester_hostname:
+               return self.tester_mac + "/" + self.tester_hostname
+            else:
+               return self.tester_mac
+        elif self.tester_hostname:
+            return self.tester_hostname
+        return None
+
