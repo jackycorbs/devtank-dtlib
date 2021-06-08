@@ -16,7 +16,7 @@ from .new_test_gui import open_new_test_page
 from .sessions_results_gui import base_session_results_singlton
 from .group_selector_gui import open_test_group_selector
 from .group_properties_gui import open_tests_properties
-from .sessions_results_gui import base_session_results_singlton
+from .sessions_results_gui import base_session_results_singlton, open_tests_sessions_results, open_dev_tests_sessions_results, init_tests_sessions_results
 from .groups_list_gui import base_groups_list_gui
 
 
@@ -35,3 +35,4 @@ def dt_gui_base_init(context):
     init_edit_test_page(context)
     init_new_test_page(context)
     init_test_group_naming(context)
+    init_tests_sessions_results(context)

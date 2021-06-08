@@ -78,7 +78,8 @@ class base_session_results_singlton(object):
 
 
     def _on_open_ran_view(self, session):
-        raise Exception("Unimplemented")
+        from .base_group_run_gui import open_ran_group
+        open_ran_group(self.context, session)
 
     def _on_back(self):
         self._size = None
@@ -162,3 +163,19 @@ class base_session_results_singlton(object):
         self.db_dev = db_dev
         self.context.push_view()
         self.context.change_view("SessionResults")
+
+_session_results = None
+
+
+def open_tests_sessions_results(context):
+    global _session_results
+    _session_results.open()
+
+def open_dev_tests_sessions_results(context, db_dev):
+    global _session_results
+    assert db_dev
+    _session_results.open(db_dev)
+
+def init_tests_sessions_results(context):
+    global _session_results
+    _session_results = base_session_results_singlton(context)

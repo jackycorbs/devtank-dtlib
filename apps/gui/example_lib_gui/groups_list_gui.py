@@ -1,12 +1,11 @@
 from __future__ import print_function, absolute_import
 
 import sys
-from dt_gui_base import base_groups_list_gui, open_notify_gui
+from dt_gui_base import base_groups_list_gui, open_notify_gui, open_tests_sessions_results
 
 _singleton = None
 
 from .group_run_gui import open_run_group
-from .sessions_results_gui import open_tests_sessions_results
 
 
 class groups_lists_gui(base_groups_list_gui):

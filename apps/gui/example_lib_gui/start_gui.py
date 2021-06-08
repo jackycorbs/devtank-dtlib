@@ -8,8 +8,10 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import GLib
 
-from dt_gui_base import scan_box_base, open_query_gui
+from dt_gui_base import scan_box_base, open_query_gui, open_dev_tests_sessions_results
 
+
+_default_test_group = "Sunny Day"
 
 _singleton = None
 
@@ -35,7 +37,6 @@ def _is_board_in_rig(context, db_dev, next_view, serial_number):
 def _view_results(context, db_dev, next_view, serial_number, yes_no):
 
     if yes_no:
-        from .sessions_results_gui import open_dev_tests_sessions_results
         context.devices = [db_dev]
         open_dev_tests_sessions_results(context, db_dev)
         return
@@ -62,7 +63,8 @@ class _start_double_scan(scan_box_base):
                 return
 
         if context.args['production']:
-            db_test_group = context.db.get_group("Sunny Day")
+            db_test_group = context.db.get_group(_default_test_group)
+            assert db_test_group, "Can't find default test group to run."
             context.tests_group.populate_from(db_test_group)
             from .group_run_gui import open_run_group
             next_view = open_run_group
