@@ -6,6 +6,9 @@ import parser
 
 from .group_selector_gui import open_test_group_selector
 from .common import create_list_store
+from .sessions_results_gui import open_tests_sessions_results
+from .base_group_run_gui import open_run_group
+from .notify_gui import open_notify_gui
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -101,12 +104,15 @@ class base_groups_list_gui(object):
 
 
     def _on_run_btn(self):
-        self._use_selection()
-        # Override
+        if len(self.context.devices):
+            self._use_selection()
+            open_run_group(self.context)
+        else:
+            open_notify_gui(self.context, "No devices known.")
 
     def _results_btn(self):
         self._use_selection()
-        # Override
+        open_tests_sessions_results(self.context)
 
     def _more_btn(self):
         self._use_selection()
