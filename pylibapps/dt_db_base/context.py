@@ -35,15 +35,16 @@ class base_context_object(object):
         if self.db:
             return True
 
-        host = self.db_def.get("host", None)
-        if host:
-            with open(os.devnull, 'w') as FNULL:
-                has_error = subprocess.call("ping -W 1 -c 1 " + host,
-                                            shell=True, stdout=FNULL,
-                                            stderr=subprocess.STDOUT)
-                if has_error:
-                    print("Unable to ping host.")
-                    return False
+        if os.environ.get("NOHOSTPING", None) is None:
+            host = self.db_def.get("host", None)
+            if host:
+                with open(os.devnull, 'w') as FNULL:
+                    has_error = subprocess.call("ping -W 1 -c 1 " + host,
+                                                shell=True, stdout=FNULL,
+                                                stderr=subprocess.STDOUT)
+                    if has_error:
+                        print("Unable to ping host.")
+                        return False
 
         try:
             db = self.db_def["open_db_backend"](self)
