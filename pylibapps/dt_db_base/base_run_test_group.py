@@ -2,6 +2,7 @@ from __future__ import print_function, absolute_import
 import os
 import sys
 import time
+import fcntl
 import datetime
 import traceback
 import pickle
@@ -23,6 +24,7 @@ if sys.version_info[0] >= 3:
 
 
 _IPC_CMD = b"IPC_CMD:"
+_IPC_TIMEOUT = 1
 
 
 class ForceExitException(Exception):
@@ -285,6 +287,7 @@ class base_run_group_manager(object):
 
         self.stdout_out = os.fdopen(stdout_out, "wb", 0)
         self.stdout_in = os.fdopen(stdout_in, "rb", 0)
+        fcntl.fcntl(self.stdout_in.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
 
         self.live = False
         self.readonly = False
@@ -325,14 +328,34 @@ class base_run_group_manager(object):
 
 
     def _stdout_in_event(self, src, cond):
-        line = self.stdout_in.readline()
-        try:
-            return self.process_line(line)
-        except Exception as e:
-            import traceback
-            print("LINE PROCESS FAILED")
-            traceback.print_exc()
-            self.stop()
+        # DIY readline with timeout
+        now = time.monotonic()
+        end_time = now + _IPC_TIMEOUT
+        line = b""
+        timeout=True
+        while now < end_time:
+            c = self.stdout_in.read(1)
+            if c is None:
+                select.select([self.stdout_in],[],[], end_time-now)
+            elif c == b'\n':
+                line += c
+                timeout = False
+                break
+            else:
+                line += c
+            now = time.monotonic()
+        if not line:
+            return True
+        if not timeout:
+            try:
+                return self.process_line(line)
+            except Exception as e:
+                import traceback
+                print("LINE PROCESS FAILED")
+                traceback.print_exc()
+        else:
+            print("Part line received, but timed out.")
+        self.stop()
         ext_cmd = self.external_cmds.get("FINISHED",None)
         if ext_cmd:
             ext_cmd("")
