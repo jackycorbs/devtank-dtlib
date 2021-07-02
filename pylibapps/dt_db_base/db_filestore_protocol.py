@@ -7,7 +7,7 @@ from shutil import copyfile
 
 def get_hash_folders(filename):
     hash_md5 = hashlib.md5()
-    hash_md5.update(filename)
+    hash_md5.update(filename.encode())
     h = hash_md5.hexdigest()
     return [ h[n:n+2] for n in range(0, 8, 2) ]
 
