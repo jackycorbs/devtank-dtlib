@@ -252,6 +252,32 @@ def dry_run_group(context, cmd_args):
     run_group(context, cmd_args, False)
 
 
+def _get_group_hash(group, print_tests_hash, longest_name=0):
+    hash_md5 = hashlib.md5()
+    tests = group.get_tests()
+    for test in tests:
+        test_hash_md5 = hashlib.md5()
+        test_hash_md5.update(test.name.encode())
+        filepath = test.get_file_to_local()
+        test_hash_md5.update(open(filepath, "rb").read())
+        test.load_properties()
+        for key, value in test.pending_properties.items():
+            test_hash_md5.update(key.encode())
+            if isinstance(value, str):
+                if os.path.exists(value):
+                    test_hash_md5.update(open(value, "rb").read())
+                else:
+                    test_hash_md5.update(value.encode())
+            else:
+                test_hash_md5.update(str(value).encode())
+        test_hash = test_hash_md5.hexdigest()
+        if print_tests_hash:
+            print(test_hash,  "%s%*.s" % (group.name, longest_name - len(group.name), ""), test.name)
+        hash_md5.update(test_hash.encode())
+    return hash_md5.hexdigest()
+
+
+
 def groups_hash(context, cmd_args):
     print_tests_hash = True if len(cmd_args) > 0 else False
     groups = context.db.get_groups()
@@ -262,28 +288,22 @@ def groups_hash(context, cmd_args):
 
     for group in groups:
         print('Group : %4s : "%*.s%s" - "%s"' % ("%u" % group.id, longest_name - len(group.name), "", group.name, group.desc))
-        hash_md5 = hashlib.md5()
-        tests = group.get_tests()
-        for test in tests:
-            test_hash_md5 = hashlib.md5()
-            test_hash_md5.update(test.name.encode())
-            filepath = test.get_file_to_local()
-            test_hash_md5.update(open(filepath, "rb").read())
-            test.load_properties()
-            for key, value in test.pending_properties.items():
-                test_hash_md5.update(key.encode())
-                if isinstance(value, str):
-                    if os.path.exists(value):
-                        test_hash_md5.update(open(value, "rb").read())
-                    else:
-                        test_hash_md5.update(value.encode())
-                else:
-                    test_hash_md5.update(str(value).encode())
-            test_hash = test_hash_md5.hexdigest()
-            if print_tests_hash:
-                print(test_hash,  "%s%*.s" % (group.name, longest_name - len(group.name), ""), test.name)
-            hash_md5.update(test_hash.encode())
-        print("MD5:", hash_md5.hexdigest())
+        print("MD5:", _get_group_hash(group, print_tests_hash, longest_name))
+
+
+def find_group_hash(context, cmd_args):
+    target_hash = cmd_args[0]
+    group_name = " ".join(cmd_args[1:])
+    db_group = context.db.get_group(group_name)
+    if not db_group:
+        print('Failed to find tests group "%s"' % group_name)
+        sys.exit(-1)
+
+    versions = db_group.get_version_times()
+    for ts, group_version in versions:
+        group_hash = _get_group_hash(group_version, False)
+        if group_hash == target_hash:
+            print("FOUND at", datetime.datetime.fromtimestamp(dt_db_base.db2py_time(ts)))
 
 
 generic_cmds = {
@@ -300,6 +320,7 @@ generic_cmds = {
     "dry_run_group": (dry_run_group,"Dry run (no DB commit) group <name> on attached <device>."),
     "run_group"    : (run_group,    "Run group <name> on attached <device>."),
     "groups_hash"  : (groups_hash,  "Generate hashes for each group (<show tests>)"),
+    "find_group_hash" : (find_group_hash, "Take given <hash> and <name> and search if in given database."),
     }
 
 

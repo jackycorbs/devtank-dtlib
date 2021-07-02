@@ -338,6 +338,11 @@ class test_group_obj(db_obj):
             return None
         return bool(r[0])
 
+    def get_version_times(self):
+        cmd = self.db.sql.get_group_name_versions(self.name)
+        rows = self.db.db.query(cmd)
+        return [(row[1], self.db.get_group_by_id(row[0], row[1])) for row in rows]
+
 
 class dev_results_builder(object):
     def __init__(self):

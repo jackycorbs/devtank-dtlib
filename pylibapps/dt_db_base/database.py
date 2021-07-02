@@ -101,16 +101,19 @@ class tester_database(object):
         rows = self.db.query(self.sql.get_groups(now))
         return [self._new_test_group(*row) for row in rows ]
 
-    def get_group_by_id(self, group_id):
-        cmd = self.sql.get_group_by_id(group_id)
+    def get_group_by_id(self, group_id, now=None):
+        if now is None:
+            now = db_ms_now()
+        cmd = self.sql.get_group_by_id(group_id, now)
         rows = self.db.query(cmd)
         if not len(rows):
             return None
         row = rows[0]
         return self._new_test_group( *row)
 
-    def get_group(self, group_name):
-        now = db_ms_now()
+    def get_group(self, group_name, now=None):
+        if now is None:
+            now = db_ms_now()
         cmd = self.sql.get_group_by_name(group_name, now)
         rows = self.db.query(cmd)
         if not len(rows):

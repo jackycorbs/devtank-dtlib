@@ -277,8 +277,23 @@ WHERE valid_from<=%i AND (valid_to IS NULL OR valid_to>%i)" % \
 WHERE valid_from<=%i AND (valid_to IS NULL OR valid_to>%i) \
 AND name='%s'" % (now, now, db_safe_str(name))
 
-    def get_group_by_id(self, group_id):
-        return self._GROUP_SQL + " WHERE id=%i" % group_id
+    def get_group_by_id(self, group_id, now):
+        return self._GROUP_SQL + "\
+WHERE valid_from<=%i AND (valid_to IS NULL OR valid_to>%i) \
+AND id=%i" % (now, now, group_id)
+
+    def get_group_name_versions(self, name):
+        return "SELECT * FROM ( \
+SELECT test_groups.id, test_groups.valid_from FROM test_groups \
+JOIN test_group_entries ON test_group_entries.test_group_id = test_groups.id \
+WHERE test_groups.name='{0}' \
+UNION \
+SELECT test_groups.id, test_group_entries.valid_from FROM test_groups \
+JOIN test_group_entries ON test_group_entries.test_group_id = test_groups.id \
+WHERE test_groups.name='{0}' \
+) AS temp \
+GROUP BY id, valid_from \
+ORDER BY valid_from".format(db_safe_str(name))
 
     def remove_test_group(self, group_id, now):
         return "\
