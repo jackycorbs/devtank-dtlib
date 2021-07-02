@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import sys
 import yaml
+import hashlib
 import datetime
 import dt_db_base
 
@@ -251,6 +252,40 @@ def dry_run_group(context, cmd_args):
     run_group(context, cmd_args, False)
 
 
+def groups_hash(context, cmd_args):
+    print_tests_hash = True if len(cmd_args) > 0 else False
+    groups = context.db.get_groups()
+    longest_name = 0
+    for group in groups:
+        if len(group.name) > longest_name:
+            longest_name = len(group.name)
+
+    for group in groups:
+        print('Group : %4s : "%*.s%s" - "%s"' % ("%u" % group.id, longest_name - len(group.name), "", group.name, group.desc))
+        hash_md5 = hashlib.md5()
+        tests = group.get_tests()
+        for test in tests:
+            test_hash_md5 = hashlib.md5()
+            test_hash_md5.update(test.name.encode())
+            filepath = test.get_file_to_local()
+            test_hash_md5.update(open(filepath, "rb").read())
+            test.load_properties()
+            for key, value in test.pending_properties.items():
+                test_hash_md5.update(key.encode())
+                if isinstance(value, str):
+                    if os.path.exists(value):
+                        test_hash_md5.update(open(value, "rb").read())
+                    else:
+                        test_hash_md5.update(value.encode())
+                else:
+                    test_hash_md5.update(str(value).encode())
+            test_hash = test_hash_md5.hexdigest()
+            if print_tests_hash:
+                print(test_hash,  "%s%*.s" % (group.name, longest_name - len(group.name), ""), test.name)
+            hash_md5.update(test_hash.encode())
+        print("MD5:", hash_md5.hexdigest())
+
+
 generic_cmds = {
     "update_tests" : (update_tests, "Update <groups yaml> in database."),
     "list_groups"  : (list_groups,  "List active groups."),
@@ -264,6 +299,7 @@ generic_cmds = {
     "show_group"   : (show_group,   "Print information about a <test group ID>"),
     "dry_run_group": (dry_run_group,"Dry run (no DB commit) group <name> on attached <device>."),
     "run_group"    : (run_group,    "Run group <name> on attached <device>."),
+    "groups_hash"  : (groups_hash,  "Generate hashes for each group (<show tests>)"),
     }
 
 
