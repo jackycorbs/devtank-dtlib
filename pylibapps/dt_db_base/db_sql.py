@@ -277,10 +277,8 @@ WHERE valid_from<=%i AND (valid_to IS NULL OR valid_to>%i)" % \
 WHERE valid_from<=%i AND (valid_to IS NULL OR valid_to>%i) \
 AND name='%s'" % (now, now, db_safe_str(name))
 
-    def get_group_by_id(self, group_id, now):
-        return self._GROUP_SQL + "\
-WHERE valid_from<=%i AND (valid_to IS NULL OR valid_to>%i) \
-AND id=%i" % (now, now, group_id)
+    def get_group_by_id(self, group_id):
+        return self._GROUP_SQL + " WHERE id=%i" % group_id
 
     def get_group_name_versions(self, name):
         return "SELECT * FROM ( \

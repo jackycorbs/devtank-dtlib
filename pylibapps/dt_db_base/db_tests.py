@@ -90,14 +90,22 @@ class test_script_obj(db_obj):
 
 
 class test_group_obj(db_obj):
-    def __init__(self, db, db_id, name, desc):
+    def __init__(self, db, db_id, name, desc, query_time=None):
         db_obj.__init__(self, db, db_id)
         self.name = name
         self.desc = desc
+        self._time = query_time
         self._note = 0 if self.db.version >= 5 else None
 
     def __eq__(self, other):
         return self.id == other.id
+
+    @property
+    def query_time(self):
+        if self._time is None:
+            return db_ms_now()
+        else:
+            return self._time
 
     @property
     def note(self):
@@ -112,14 +120,14 @@ class test_group_obj(db_obj):
 
     def get_tests(self, now=None):
         if now is None:
-            now = db_ms_now()
+            now = self.query_time
         rows = self.db.db.query(self.db.sql.get_tests(self.id, now))
         return [ test_script_obj(self.db, row[0], row[1], row[2], row[3], row[4], row[6]) for row in rows ]
 
     def get_duration(self, now=None):
         db = self.db.db
         if now is None:
-            now = db_ms_now()
+            now = self.query_time
         r = 0
         rows = db.query(self.db.sql.get_test_group_durations(self.id, now))
         for row in rows:
