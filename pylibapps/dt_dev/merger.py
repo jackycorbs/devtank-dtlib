@@ -124,10 +124,12 @@ WHERE files.insert_time > %u" % self.merge_from_ts
         print("Hashing current non-log files")
         # Select files not just results logs
         cmd = "SELECT files.id, files.filename, files.size FROM files \
-WHERE files.id NOT IN (\
+WHERE insert_time > {origin_ts} AND files.id NOT IN (\
   SELECT files.id FROM files \
-  JOIN {results_table} ON output_file_id = files.id OR log_file_id = files.id)\
-".format(results_table=self.results_table)
+  JOIN {results_table} ON output_file_id = files.id OR log_file_id = files.id \
+  JOIN test_group_results ON test_group_results.id = group_result_id \
+  WHERE time_of_tests > {origin_ts})\
+".format(results_table=self.results_table, origin_ts=self.merge_from_ts)
         self.new_c.execute(cmd)
         rows = self.new_c.fetchall()
         for row in rows:
@@ -140,8 +142,9 @@ WHERE files.id NOT IN (\
 WHERE files.id IN (\
   SELECT files.id FROM files \
   JOIN {results_table} ON output_file_id = files.id OR log_file_id = files.id \
-  JOIN test_group_results ON test_group_results.id = group_result_id)\
-".format(results_table=self.results_table)
+  JOIN test_group_results ON test_group_results.id = group_result_id \
+  WHERE time_of_tests > {origin_ts})\
+".format(results_table=self.results_table, origin_ts=self.merge_from_ts)
         self.new_c.execute(cmd)
         rows = self.new_c.fetchall()
         for row in rows:
@@ -601,6 +604,10 @@ self.results_table, self.results_table, self.results_table,
 
     def do_merge(self, old_db_url, new_db_url):
         print('Merging "%s" into "%s"' % (old_db_url, new_db_url))
+
+        delta_ts=os.environ.get("MERGE_FROM_UNIX_USECS", None)
+        if delta_ts:
+            self.merge_from_ts = int(delta_ts)
 
         self.old_c = self.db_open(old_db_url)
         self.new_c = self.db_open(new_db_url)
