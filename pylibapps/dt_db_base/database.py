@@ -80,8 +80,8 @@ class tester_database(object):
             c.insert(sql.add_file_store(host, folder, 1 if writable else 0, protocol_id ))
         db.commit()
 
-    def _new_test_group(self, *args, query_time=None):
-        return test_group_obj(self, *args, query_time=query_time)
+    def _new_test_group(self, db_id, name, desc, query_time=None):
+        return test_group_obj(self, db_id, name, desc, query_time=query_time)
 
     def _new_test_obj(self, *args):
         return test_script_obj(self, *args)
@@ -99,7 +99,7 @@ class tester_database(object):
     def get_groups(self):
         now = db_ms_now()
         rows = self.db.query(self.sql.get_groups(now))
-        return [self._new_test_group(*row) for row in rows ]
+        return [self._new_test_group(row[0], row[1], row[2]) for row in rows ]
 
     def get_group_by_id(self, group_id, now=None):
         if now is None:
@@ -109,7 +109,7 @@ class tester_database(object):
         if not len(rows):
             return None
         row = rows[0]
-        return self._new_test_group( *row, query_time=now)
+        return self._new_test_group( row[0], row[1], row[2], query_time=now)
 
     def get_group(self, group_name, now=None):
         if now is None:
@@ -119,7 +119,7 @@ class tester_database(object):
         if not len(rows):
             return None
         row = rows[0]
-        return self._new_test_group( *row)
+        return self._new_test_group(row[0], row[1], row[2])
 
     def _add_files(self, c, filepaths, now=None):
         file_store = c.query_one(self.sql.get_rw_file_store())
