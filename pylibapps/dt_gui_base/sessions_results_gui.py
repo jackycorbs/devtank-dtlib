@@ -142,7 +142,7 @@ class base_session_results_singlton(object):
             icon = self.context.get_pass_fail_icon_name(session.pass_fail)
             machine = session.get_tester_line_str()
 
-            row = [str(stamp), session.group.name, icon, machine, session]
+            row = [stamp.strftime("%Y-%m-%d %H:%M:%S"), session.group.name, icon, machine, session]
             list_store.insert(0, row)
 
 
