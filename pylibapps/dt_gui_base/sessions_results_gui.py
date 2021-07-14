@@ -37,10 +37,10 @@ class base_session_results_singlton(object):
         for column in self.columns:
             self.session_list.append_column(column)
 
-        self.line_height = self.columns[0].cell_get_size().height
+        line_space = self.session_list.style_get_property("vertical-separator")
+        self.line_height = self.columns[0].cell_get_size().height + (line_space * 2)
         self.header_height = max([size.height for size in
             self.columns[0].get_button().get_preferred_size() ])
-        self.line_space = self.session_list.style_get_property("vertical-separator")
 
         back_btn = context.builder.get_object("results_back_btn")
         window = context.builder.get_object("SessionResults")
@@ -107,7 +107,7 @@ class base_session_results_singlton(object):
         v_page_size = self.adj.get_page_size()
 
         lines_to_get = v_page_size - self.header_height
-        lines_to_get /= float(self.line_height + self.line_space)
+        lines_to_get /= float(self.line_height)
 
         lines_to_get = int(lines_to_get)
 
@@ -115,23 +115,27 @@ class base_session_results_singlton(object):
 
         list_store.clear()
 
-        total_height =  self.header_height + ((self.results_count + 1) * (self.line_height + self.line_space))
+        total_height =  self.header_height + ((self.results_count + 2) * self.line_height)
+
+        # The maths isn't exact, and it can make it hard to get to the end, or so you can go past it.
+        # This stops you going past the end and makes sure the end really is the end.
+        if (pos + v_page_size) >= total_height:
+            pos = total_height - v_page_size
+            if (offset + lines_to_get) < (self.results_count - 1):
+                offset = self.results_count - 1 - lines_to_get
 
         self.session_results_pos.move(self.session_list, 0, pos)
+        self.session_results_pos.set_size_request(h_page_size, total_height)
 
-        self.session_list.set_size_request(h_page_size, total_height - pos)
+        self.session_list.set_size_request(h_page_size, v_page_size)
 
         if self.db_dev:
-            sessions = self.db_dev.get_sessions(offset,
-                      min(lines_to_get,
-                          self.results_count - offset))
+            sessions = self.db_dev.get_sessions(offset, lines_to_get)
             self.session_lab.set_text(
                 "Results for Device\n\"%s\"" % (self.db_dev.uuid))
         else:
             tests_group = self.context.tests_group
-            sessions = tests_group.db_group.get_sessions(offset,
-                                min(lines_to_get,
-                                    self.results_count - offset))
+            sessions = tests_group.db_group.get_sessions(offset, lines_to_get)
             self.session_lab.set_text(
                 "Results for Test Group\n\"%s\"" % tests_group.name)
 
@@ -155,10 +159,10 @@ class base_session_results_singlton(object):
             self.results_count = tests_group.db_group.get_sessions_count()
 
         # Get again incase of theme change.
-        self.line_height = self.columns[0].cell_get_size().height
         self.header_height = max([size.height for size in
             self.columns[0].get_button().get_preferred_size() ])
-        self.line_space = self.session_list.style_get_property("vertical-separator")
+        line_space = self.session_list.style_get_property("vertical-separator")
+        self.line_height = self.columns[0].cell_get_size().height + (line_space * 2)
 
         self.adj.set_step_increment(self.line_height)
         self.prev_offset = -1
