@@ -398,6 +398,13 @@ class tester_database(object):
                 test_arg_defs = {}
                 for arg in file_args:
                     test_arg_defs[arg] = default_args[arg]
+                    if arg not in test_args:
+                        arg_def = test_arg_defs[arg]
+                        default_val = arg_def.get("default", None)
+                        if default_val is not None:
+                            test_args[arg] = default_val
+                        else:
+                            raise Exception("Argument used in file, not given value in tests definition or default in arg definition.")
                 test_obj = self.add_test(test_filename, test_arg_defs, c, now, test_name)
             for arg_key in test_args:
                 arg_details = default_args[arg_key]
