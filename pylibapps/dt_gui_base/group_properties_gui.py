@@ -331,7 +331,7 @@ class group_properties_singleton(object):
 
         unsets = context.tests_group.get_unset()
         if unsets:
-            self._select_unset(context, unsets)
+            self._select_unset(unsets)
             if only_unset:
                 unset_tests = {}
                 for test, props in unsets:
