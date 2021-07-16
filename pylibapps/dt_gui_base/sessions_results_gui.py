@@ -125,6 +125,8 @@ class base_session_results_singlton(object):
                 offset = self.results_count - 1 - lines_to_get
                 if offset < 0:
                     offset = 0
+            if pos < 0:
+                pos = 0
 
         self.session_results_pos.move(self.session_list, 0, pos)
         self.session_results_pos.set_size_request(h_page_size, total_height)
