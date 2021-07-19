@@ -22,6 +22,9 @@ if sys.version_info[0] >= 3:
     def execfile(test_file, args):
         with open(test_file) as f:
             exec(f.read(), args)
+    get_monotonic = time.monotonic
+else:
+    get_monotonic = time.time
 
 
 _IPC_CMD = b"IPC_CMD:"
@@ -330,7 +333,7 @@ class base_run_group_manager(object):
 
     def _stdout_in_event(self, src, cond):
         # DIY readline with timeout
-        now = time.monotonic()
+        now = get_monotonic()
         end_time = now + _IPC_TIMEOUT
         line = b""
         timeout=True
@@ -344,7 +347,7 @@ class base_run_group_manager(object):
                 break
             else:
                 line += c
-            now = time.monotonic()
+            now = get_monotonic()
         if not line:
             return True
         if not timeout:
