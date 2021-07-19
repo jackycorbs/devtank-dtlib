@@ -382,24 +382,20 @@ WHERE test_group_results.id IN (%s) ORDER BY Time_Of_tests DESC" % \
 ",".join([str(session_id) for session_id in session_ids])
 
     def get_dev_results(self, session_id):
-        dev_result_table_name = self.dev_result_table_name
-        devices_table_name = self.devices_table_name
-        device_key_name = self.device_key_name
         return "\
-SELECT %s.id, %s.uid, pass_fail, output_file_id,\
+SELECT {results}.id, {devs}.uid, pass_fail, output_file_id, \
       log_file_id, Test_id, name, filename, order_position \
-FROM %s \
+FROM {results} \
 JOIN test_group_entries ON \
-    test_group_entries.id = %s.group_entry_id \
+    test_group_entries.id = {results}.group_entry_id \
 JOIN tests ON tests.id = test_group_entries.Test_id \
 JOIN files ON files.id = tests.file_id \
-JOIN %s ON %s.id = %s.%s \
-WHERE %s.group_result_id=%i" % \
- (dev_result_table_name, devices_table_name, dev_result_table_name, \
-  dev_result_table_name, devices_table_name, devices_table_name, \
-  dev_result_table_name, device_key_name, dev_result_table_name, \
-  session_id)
-
+JOIN {devs} ON {devs}.id = {results}.{dev_key} \
+WHERE {results}.group_result_id={session_id}".format(
+results=self.dev_result_table_name,
+devs=self.devices_table_name,
+dev_key=self.device_key_name,
+session_id=session_id)
 
     def get_test_group_results_tests(self, session_id, now):
         return "\
