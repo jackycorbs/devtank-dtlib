@@ -469,10 +469,11 @@ class base_run_group_manager(object):
             name = db_std_str(name)
             if name != "STORE_VALUE":
                 opt = db_std_str(opt)
-            cb = self.cmds[name]
-            cb(opt)
-            if name in self.external_cmds:
-                cb = self.external_cmds[name]
+            cb = self.cmds.get(name, None)
+            if cb:
+                cb(opt)
+            cb = self.external_cmds.get(name, None)
+            if cb:
                 cb(opt)
         else:
             if isinstance(line, bytes) and sys.version_info[0] >= 3:
