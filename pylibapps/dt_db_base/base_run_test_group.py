@@ -582,6 +582,7 @@ class base_run_group_manager(object):
         self.process = None
         self.last_end_time = time.time()
         self.context.release_bus()
+        self.live = False # Should already be False, but concurrence means it could have changed before process stopped.
 
     def stop(self):
         self.live = False
