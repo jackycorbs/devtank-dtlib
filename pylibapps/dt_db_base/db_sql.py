@@ -384,7 +384,8 @@ WHERE test_group_results.id IN (%s) ORDER BY Time_Of_tests DESC" % \
     def get_dev_results(self, session_id):
         return "\
 SELECT {results}.id, {devs}.uid, pass_fail, output_file_id, \
-      log_file_id, Test_id, name, filename, order_position \
+      log_file_id, Test_id, name, filename, order_position, \
+      {devs}.serial_number \
 FROM {results} \
 JOIN test_group_entries ON \
     test_group_entries.id = {results}.group_entry_id \

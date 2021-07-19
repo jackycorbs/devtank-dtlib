@@ -17,7 +17,7 @@ class base_session_results_singlton(object):
         self.session_results_scroll = context.builder.get_object("session_results_scroll")
         self.session_results_pos = context.builder.get_object("session_results_pos")
 
-        self.session_list_store = Gtk.ListStore(str, str, GdkPixbuf.Pixbuf, str, object)
+        self.session_list_store = Gtk.ListStore(str, str, GdkPixbuf.Pixbuf, str, str, object)
 
         self.columns = [ Gtk.TreeViewColumn("Session",
                                             Gtk.CellRendererText(),
@@ -28,9 +28,12 @@ class base_session_results_singlton(object):
                          Gtk.TreeViewColumn("Status",
                                              Gtk.CellRendererPixbuf(),
                                              pixbuf=2),
-                         Gtk.TreeViewColumn("Test Machine",
+                         Gtk.TreeViewColumn("Devs",
                                             Gtk.CellRendererText(),
                                             text=3),
+                         Gtk.TreeViewColumn("Test Machine",
+                                            Gtk.CellRendererText(),
+                                            text=4),
                           ]
 
         self.session_list.set_model(self.session_list_store)
@@ -146,11 +149,12 @@ class base_session_results_singlton(object):
         sessions.reverse()
 
         for session in sessions:
+            devs = session.dev_serials
             stamp = datetime.datetime.fromtimestamp(session.time_of_tests)
             icon = self.context.get_pass_fail_icon_name(session.pass_fail)
             machine = session.get_tester_line_str()
 
-            row = [stamp.strftime("%Y-%m-%d %H:%M:%S"), session.group.name, icon, machine, session]
+            row = [stamp.strftime("%Y-%m-%d %H:%M:%S"), session.group.name, icon, ",".join(devs), machine, session]
             list_store.insert(0, row)
 
 

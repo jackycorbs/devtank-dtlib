@@ -379,6 +379,8 @@ class test_group_sessions(object):
             self.pass_fail = False
 
         devs = {}
+        serial_numbers = {}
+
         for row in rows:
             result_id   = row[0]
             dev_uuid    = row[1]
@@ -389,6 +391,7 @@ class test_group_sessions(object):
             test_name   = row[6]
             test_file   = row[7]
             order_pos   = row[8]
+            serial_num  = row[9]
             if not test_name:
                 test_name = test_file
             if not pass_fail:
@@ -399,6 +402,8 @@ class test_group_sessions(object):
                 dev_results = dev_results_builder()
                 devs[dev_uuid] = dev_results
 
+            serial_numbers[serial_num] = True
+
             dev_results.set_result(order_pos, test_name, pass_fail, out_file_id, log_file_id)
 
         for dev in devs:
@@ -407,6 +412,7 @@ class test_group_sessions(object):
                 dev_results.pass_fail = min([result[0] for result in dev_results.results])
 
         self.devices = devs
+        self.dev_serials = list(serial_numbers.keys())
 
         all_tests = []
         cmd = self.db.sql.get_test_group_results_tests(self.id, db_time_of_tests)
