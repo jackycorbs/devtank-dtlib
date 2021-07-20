@@ -118,7 +118,7 @@ WHERE files.insert_time > %u" % self.merge_from_ts
         import_file_rows = self.old_c.fetchall()
 
         if not len(import_file_rows):
-            # New new files, so no deduplication to do
+            # No new files, so no deduplication to do
             return 0
 
         print("Hashing current non-log files")
