@@ -404,7 +404,7 @@ class tester_database(object):
                         if default_val is not None:
                             test_args[arg] = default_val
                         else:
-                            raise Exception("Argument used in file, not given value in tests definition or default in arg definition.")
+                            print('WARNING importing test "%s", argument "%s", no value at load time.' % (test_name, arg))
                 test_obj = self.add_test(test_filename, test_arg_defs, c, now, test_name)
             for arg_key in test_args:
                 arg_details = default_args[arg_key]
