@@ -177,7 +177,7 @@ class value_obj_t(db_obj):
             assert value[0] is dbfile
             value_field="Value_File_ID"
             if value[2] is None:
-                r = self.db.add_files(c, [value[1]], now)
+                r = self.db.add_files([value[1]], c, now)
                 value = list(value)
                 value[2] = r[0]
             value = value[2]
