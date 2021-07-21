@@ -80,8 +80,7 @@ class tests_group_creator:
             uuid_test_results = uuid_results['tests']
             for test in self.tests:
                 test_data = uuid_test_results.get(test.name, None)
-                if test_data:
-                    to_reduce["%s_%s" % (uuid, test.name)] = test_data.get('passfail', False)
+                to_reduce["%s_%s" % (uuid, test.name)] = test_data.get('passfail', False) if test_data else False
 
         self.passed = min(to_reduce.values()) if len(to_reduce) else False
 
