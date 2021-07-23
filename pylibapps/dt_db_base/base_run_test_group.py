@@ -477,7 +477,7 @@ class base_run_group_manager(object):
                 cb(opt)
         else:
             if isinstance(line, bytes) and sys.version_info[0] >= 3:
-                line = line.decode()
+                line = line.decode(errors='replace')
             ansi = None
             if len(line) > 22 and \
                line[2] == '/' and \
@@ -623,7 +623,7 @@ class base_run_group_manager(object):
                     else:
                         local_file = f
                     if local_file and os.path.exists(local_file):
-                        with open(local_file, "r") as f:
+                        with open(local_file, "rb") as f:
                             for line in f:
                                 self.process_line(line)
         self.live = False
