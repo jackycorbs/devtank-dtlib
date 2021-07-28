@@ -338,9 +338,15 @@ class base_run_group_manager(object):
         line = b""
         timeout=True
         while now < end_time:
-            c = self.stdout_in.read(1)
+            try:
+                c = self.stdout_in.read(1)
+            except IOError as e:
+                c = None
             if c is None:
-                select.select([self.stdout_in],[],[], end_time-now)
+                try:
+                    select.select([self.stdout_in],[],[], end_time-now)
+                except IOError as e:
+                    c = None
             elif c == b'\n':
                 line += c
                 timeout = False
