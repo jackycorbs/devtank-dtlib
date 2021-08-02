@@ -314,7 +314,7 @@ generic_cmds = {
     "group_dump"   : (group_dump,   "Get all results of <named> group (WARNING >all<)"),
     "get_file"     : (get_file,     "Get a file by <id>."),
     "dev_status"   : (dev_status,   "Get status of devices after given <unix time>."),
-    "add_fail"     : (add_fail,     "Get <device> a fail for <named> group."),
+    "add_fail"     : (add_fail,     "For <device> add a fail for <named> group."),
     "dev_results"  : (dev_results,  "Get <device> results."),
     "show_group"   : (show_group,   "Print information about a <test group ID>"),
     "dry_run_group": (dry_run_group,"Dry run (no DB commit) group <name> on attached <device>."),
