@@ -170,6 +170,25 @@ def add_fail(context, cmd_args):
     db_group.add_tests_results(results, tests)
 
 
+def add_pass(context, cmd_args):
+    assert len(cmd_args) >= 2, "Wrong argument count."
+    uid = cmd_args[0]
+    dev = cli_get_device(context.db, uid)
+    uid = dev.uuid
+    group_name = " ".join(cmd_args[1:])
+    db_group = context.db.get_group(group_name)
+    if not db_group:
+        print('No group of name "%s" found.' % group_name)
+        sys.exit(-1)
+
+    tests = db_group.get_tests()
+
+    results = {uid : {'tests': dict([(test.name, {'passfail' : True}) for test in tests]) } }
+
+    db_group.add_tests_results(results, tests)
+
+
+
 def dev_results(context, cmd_args):
     assert len(cmd_args) == 1, "dev_results takes one argument, the device's uuid."
     dev_uuid = cmd_args[0]
@@ -314,7 +333,8 @@ generic_cmds = {
     "group_dump"   : (group_dump,   "Get all results of <named> group (WARNING >all<)"),
     "get_file"     : (get_file,     "Get a file by <id>."),
     "dev_status"   : (dev_status,   "Get status of devices after given <unix time>."),
-    "add_fail"     : (add_fail,     "For <device> add a fail for <named> group."),
+    "add_fail"     : (add_fail,     "For <device> add a fake fail for <named> group."),
+    "add_pass"     : (add_pass,     "For <device> add a fake pass for <named> group."),
     "dev_results"  : (dev_results,  "Get <device> results."),
     "show_group"   : (show_group,   "Print information about a <test group ID>"),
     "dry_run_group": (dry_run_group,"Dry run (no DB commit) group <name> on attached <device>."),
