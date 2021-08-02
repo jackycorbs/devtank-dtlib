@@ -174,6 +174,9 @@ class tester_database(object):
         return r
 
     def get_file_to_local(self, file_id):
+        if isinstance(file_id, tuple):
+            file_id = file_id[-1]
+
         row = self.db.query_one(self.sql.get_file_filestore(file_id))
         file_store_host = row[0]
         file_store_protocol_id = row[1]
