@@ -51,6 +51,9 @@ class gui_context_object(base_context_object):
         main_window.set_decorated(False)
 
     def change_view(self, name):
+        if os.environ.get("DEBUG", None):
+            print("VIEW SET", name)
+            self.print_view_stack()
         view_obj = self.view_objs.get(name, None)
         if view_obj:
             self.current_view = name
@@ -64,15 +67,29 @@ class gui_context_object(base_context_object):
         Gtk.main_quit()
 
     def push_view(self):
+        if os.environ.get("DEBUG", None):
+            print("VIEW PUSH", self.current_view)
         self.prev_view += [ self.current_view ]
+
+    def print_view_stack(self):
+        l = len(self.prev_view)
+        for n in range(0, l):
+            view = self.prev_view[l-n-1]
+            print("VIEW STACK [%u]:" % n, view)
 
     def pop_view(self):
         prev_view = self.prev_view.pop()
+        if os.environ.get("DEBUG", None):
+            print("VIEW POP", prev_view)
         if prev_view:
             self.change_view(prev_view)
 
     def drop_view(self):
         self.prev_view.pop()
+        if os.environ.get("DEBUG", None):
+            print("VIEW DROP", prev_view)
 
     def clear_view_stack(self):
         self.prev_view = []
+        if os.environ.get("DEBUG", None):
+            print("VIEW STACKED CLEARED")
