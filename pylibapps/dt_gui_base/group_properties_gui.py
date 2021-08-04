@@ -141,7 +141,7 @@ class group_properties_singleton(object):
             else:
                 entrybox = Gtk.Entry()
                 if val_value is not None:
-                    entrybox.set_text(val_value)
+                    entrybox.set_text(str(val_value))
                 entrybox.connect("changed", lambda x: self._value_change(test, arg, lab, x.get_text()))
                 box2.add(entrybox)
         elif val_type is int:
@@ -159,7 +159,7 @@ class group_properties_singleton(object):
         elif val_type is bool:
             btn = Gtk.CheckButton()
             if val_value is not None:
-                btn.set_active(val_value)
+                btn.set_active(bool(val_value))
             btn.connect("toggled", lambda x: self._value_change(test, arg, lab, x.get_active()))
             box2.add(btn)
         elif val_type is dbfile:

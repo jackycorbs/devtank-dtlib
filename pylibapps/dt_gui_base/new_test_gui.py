@@ -1,8 +1,11 @@
+from dt_db_base import db_ms_now
+
 from dt_gui_base import populate_test_properties, update_default
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+
 
 
 def _clicked_ok(context):

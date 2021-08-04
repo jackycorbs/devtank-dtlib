@@ -306,7 +306,7 @@ class tester_database(object):
             return None
         return self._new_test_obj( row[0], row[1], row[2])
 
-    def add_test(self, local_file, test_arg_defs, db_cursor=None, now=None, test_name=None, default_args=None):
+    def add_test(self, local_file, db_cursor=None, now=None, test_name=None):
         if now is None:
             now = db_ms_now()
         db = self.db
@@ -331,7 +331,6 @@ class tester_database(object):
         if test_id is None:
             file_id = self._add_files(c, [local_file])[0] # Look up again if need be
             test_id = c.insert(self.sql.add_test(file_id, now))
-            self.add_defaults(test_arg_defs, c, now)
             if db_cursor is None:
                 db.commit()
             tests_id_cache[(test_name, local_file)] = (test_id, file_id)
@@ -398,17 +397,15 @@ class tester_database(object):
                 if not os.path.exists(test_filename):
                     raise Exception("Test file '%s' not found" % test_filename)
                 file_args = get_args_in_src(test_filename)
-                test_arg_defs = {}
                 for arg in file_args:
-                    test_arg_defs[arg] = default_args[arg]
                     if arg not in test_args:
-                        arg_def = test_arg_defs[arg]
+                        arg_def = default_args[arg]
                         default_val = arg_def.get("default", None)
                         if default_val is not None:
                             test_args[arg] = default_val
                         else:
                             print('WARNING importing test "%s", argument "%s", no value at load time.' % (test_name, arg))
-                test_obj = self.add_test(test_filename, test_arg_defs, c, now, test_name)
+                test_obj = self.add_test(test_filename, c, now, test_name)
             for arg_key in test_args:
                 arg_details = default_args[arg_key]
                 if arg_details['type'] == 'file':
@@ -434,6 +431,8 @@ class tester_database(object):
         r = self.add_group(group_data["name"],
                            group_data["desc"],
                            tests, c, now, group_data.get("note", None))
+
+        self.add_defaults(default_args, c, now)
 
         if db_cursor is None:
             db.commit()
