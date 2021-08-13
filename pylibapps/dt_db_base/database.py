@@ -86,8 +86,9 @@ class tester_database(object):
     def _new_test_obj(self, *args):
         return test_script_obj(self, *args)
 
-    def get_all_tests(self):
-        now = db_ms_now()
+    def get_all_tests(self, now=None):
+        if now is None:
+            now = db_ms_now()
         rows = self.db.query(self.sql.get_all_tests(now))
         return [ self._new_test_obj( row[0], row[1], row[2]) for row in rows ]
 
@@ -96,8 +97,9 @@ class tester_database(object):
         rows = self.db.query(self.sql.get_deleted_tests(now))
         return [ self._new_test_obj( row[0], row[1], row[2]) for row in rows ]
 
-    def get_groups(self):
-        now = db_ms_now()
+    def get_groups(self, now=None):
+        if now is None:
+            now = db_ms_now()
         rows = self.db.query(self.sql.get_groups(now))
         return [self._new_test_group(row[0], row[1], row[2]) for row in rows ]
 

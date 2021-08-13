@@ -325,6 +325,69 @@ def find_group_hash(context, cmd_args):
             print("FOUND at", datetime.datetime.fromtimestamp(dt_db_base.db2py_time(ts)))
 
 
+def update_test(context, cmd_args):
+    db = context.db
+
+    test_script = cmd_args[0]
+    test_filename = os.path.basename(test_script)
+
+    def hash_test_file(filepath):
+        test_hash_md5 = hashlib.md5()
+        test_hash_md5.update(open(filepath, "rb").read())
+        return test_hash_md5.hexdigest()
+
+    test_script_hash = hash_test_file(test_script)
+
+    now = dt_db_base.db_ms_now()
+    tests = db.get_all_tests(now)
+    to_replace = []
+    matching = []
+    for test in tests:
+        if test.filename == test_filename:
+            local_file = test.get_file_to_local()
+            test_hash = hash_test_file(local_file)
+            if test_script_hash != test_hash:
+                to_replace += [test]
+            else:
+                matching += [test]
+
+    c = db.db.cursor()
+
+    if len(to_replace) or not len(matching):
+        while len(to_replace):
+            test = to_replace.pop()
+            test.remove(c, now)
+
+        new_test_obj = db.add_test(test_script, db_cursor=c, now=now)
+        matching += [new_test_obj]
+
+    if len(matching) > 1:
+        print("Multiple instances of test of same name.")
+
+    new_test_obj = matching[0]
+
+    groups = context.db.get_groups(now)
+    for group in groups:
+        tests = group.get_tests(now)
+        to_replace = []
+        pos = 0
+        for test in tests:
+            if test.filename == test_filename:
+                local_file = test.get_file_to_local()
+                test_hash = hash_test_file(local_file)
+                if test_script_hash != test_hash:
+                    to_replace += [(test, pos)]
+            pos += 1
+        while len(to_replace):
+            test, pos = to_replace.pop()
+            group.remove_test(test, c, now)
+            group.add_test(new_test_obj, c, pos, now)
+
+    db.db.commit()
+
+
+
+
 generic_cmds = {
     "update_tests" : (update_tests, "Update <groups yaml> in database."),
     "list_groups"  : (list_groups,  "List active groups."),
@@ -341,6 +404,7 @@ generic_cmds = {
     "run_group"    : (run_group,    "Run group <name> on attached <device>."),
     "groups_hash"  : (groups_hash,  "Generate hashes for each group (<show tests>)"),
     "find_group_hash" : (find_group_hash, "Take given <hash> and <name> and search if in given database."),
+    "update_test" : (update_test, "Update given test script used in any test groups."),
     }
 
 
