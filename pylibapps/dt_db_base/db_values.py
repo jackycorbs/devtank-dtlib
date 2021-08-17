@@ -128,6 +128,11 @@ class value_obj_t(db_obj):
                         self.add_child(name, value, c, now)
                 elif type(child.value) != type(value) or \
                   child.value != value:
+                    if isinstance(value, tuple) and value[0] == dbfile and \
+                       isinstance(child.value, tuple) and child.value[0] == dbfile:
+                        if value[-1] == child.value[-1]:
+                            continue
+
                     child.remove(c, now)
                     self.add_child(name, value, c, now)
 
