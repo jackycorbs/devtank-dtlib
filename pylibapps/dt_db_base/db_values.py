@@ -124,11 +124,11 @@ class value_obj_t(db_obj):
                     if child.value is None:
                         child._set_dict_tree(value, append, c, now)
                     else:
-                        child.remove()
+                        child.remove(c, now)
                         self.add_child(name, value, c, now)
                 elif type(child.value) != type(value) or \
                   child.value != value:
-                    child.remove()
+                    child.remove(c, now)
                     self.add_child(name, value, c, now)
 
         if not append:
