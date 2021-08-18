@@ -142,7 +142,7 @@ class base_session_results_singlton(object):
                 "Results for Device\n\"%s\"" % (self.db_dev.uuid))
         else:
             tests_group = self.context.tests_group
-            sessions = tests_group.db_group.get_sessions(offset, lines_to_get)
+            sessions = tests_group.db_group.get_all_sessions(offset, lines_to_get)
             self.session_lab.set_text(
                 "Results for Test Group\n\"%s\"" % tests_group.name)
 
@@ -164,7 +164,7 @@ class base_session_results_singlton(object):
             self.results_count = self.db_dev.get_session_count()
         else:
             tests_group = self.context.tests_group
-            self.results_count = tests_group.db_group.get_sessions_count()
+            self.results_count = tests_group.db_group.get_all_sessions_count()
 
         # Get again incase of theme change.
         self.header_height = max([size.height for size in
