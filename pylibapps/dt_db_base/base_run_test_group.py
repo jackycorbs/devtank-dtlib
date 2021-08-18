@@ -85,8 +85,10 @@ class base_run_group_context(object):
         raise ForceExitException
 
     def test_check(self, test_name, args, results, result, desc):
+        r = False
         if result:
             self.lib_inf.output_good("%s - passed" % desc)
+            r = True
         else:
             results[test_name] = False
             msg = "%s - FAILED" % desc
@@ -99,12 +101,13 @@ class base_run_group_context(object):
             if args.get("exit_on_fail", False):
                 self.forced_exit()
         self.sub_test_count += 1
+        return r
 
     def threshold_check(self, test_name, args, results, sbj, ref, margin, unit, desc):
-        self.test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
+        return self.test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
-        self.test_check(test_name, args, results, sbj == ref, "%s (%s is ref %s) check" % (desc, str(sbj), str(ref)))
+        return self.test_check(test_name, args, results, sbj == ref, "%s (%s is ref %s) check" % (desc, str(sbj), str(ref)))
 
     def store_value(self, n, v):
         data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline
