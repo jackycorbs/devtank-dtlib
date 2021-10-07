@@ -92,4 +92,7 @@ INSERT INTO "values" ("name", "valid_from") VALUES('results_values', 0);
 INSERT INTO "file_store_protocols" ("name") VALUES('SFTP');
 INSERT INTO "file_store_protocols" ("name") VALUES('SMB');
 
+CREATE INDEX "idx_values" ON "values" ("parent_id", "valid_from", "valid_to");
+CREATE INDEX "idx_filename_files" ON "files" ("filename");
+
 COMMIT;
