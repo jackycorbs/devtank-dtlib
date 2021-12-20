@@ -231,10 +231,12 @@ def _thread_test(test_context):
                         dev_uuid = post_dev_uuid
                     bus_con.poll_devices()
                 except ForceExitException as e:
+                    duration = time.time() - start_time
                     results[name] = False
                     lib_inf.output_bad("Forced Exit")
                     lib_inf.enable_info_msgs(False)
                 except Exception as e:
+                    duration = time.time() - start_time
                     results[name] = False
                     lib_inf.output_bad("Exception:")
                     for line in str(e).splitlines():
