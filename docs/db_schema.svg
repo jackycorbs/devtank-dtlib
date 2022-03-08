@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
-   sodipodi:docname="db_schema_v2.svg"
+   sodipodi:docname="db_schema.svg"
    id="svg5596"
    version="1.1"
    viewBox="0 0 1190.5512 841.88981"
@@ -31,9 +31,9 @@
      inkscape:window-maximized="1"
      inkscape:window-y="43"
      inkscape:window-x="0"
-     inkscape:cy="527.50953"
-     inkscape:cx="710.94978"
-     inkscape:zoom="1.5781706"
+     inkscape:cy="600.84138"
+     inkscape:cx="1097.7341"
+     inkscape:zoom="1.1159351"
      units="mm"
      showgrid="false"
      id="namedview5598"
@@ -594,6 +594,12 @@
        width="276.57337"
        y="262.60196"
        x="2328.2512" />
+    <rect
+       id="rect11974-3"
+       height="212.70625"
+       width="371.85801"
+       y="170.78229"
+       x="52.193153" />
   </defs>
   <g
      id="g393"
@@ -1121,7 +1127,7 @@
   </g>
   <path
      id="path2529"
-     d="M 561.45363,668.24285 C 399.82806,649.25696 496.0082,473.54467 464.32378,424.6304"
+     d="M 561.45363,668.24285 C 455.27048,564.15223 496.0082,473.54467 464.32378,424.6304"
      style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:10;stroke-opacity:1"
      sodipodi:nodetypes="cc" />
   <path
@@ -2190,19 +2196,19 @@
      transform="matrix(0.5,0,0,0.5,10.511861,175.59406)"><tspan
        x="93.910156"
        y="406.02271"
-       id="tspan381195">Result log files, firmware, test script and more are stored in the file </tspan><tspan
+       id="tspan127868">Result log files, firmware, test script and more are stored in the file </tspan><tspan
        x="93.910156"
        y="424.77271"
-       id="tspan381197">stores. Currently only sftp is used, but in the past smb was used and </tspan><tspan
+       id="tspan127870">stores. Currently only sftp is used, but in the past smb was used and </tspan><tspan
        x="93.910156"
        y="443.52271"
-       id="tspan381199">others could be supported. Each file is given an ID in the filestore. A </tspan><tspan
+       id="tspan127872">others could be supported. Each file is given an ID in the filestore. A </tspan><tspan
        x="93.910156"
        y="462.27271"
-       id="tspan381201">filestore is a protocol, server and folder on that server and if it is </tspan><tspan
+       id="tspan127874">filestore is a protocol, server and folder on that server and if it is </tspan><tspan
        x="93.910156"
        y="481.02271"
-       id="tspan381203">currently writable.</tspan></text>
+       id="tspan127876">currently writable.</tspan></text>
   <rect
      style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      id="rect6431"
@@ -2240,28 +2246,28 @@
      transform="matrix(0.5,0,0,0.5,-292.80844,119.07947)"><tspan
        x="1659.9165"
        y="1221.9718"
-       id="tspan381205">There are a number of places that require key / value pairing. </tspan><tspan
+       id="tspan127878">There are a number of places that require key / value pairing. </tspan><tspan
        x="1659.9165"
        y="1240.7218"
-       id="tspan381207">This is where &quot;values&quot; comes in. A value consists of a name and a </tspan><tspan
+       id="tspan127880">This is where &quot;values&quot; comes in. A value consists of a name and a </tspan><tspan
        x="1659.9165"
        y="1259.4718"
-       id="tspan381209">value in one of the fields text, int, real or file_id. Some uses of </tspan><tspan
+       id="tspan127882">value in one of the fields text, int, real or file_id. Some uses of </tspan><tspan
        x="1659.9165"
        y="1278.2218"
-       id="tspan381211">values, for example default values, are versioned. A value is valid </tspan><tspan
+       id="tspan127884">values, for example default values, are versioned. A value is valid </tspan><tspan
        x="1659.9165"
        y="1296.9718"
-       id="tspan381213">when is valid_from is older and valid_to is NULL or is above the </tspan><tspan
+       id="tspan127886">when is valid_from is older and valid_to is NULL or is above the </tspan><tspan
        x="1659.9165"
        y="1315.7218"
-       id="tspan381215">date given in the query. So a value is valid in a window of time. </tspan><tspan
+       id="tspan127888">date given in the query. So a value is valid in a window of time. </tspan><tspan
        x="1659.9165"
        y="1334.4718"
-       id="tspan381217">Values can also be grouped into trees using a parent_id. Different </tspan><tspan
+       id="tspan127890">Values can also be grouped into trees using a parent_id. Different </tspan><tspan
        x="1659.9165"
        y="1353.2218"
-       id="tspan381219">types of values have different standard parent_ids.</tspan></text>
+       id="tspan127892">types of values have different standard parent_ids.</tspan></text>
   <text
      id="text9183"
      y="717.16339"
@@ -2280,28 +2286,28 @@
      transform="matrix(0.5,0,0,0.5,15.323412,63.137886)"><tspan
        x="1112.2715"
        y="903.98755"
-       id="tspan381221">Tests are organized into groups. A test is mealy a known file. They are versioned and as such have a valid_from and </tspan><tspan
+       id="tspan127894">Tests are organized into groups. A test is mealy a known file. They are versioned and as such have a valid_from and </tspan><tspan
        x="1112.2715"
        y="922.73755"
-       id="tspan381223">valid_to field. Tests currently available to add to new groups will have a valid_from that is lower than the date given in </tspan><tspan
+       id="tspan127896">valid_to field. Tests currently available to add to new groups will have a valid_from that is lower than the date given in </tspan><tspan
        x="1112.2715"
        y="941.48755"
-       id="tspan381225">a query and either a valid_to that is NULL or above the date given. A group of tests is itself a name and the same kind </tspan><tspan
+       id="tspan127898">a query and either a valid_to that is NULL or above the date given. A group of tests is itself a name and the same kind </tspan><tspan
        x="1112.2715"
        y="960.23755"
-       id="tspan381227">of valid time window. Test are attached to this group with a name and order as entries, also in a valid time window. </tspan><tspan
+       id="tspan127900">of valid time window. Test are attached to this group with a name and order as entries, also in a valid time window. </tspan><tspan
        x="1112.2715"
        y="978.98755"
-       id="tspan381229">Many tests have arguments/properties from the &quot;values&quot; table. Entries are given these properties through another </tspan><tspan
+       id="tspan127902">Many tests have arguments/properties from the &quot;values&quot; table. Entries are given these properties through another </tspan><tspan
        x="1112.2715"
        y="997.73755"
-       id="tspan381231">table that is just an ID for the two tables it is linking, test group entry and value.</tspan></text>
+       id="tspan127904">table that is just an ID for the two tables it is linking, test group entry and value.</tspan></text>
   <rect
      style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
      id="rect9191"
      width="251.07701"
      height="229.82794"
-     x="525.88342"
+     x="510.88342"
      y="588.17786" />
   <text
      xml:space="preserve"
@@ -2326,55 +2332,55 @@
      transform="matrix(0.5,0,0,0.5,-384.33116,-96.942231)"><tspan
        x="2328.252"
        y="275.38599"
-       id="tspan381233">Results are recorded for a specific device, each device an entry in the devices table, here it is &quot;example_devs&quot;. The </tspan><tspan
+       id="tspan127906">Results are recorded for a specific device, each device an entry in the devices table, here it is &quot;example_devs&quot;. The </tspan><tspan
        x="2328.252"
        y="294.13599"
-       id="tspan381235">device table has two standard fields, serial_number and uid. Serial number is a static identifier and UID is a dynamic </tspan><tspan
+       id="tspan127908">device table has two standard fields, serial_number and uid. Serial number is a static identifier and UID is a dynamic </tspan><tspan
        x="2328.252"
        y="312.88599"
-       id="tspan381237">identifier. Typically the serial_number is from a bar code and the UID is discovered and set by a test. Other than these </tspan><tspan
+       id="tspan127910">identifier. Typically the serial_number is from a bar code and the UID is discovered and set by a test. Other than these </tspan><tspan
        x="2328.252"
        y="331.63599"
-       id="tspan381239">fields, the devices table can have any other entries the job requires.
+       id="tspan127912">fields, the devices table can have any other entries the job requires.
 </tspan><tspan
        x="2328.252"
        y="350.38599"
-       id="tspan381241">
+       id="tspan127914">
 </tspan><tspan
        x="2328.252"
        y="369.13599"
-       id="tspan381243">Tests are run in groups and as such for each test group there is a test group results. Each result in a result entry linked </tspan><tspan
+       id="tspan127916">Tests are run in groups and as such for each test group there is a test group results. Each result in a result entry linked </tspan><tspan
        x="2328.252"
        y="387.88599"
-       id="tspan381245">to the group results. The result is also linked to the entry of the test group it is for, so all properties the test was run </tspan><tspan
+       id="tspan127918">to the group results. The result is also linked to the entry of the test group it is for, so all properties the test was run </tspan><tspan
        x="2328.252"
        y="406.63599"
-       id="tspan381247">with can be linked back.
+       id="tspan127920">with can be linked back.
 </tspan><tspan
        x="2328.252"
        y="425.38599"
-       id="tspan381249">
+       id="tspan127922">
 </tspan><tspan
        x="2328.252"
        y="444.13599"
-       id="tspan381251">Typical a production test system is a network with multiple testers. Each test machine has it's own entry in the </tspan><tspan
+       id="tspan127924">Typical a production test system is a network with multiple testers. Each test machine has it's own entry in the </tspan><tspan
        x="2328.252"
        y="462.88599"
-       id="tspan381253">&quot;tester_machines&quot; table and this is referenced in the results. The SHA1 of the latest git commit of the tester is also </tspan><tspan
+       id="tspan127926">&quot;tester_machines&quot; table and this is referenced in the results. The SHA1 of the latest git commit of the tester is also </tspan><tspan
        x="2328.252"
        y="481.63599"
-       id="tspan381255">stored. 
+       id="tspan127928">stored. 
 </tspan><tspan
        x="2328.252"
        y="500.38599"
-       id="tspan381257">
+       id="tspan127930">
 </tspan><tspan
        x="2328.252"
        y="519.13599"
-       id="tspan381259">Finally there are some tests directly store values into the database. So there is a linking table linking the results tables </tspan><tspan
+       id="tspan127932">Finally there are some tests directly store values into the database. So there is a linking table linking the results tables </tspan><tspan
        x="2328.252"
        y="537.88599"
-       id="tspan381261">and the values table. This is for example voltages so treads can be compared to thresholds in for example Grafana.</tspan></text>
+       id="tspan127934">and the values table. This is for example voltages so treads can be compared to thresholds in for example Grafana.</tspan></text>
   <text
      id="text9183-3-7"
      y="98.873306"
@@ -2418,107 +2424,107 @@
      xml:space="preserve"
      id="text9296"
      style="font-style:normal;font-weight:normal;font-size:13.125px;line-height:18.75px;font-family:Sans;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect9298);fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-     transform="matrix(0.5,0,0,0.5,0.58354156,91.831573)"><tspan
+     transform="matrix(0.5,0,0,0.5,-21.029411,52.474816)"><tspan
        x="92.8125"
        y="1107.5475"
-       id="tspan381265"><tspan
+       id="tspan127938"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381263">Notes:
+         id="tspan127936">Notes:
 </tspan></tspan><tspan
        x="92.8125"
        y="1126.3633"
-       id="tspan381269"><tspan
+       id="tspan127942"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381267">
+         id="tspan127940">
 </tspan></tspan><tspan
        x="92.8125"
        y="1145.1791"
-       id="tspan381273"><tspan
+       id="tspan127946"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381271">Times are big intergers to make them independ of any SQL implimentation and so they can be both subsecond acturate and </tspan></tspan><tspan
+         id="tspan127944">Times are big intergers to make them independ of any SQL implimentation and so they can be both subsecond acturate and </tspan></tspan><tspan
        x="92.8125"
        y="1163.9949"
-       id="tspan381277"><tspan
+       id="tspan127950"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381275">2038 safe. They are in microseconds.
+         id="tspan127948">2038 safe. They are in microseconds.
 </tspan></tspan><tspan
        x="92.8125"
        y="1182.8107"
-       id="tspan381281"><tspan
+       id="tspan127954"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381279">
+         id="tspan127952">
 </tspan></tspan><tspan
        x="92.8125"
        y="1201.6265"
-       id="tspan381285"><tspan
+       id="tspan127958"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381283">Root values (no parent's of their own):
+         id="tspan127956">Root values (no parent's of their own):
 </tspan></tspan><tspan
        x="92.8125"
        y="1220.4422"
-       id="tspan381289"><tspan
+       id="tspan127962"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381287">ID,   Name,                       Description
+         id="tspan127960">ID,   Name,                       Description
 </tspan></tspan><tspan
        x="92.8125"
        y="1239.258"
-       id="tspan381293"><tspan
+       id="tspan127966"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381291">(1) : &quot;version&quot;                   Used by client to see if it can work with database.
+         id="tspan127964">(1) : &quot;version&quot;                   Used by client to see if it can work with database.
 </tspan></tspan><tspan
        x="92.8125"
        y="1258.0738"
-       id="tspan381297"><tspan
+       id="tspan127970"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381295">(2) : &quot;settings&quot;                  Parent for any settings client needs to know about database.
+         id="tspan127968">(2) : &quot;settings&quot;                  Parent for any settings client needs to know about database.
 </tspan></tspan><tspan
        x="92.8125"
        y="1276.8896"
-       id="tspan381301"><tspan
+       id="tspan127974"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381299">    - &quot;dev_table                  Stores name of the table storing the devices (&quot;example_devs&quot;)
+         id="tspan127972">    - &quot;dev_table                  Stores name of the table storing the devices (&quot;example_devs&quot;)
 </tspan></tspan><tspan
        x="92.8125"
        y="1295.7054"
-       id="tspan381305"><tspan
+       id="tspan127978"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381303">    - &quot;dev_results_table          Stores name of the table sotring the results (&quot;example_dev_test_results&quot;)
+         id="tspan127976">    - &quot;dev_results_table          Stores name of the table sotring the results (&quot;example_dev_test_results&quot;)
 </tspan></tspan><tspan
        x="92.8125"
        y="1314.5212"
-       id="tspan381309"><tspan
+       id="tspan127982"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381307">    - &quot;dev_results_table_key      Stores the name of the device key in the results (&quot;example_dev_id&quot;)
+         id="tspan127980">    - &quot;dev_results_table_key      Stores the name of the device key in the results (&quot;example_dev_id&quot;)
 </tspan></tspan><tspan
        x="92.8125"
        y="1333.337"
-       id="tspan381313"><tspan
+       id="tspan127986"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381311">    - &quot;dev_results_values_table   Stores the name of the tablle to store any stored values by tests.
+         id="tspan127984">    - &quot;dev_results_values_table   Stores the name of the tablle to store any stored values by tests.
 </tspan></tspan><tspan
        x="92.8125"
        y="1352.1528"
-       id="tspan381317"><tspan
+       id="tspan127990"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381315">(3) : &quot;defaults&quot;                  Parent of values that are default values for test properties/arguments.
+         id="tspan127988">(3) : &quot;defaults&quot;                  Parent of values that are default values for test properties/arguments.
 </tspan></tspan><tspan
        x="92.8125"
        y="1370.9686"
-       id="tspan381321"><tspan
+       id="tspan127994"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381319">(4) : &quot;tests_properties&quot;          Parent of values of tests used in groups.
+         id="tspan127992">(4) : &quot;tests_properties&quot;          Parent of values of tests used in groups.
 </tspan></tspan><tspan
        x="92.8125"
        y="1389.7844"
-       id="tspan381325"><tspan
+       id="tspan127998"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381323">(5) : &quot;results_values&quot;            Parent of values recorded during a test run.
+         id="tspan127996">(5) : &quot;results_values&quot;            Parent of values recorded during a test run.
 </tspan></tspan><tspan
        x="92.8125"
        y="1408.6002"
-       id="tspan381329"><tspan
+       id="tspan128002"><tspan
          style="font-family:'Liberation Mono';-inkscape-font-specification:'Liberation Mono'"
-         id="tspan381327">
+         id="tspan128000">
 </tspan></tspan></text>
   <text
      style="font-style:normal;font-weight:normal;font-size:13.125px;line-height:18.75px;font-family:Sans;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect11974);fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -2527,19 +2533,19 @@
      transform="translate(0,22.500001)"><tspan
        x="52.193359"
        y="183.56763"
-       id="tspan381331">The Devtank Production Database is generic, Example </tspan><tspan
+       id="tspan128004">The Devtank Production Database is generic, Example </tspan><tspan
        x="52.193359"
        y="202.31763"
-       id="tspan381333">Devtank Production Tester Database is a spin of it to be used </tspan><tspan
+       id="tspan128006">Devtank Production Tester Database is a spin of it to be used </tspan><tspan
        x="52.193359"
        y="221.06763"
-       id="tspan381335">as an example or template. The generic design breaks into </tspan><tspan
+       id="tspan128008">as an example or template. The generic design breaks into </tspan><tspan
        x="52.193359"
        y="239.81763"
-       id="tspan381337">four parts best looked at in the order &quot;files&quot;, &quot;values&quot;, &quot;tests&quot; </tspan><tspan
+       id="tspan128010">four parts best looked at in the order &quot;files&quot;, &quot;values&quot;, &quot;tests&quot; </tspan><tspan
        x="52.193359"
        y="258.56763"
-       id="tspan381339">and &quot;results&quot;.</tspan></text>
+       id="tspan128012">and &quot;results&quot;.</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:16px;line-height:0.4125px;font-family:sans-serif;-inkscape-font-specification:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;fill-opacity:1"
@@ -4085,4 +4091,42 @@
        id="polygon869"
        transform="translate(4,1297)" />
   </g>
+  <rect
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.875;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+     id="rect1588"
+     width="386.91855"
+     height="91.983513"
+     x="788.96045"
+     y="648.17786"
+     ry="0" />
+  <text
+     style="font-style:normal;font-weight:normal;font-size:6.5625px;line-height:9.375px;font-family:Sans;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect11974-3);fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     id="text11972-6"
+     xml:space="preserve"
+     transform="translate(747.42482,486.50309)"><tspan
+       x="52.193359"
+       y="179.10742"
+       id="tspan128016"><tspan
+         style="font-size:14px;-inkscape-font-specification:Sans"
+         id="tspan128014">Versioning / Time Windowing
+</tspan></tspan><tspan
+       x="52.193359"
+       y="188.48242"
+       id="tspan128018">
+</tspan><tspan
+       x="52.193359"
+       y="197.85742"
+       id="tspan128020">You may notice that many tables have &quot;valid_to&quot; and &quot;valid_from&quot;. These are for time windowing changes. When </tspan><tspan
+       x="52.193359"
+       y="207.23242"
+       id="tspan128022">something is first set, the &quot;valid_from&quot; is set with a Unix microseconds timestamp and &quot;valid_to&quot; is set to NULL. </tspan><tspan
+       x="52.193359"
+       y="216.60742"
+       id="tspan128024">When it is replaced &quot;valid_to&quot; is set to the same timestamp as the replacement row's &quot;valid_from&quot;. To get the </tspan><tspan
+       x="52.193359"
+       y="225.98242"
+       id="tspan128026">current values, select from things with &quot;valid_to&quot; of NULL. To get the values at a time in history do a equal to or </tspan><tspan
+       x="52.193359"
+       y="235.35742"
+       id="tspan128028">great of that time on the &quot;valid_from&quot; and less than or NULL on the &quot;valid_to&quot;.</tspan></text>
 </svg>
