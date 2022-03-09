@@ -15,7 +15,7 @@ valgrind: $(TESTS)
 	set -e; \
 	for test in $(TESTS);\
 	do\
-		valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes --track-fds=yes --suppressions=$(LIBDEVTANKROOT)/misc/valgrind.supp $$test;\
+		valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes --track-fds=yes $$test;\
 		echo "$$test -- passed"; \
 	done
 

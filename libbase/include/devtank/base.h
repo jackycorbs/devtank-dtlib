@@ -142,8 +142,10 @@ extern void dt_sleep(dt_usecs usecs);
 
 
 #ifndef DOXYGEN
+#define UNUSED  __attribute__((unused))
 #define PRINTF_FMT_CHECK(_fmt_arg, _el_arg)  __attribute__ ((format (printf, _fmt_arg, _el_arg)))
 #else
+#define UNUSED
 #define PRINTF_FMT_CHECK(_fmt_arg, _el_arg)
 #endif
 

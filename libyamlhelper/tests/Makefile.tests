@@ -1,0 +1,13 @@
+
+TESTS_CFLAGS    := $(LIBDEVTANKYAML_CFLAGS)
+TESTS_LDFLAGS   := -lyamlhelper $(LIBDEVTANKYAML_LDFLAGS)
+
+TESTS = $(OUTDIR)/bin/yaml_tests
+
+$(OUTDIR)/build/tests/%.o : $(LIBDEVTANKYAML)/tests/%.c
+	mkdir -p `dirname $@`
+	$(CC) $(TESTS_CFLAGS) -c $< -o $@
+
+$(OUTDIR)/bin/yaml_tests : $(OUTDIR)/build/tests/yaml_tests.o $(OUTDIR)/lib/libyamlhelper.a
+	mkdir -p `dirname $@`
+	$(CC) $(OUTDIR)/build/tests/yaml_tests.o $(TESTS_LDFLAGS) -o $@
