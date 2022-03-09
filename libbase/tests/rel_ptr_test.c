@@ -31,8 +31,8 @@
 
 int main(int argc, char* argv[])
 {
-    char memory[128];
-    char other[64];
+    char memory[128] = {0};
+    char other[64] = {0};
 
     dt_dyn_rel_ptr_t * ptr = (dt_dyn_rel_ptr_t*)memory;
 
