@@ -75,12 +75,12 @@ However, if we want all the versions of a test, called say, "Sunny Day", we coul
 If we have the test group ID, say 13, of a test group we know was bad, we can find the devices it was used with by doing:
 
 
-   SELECT datetime(time_of_tests / 1000000, 'unixepoch', 'localtime') AS test_time,
-          serial_number
-   FROM test_group_results
-   JOIN example_dev_test_results ON example_dev_test_results.group_result_id = test_group_results.id
-   JOIN example_devs ON example_devs.id = example_dev_id
-   WHERE test_group_results.group_id = 13
+    SELECT datetime(time_of_tests / 1000000, 'unixepoch', 'localtime') AS test_time,
+           serial_number
+    FROM test_group_results
+    JOIN example_dev_test_results ON example_dev_test_results.group_result_id = test_group_results.id
+    JOIN example_devs ON example_devs.id = example_dev_id
+    WHERE test_group_results.group_id = 13
     
 
 Knowing the specific group ID already, we don't need the test_groups table, we can just go straight to the test_group_results with that.
@@ -97,16 +97,16 @@ Say we have a board/device we know the serial and we want to get the history of 
 Here's a quick query to find the history of BOARD_66613.
 
 
-   SELECT datetime(time_of_tests / 1000000, 'unixepoch', 'localtime') AS test_time,
-          test_groups.name,
-          test_group_entries.name,
-          example_dev_test_results.pass_fail
-   FROM example_devs
-   JOIN example_dev_test_results ON example_dev_test_results.example_dev_id = example_devs.id
-   JOIN test_group_results ON test_group_results.id = example_dev_test_results.group_result_id
-   JOIN test_groups ON test_groups.id = test_group_results.group_id
-   JOIN test_group_entries ON test_group_entries.id = example_dev_test_results.group_entry_id
-   WHERE serial_number="BOARD_66613"
+    SELECT datetime(time_of_tests / 1000000, 'unixepoch', 'localtime') AS test_time,
+           test_groups.name,
+           test_group_entries.name,
+           example_dev_test_results.pass_fail
+    FROM example_devs
+    JOIN example_dev_test_results ON example_dev_test_results.example_dev_id = example_devs.id
+    JOIN test_group_results ON test_group_results.id = example_dev_test_results.group_result_id
+    JOIN test_groups ON test_groups.id = test_group_results.group_id
+    JOIN test_group_entries ON test_group_entries.id = example_dev_test_results.group_entry_id
+    WHERE serial_number="BOARD_66613"
 
 We start spinning up our query from the devices table.
 We join to that all the device results.
@@ -125,14 +125,14 @@ Some times test times aren't deterministic as there is waits for external factor
 To find out what the average time taken by all the tests are we could simply do:
 
 
-   SELECT test_groups.name AS group_name,
-          test_group_entries.name AS test_name,
-          AVG(example_dev_test_results.duration) / 1000000 AS seconds
-   FROM example_dev_test_results
-   JOIN test_group_results ON test_group_results.id = example_dev_test_results.group_result_id
-   JOIN test_groups ON test_groups.id = test_group_results.group_id
-   JOIN test_group_entries ON test_group_entries.id = example_dev_test_results.group_entry_id
-   GROUP BY group_name, test_name
+    SELECT test_groups.name AS group_name,
+           test_group_entries.name AS test_name,
+           AVG(example_dev_test_results.duration) / 1000000 AS seconds
+    FROM example_dev_test_results
+    JOIN test_group_results ON test_group_results.id = example_dev_test_results.group_result_id
+    JOIN test_groups ON test_groups.id = test_group_results.group_id
+    JOIN test_group_entries ON test_group_entries.id = example_dev_test_results.group_entry_id
+    GROUP BY group_name, test_name
 
 However, this may not be useful as it's the average over all time.
 We'd be better asking for an average over a specific period of time. We could of course do that with a WHERE before the GROUP BY to frame the time we are interested in:
@@ -146,14 +146,14 @@ Example of test pass rates
 
 To get the percentage a test passes when it is run you can simply do:
 
-   SELECT test_groups.name AS group_name,
-          test_group_entries.name AS test_name,
-          AVG(example_dev_test_results.pass_fail) * 100 AS pass_rate
-   FROM example_dev_test_results
-   JOIN test_group_results ON test_group_results.id = example_dev_test_results.group_result_id
-   JOIN test_groups ON test_groups.id = test_group_results.group_id
-   JOIN test_group_entries ON test_group_entries.id = example_dev_test_results.group_entry_id
-   GROUP BY group_name, test_name
+    SELECT test_groups.name AS group_name,
+           test_group_entries.name AS test_name,
+           AVG(example_dev_test_results.pass_fail) * 100 AS pass_rate
+    FROM example_dev_test_results
+    JOIN test_group_results ON test_group_results.id = example_dev_test_results.group_result_id
+    JOIN test_groups ON test_groups.id = test_group_results.group_id
+    JOIN test_group_entries ON test_group_entries.id = example_dev_test_results.group_entry_id
+    GROUP BY group_name, test_name
 
 As it's very similar to above, you can average over a specific time window in the same way.
 
