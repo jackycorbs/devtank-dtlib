@@ -235,9 +235,11 @@ def _thread_test(test_context):
                     results[name] = False
                     lib_inf.output_bad("Forced Exit")
                     lib_inf.enable_info_msgs(False)
+                    store_value("SUB_FAIL_N", "SCRIPT EXITED")
                 except Exception as e:
                     duration = time.time() - start_time
                     results[name] = False
+                    store_value("SUB_FAIL_N", "SCRIPT CRASH")
                     lib_inf.output_bad("Exception:")
                     for line in str(e).splitlines():
                         lib_inf.output_bad(line)
