@@ -2,7 +2,6 @@ from __future__ import print_function, absolute_import
 
 import os
 import sys
-import parser
 
 from .group_selector_gui import open_test_group_selector
 from .common import create_list_store
