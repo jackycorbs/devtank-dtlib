@@ -68,6 +68,7 @@ class merger_t(db_process_t):
             self.new_c.execute(cmd)
             r = self.new_c.fetchone()
             if r is None:
+                print("Adding tester %s %s" % (hostname, mac_address))
                 cmd = "INSERT INTO tester_machines (hostname, mac) \
                     VALUES('%s', '%s')" % (hostname, mac_address)
                 self.new_c.execute(cmd)
