@@ -111,6 +111,10 @@ class merger_t(db_process_t):
 
         self.file_dedupe = {}
 
+        if os.environ.get("DYNAMIC_FILE_COPY", None):
+            print("Copying files on demand.")
+            return 1
+
         print("Querying files to import")
         cmd = "SELECT id, filename, size, modified_date, insert_time FROM files \
 WHERE files.insert_time > %u" % self.merge_from_ts
