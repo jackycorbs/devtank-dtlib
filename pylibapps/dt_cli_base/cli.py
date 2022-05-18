@@ -190,13 +190,19 @@ def add_pass(context, cmd_args):
 
 
 def dev_results(context, cmd_args):
-    assert len(cmd_args) == 1, "dev_results takes one argument, the device's uuid."
+    assert len(cmd_args) >= 1, "dev_results takes one argument, the device's uuid."
     dev_uuid = cmd_args[0]
     dev = cli_get_device(context.db, dev_uuid)
-    count = dev.get_session_count()
+    step = 10
+    if len(cmd_args) > 1:
+        count = int(cmd_args[1])
+        if count < step:
+            step = 1
+    else:
+        count = dev.get_session_count()
 
-    for n in range(0, count, 10):
-        sessions = dev.get_sessions(n, 10)
+    for n in range(0, count, step):
+        sessions = dev.get_sessions(n, step)
         for session in sessions:
             print_session(session)
 
