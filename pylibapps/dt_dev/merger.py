@@ -60,6 +60,7 @@ class merger_t(db_process_t):
         cmd = "SELECT id, hostname, mac FROM tester_machines"
         self.old_c.execute(cmd)
         rows = self.old_c.fetchall()
+        machines_copied = 0
         for row in rows:
             org_machine_id, hostname, mac_address = row
             hostname = hostname.strip()
@@ -69,6 +70,7 @@ class merger_t(db_process_t):
             r = self.new_c.fetchone()
             if r is None:
                 print("Adding tester %s %s" % (hostname, mac_address))
+                machines_copied += 1
                 cmd = "INSERT INTO tester_machines (hostname, mac) \
                     VALUES('%s', '%s')" % (hostname, mac_address)
                 self.new_c.execute(cmd)
@@ -76,6 +78,7 @@ class merger_t(db_process_t):
             else:
                 new_machine_id = r[0]
             self.old_machine_id_map[org_machine_id] = new_machine_id
+        print("Copied %u machines" % machines_copied)
 
     def get_dev_row(self):
         return "uid, serial_number"
@@ -107,6 +110,8 @@ class merger_t(db_process_t):
             else:
                 dev_id = r[0]
                 self.old_dev_id_map[org_dev_id] = dev_id
+
+        print("Copied %u devices" % self.imported_devs_count)
 
     def copy_files(self):
 
@@ -248,8 +253,6 @@ output_file_id, log_file_id, group_result_id, duration" % \
             self.old_session_id_map[old_session_id] = self.new_c.lastrowid
             self.importing_session_ids += [old_session_id]
 
-        print("Copy Results")
-
         if len(self.importing_session_ids):
             cmd = "SELECT %s FROM %s JOIN test_group_results ON test_group_results.id = %s.group_result_id \
     WHERE group_result_id in (%s)" % (self.get_result_row(),
@@ -263,6 +266,7 @@ output_file_id, log_file_id, group_result_id, duration" % \
                 self.imported_results_count += 1
                 self.new_c.execute(cmd)
                 self.old_result_id_map[row[0]] = self.new_c.lastrowid
+        print("Copied %u Results" % len(self.importing_session_ids))
 
     def copy_results_values(self):
         if not len(self.importing_session_ids):
