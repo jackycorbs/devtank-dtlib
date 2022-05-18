@@ -125,22 +125,29 @@ class db_process_t(object):
         if level <= log_level:
             print(msg)
 
+    def _db_dict_open(self, db_def):
+        print ('Opening "%s" on "%s"' % (db_def["dbname"], db_def["host"]), file=sys.stderr)
+        db = mysqlconn.connect(database=db_def["dbname"],
+                               user=db_def["user"],
+                               password=db_def["password"],
+                               host=db_def["host"],
+                               port=db_def.get("port", 3306))
+        db.sql_mode = 'ANSI'
+        c = db.cursor(buffered=True)
+        self.dbrefs[c] = db
+        self.db_paths[c] = db_def
+        return c
+
     def db_open(self, db_url):
         if db_url[0]=='{':
             db_def_gen=yaml.safe_load_all(db_url)
             db_def = [root for root in db_def_gen][0]
-            print ('Opening "%s" on "%s"' % (db_def["dbname"], db_def["host"]), file=sys.stderr)
-            db = mysqlconn.connect(database=db_def["dbname"],
-                                   user=db_def["user"],
-                                   password=db_def["password"],
-                                   host=db_def["host"],
-                                   port=db_def.get("port", 3306))
-            db.sql_mode = 'ANSI'
-            c = db.cursor(buffered=True)
-            self.dbrefs[c] = db
-            self.db_paths[c] = db_def
-            return c
+            return self._db_dict_open(db_def)
         else:
+            if db_url.endswith(".yaml"):
+                db_def_gen=yaml.safe_load_all(open(db_url))
+                db_def = [root for root in db_def_gen][0]
+                return self._db_dict_open(db_def)
             sqlite_path=db_url
             print ("Opening :", sqlite_path, file=sys.stderr)
             db = sqlite3.connect(sqlite_path)
