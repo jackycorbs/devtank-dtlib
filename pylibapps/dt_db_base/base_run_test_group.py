@@ -220,6 +220,8 @@ def _thread_test(test_context):
                                           'results': results,
                                           'store_value' : store_value,
                                           '__file__' : os.path.abspath(test_file)})
+                    if hasattr(dev, "start_test"):
+                        dev.start_test(name)
                     if hasattr(dev, "set_test_functions"):
                         dev.set_test_functions(test_check, threshold_check, exact_check, store_value)
                     execfile(test_file, test_exec_map)
