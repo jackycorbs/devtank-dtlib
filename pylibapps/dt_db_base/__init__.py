@@ -41,3 +41,4 @@ from .c_base import set_log_file,          \
                    info_msgs_is_enabled,  \
                    enable_warning_msgs,   \
                    enable_info_msgs
+from .timerfd import create_timerfd_of, drain_timerfd
