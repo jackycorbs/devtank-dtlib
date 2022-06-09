@@ -86,6 +86,7 @@ class base_run_group_context(object):
 
     def test_check(self, test_name, args, results, result, desc):
         r = False
+        desc = db_std_str(desc)
         if result:
             self.lib_inf.output_good("%s - passed" % desc)
             r = True
@@ -104,9 +105,12 @@ class base_run_group_context(object):
         return r
 
     def threshold_check(self, test_name, args, results, sbj, ref, margin, unit, desc):
+        unit = db_std_str(unit)
+        desc = db_std_str(desc)
         return self.test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
+        desc = db_std_str(desc)
         return self.test_check(test_name, args, results, sbj == ref, "%s (%s is ref %s) check" % (desc, str(sbj), str(ref)))
 
     def store_value(self, n, v):
