@@ -3,7 +3,7 @@ from __future__ import print_function, absolute_import
 import os
 import sys
 import time
-import mysql.connector as mysqlconn
+import pymysql
 import pytz
 
 
@@ -25,14 +25,13 @@ class mysql_db_cursor(db_cursor):
 
 
 def _do_raw_connect(db_def):
-    return mysqlconn.connect(database=db_def["dbname"],
-                             user=db_def["user"],
-                             password=db_def["password"],
-                             host=db_def["host"],
-                             port=db_def.get("port", 3306),
-                             sql_mode='ANSI_QUOTES',
-                             buffered=True,
-                             connection_timeout=10)
+    return pymysql.connect(database=db_def["dbname"],
+                           user=db_def["user"],
+                           password=db_def["password"],
+                           host=db_def["host"],
+                           port=db_def.get("port", 3306),
+                           sql_mode='ANSI_QUOTES',
+                           connect_timeout=10)
 
 
 class mysql_db_inf(db_inf):
