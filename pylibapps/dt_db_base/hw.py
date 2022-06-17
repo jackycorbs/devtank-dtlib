@@ -41,6 +41,8 @@ class power_controller_t(object):
         return _dt_adj_pwr_is_setup(self._c_ptr)
 
     def load(self, filename):
+        if isinstance(filename, str):
+            filename = filename.encode()
         return _dt_adj_pwr_load_power_control(self._c_ptr, filename)
 
     def shutdown(self):
