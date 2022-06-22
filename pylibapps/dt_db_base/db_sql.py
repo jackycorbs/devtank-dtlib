@@ -180,6 +180,9 @@ UPDATE files modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, tar_fi
     def get_tar_id(self, file_id):
         return "SELECT parent_file_id WHERE file_id=%u" % file_id
 
+    def get_tar_virtual_filestore(self):
+        return "SELECT id FROM file_stores WHERE server_name = 'virtual_tars'"
+
     """
     ====================================================================
 

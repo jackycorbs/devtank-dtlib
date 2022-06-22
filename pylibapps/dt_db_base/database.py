@@ -153,6 +153,9 @@ class tester_database(object):
                     file_store_id, now, mod_time, file_size))
 
             protocol_transferer.set_tar_db_id(completed_tar_id)
+
+            row = self.sql.get_tar_virtual_filestore()
+            file_store_id = row[0]
         else:
             protocol_transferer.open(file_store_host, file_store_folder)
 

@@ -101,6 +101,8 @@ INSERT INTO "file_store_protocols" ("name") VALUES('SFTP');
 INSERT INTO "file_store_protocols" ("name") VALUES('SMB');
 INSERT INTO "file_store_protocols" ("name") VALUES('TAR');
 
+INSERT INTO "file_stores" ("protocol_id", "server_name", "base_folder", "is_writable") VALUES(2, 'virtual_tars', '', 0)
+
 CREATE INDEX "idx_values" ON "values" ("parent_id", "valid_from", "valid_to");
 CREATE INDEX "idx_filename_files" ON "files" ("filename");
 
