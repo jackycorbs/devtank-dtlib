@@ -18,8 +18,10 @@ class base_context_object(object):
         self.tests_group = tests_group_creator(None)
         self._in_db_init = False
         self._resource_dir = self.resource_dir
-        resource_dir = self._resource_dir 
-        assert "open_db_backend" in db_def
+        resource_dir = self._resource_dir
+        if not "open_db_backend" in db_def:
+            from .db_backend_open import base_open_db_backend
+            db_def["open_db_backend"] = base_open_db_backend
         assert "work_folder" in db_def
         assert "fn_get_dev" in db_def
 

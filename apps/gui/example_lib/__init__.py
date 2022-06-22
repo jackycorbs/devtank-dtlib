@@ -2,8 +2,7 @@ from __future__ import print_function, absolute_import
 
 import sys
 
-from dt_db_base import base_open_db_backend,  \
-                       set_log_file,          \
+from dt_db_base import set_log_file,          \
                        str_from_c_buffer,     \
                        make_c_buffer_from,    \
                        set_output,            \

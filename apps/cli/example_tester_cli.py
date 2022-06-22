@@ -55,7 +55,6 @@ def main():
     db_def["fn_get_dev"] = example_lib.db_example_dev.get_by_uuid
     db_def["fn_get_dev_by_sn"] = example_lib.db_example_dev.get_by_serial
     db_def["work_folder"] = os.path.abspath("../gui/files_cache")
-    db_def["open_db_backend"] = example_lib.base_open_db_backend
 
     context = example_lib.cli_context_object(args, db_def)
 

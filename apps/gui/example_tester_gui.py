@@ -52,7 +52,6 @@ def main():
     db_def['sql'] = example_lib.example_sql_common()
     db_def["fn_get_dev"] = example_lib.db_example_dev.get_by_uuid
     db_def["work_folder"] = os.path.abspath("files_cache")
-    db_def["open_db_backend"] = example_lib.base_open_db_backend
     db_def["fn_extra_load"] = db_load_extra
 
     context = example_lib_gui.gui_context_object(args, db_def, ["gui.glade"])
