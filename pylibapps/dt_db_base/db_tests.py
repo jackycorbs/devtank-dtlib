@@ -248,6 +248,26 @@ class test_group_obj(db_obj):
 
         for dev_uuid, uuid_results in results.items():
             uuid_test_results = uuid_results['tests']
+            for test in tests:
+                test_data = uuid_test_results.get(test.name, None)
+                if test_data:
+                    output = test_data.get('outfile', None)
+                    log = test_data.get('logfile', None)
+                    if output:
+                        files += [output]
+                    if log:
+                        files += [log]
+
+        file_ids = self.db._add_files(c, files)
+
+        file_count = len(files)
+
+        assert len(file_ids) == file_count, "No ID for all files given."
+
+        file_ids_map = dict( [ (files[n], file_ids[n]) for n in range(file_count) ] )
+
+        for dev_uuid, uuid_results in results.items():
+            uuid_test_results = uuid_results['tests']
             old_uuid = uuid_results.get('old_uuid', None)
 
             for test in tests:
@@ -270,16 +290,11 @@ class test_group_obj(db_obj):
 
                 group_entry_id = test.group_entry_id
 
-                files = []
-                if output:
-                    files += [output]
                 if log:
-                    files += [log]
-                file_ids = self.db._add_files(c, files)
-                if log:
-                    log = file_ids.pop()
+                    log = file_ids_map[log]
+                    
                 if output:
-                    output = file_ids.pop()
+                    output = file_ids_map[output]
 
                 dev = self.db.get_dev(dev_uuid)
                 if not dev and old_uuid:

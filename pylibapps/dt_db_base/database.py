@@ -8,10 +8,11 @@ import os
 import sys
 import copy
 import yaml
+import uuid
 
 
 from .test_file_extract import get_args_in_src
-from .db_filestore_protocol import smb_transferer, sftp_transferer
+from .db_filestore_protocol import smb_transferer, sftp_transferer, tar_transferer
 
 from .db_common import *
 from .db_tests import test_script_obj, test_group_obj, test_group_sessions
@@ -32,7 +33,8 @@ class tester_database(object):
         self.work_folder = work_folder
         self._known_objs = {}
         self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer(),
-                                     smb_transferer.protocol_id  : smb_transferer() }
+                                     smb_transferer.protocol_id  : smb_transferer(),
+                                     tar_transferer.protocol_id : tar_transferer(self, sql, work_folder) }
         self._file_upload_cache = (None, {})
         self._new_tests_cache = (None, {})
         if not os.path.exists(work_folder):
@@ -129,6 +131,30 @@ class tester_database(object):
         file_store_host = file_store[1]
         file_store_folder = file_store[2]
         protocol_id = file_store[3]
+        if protocol_id not in self.protocol_transferers:
+            raise Exception("Unknown protocol for filestore.")
+
+        protocol_transferer = self.protocol_transferers[protocol_id]
+
+        if filepaths > 1:
+
+            real_protocol_transferer = protocol_transferer
+
+            protocol_id = tar_transferer.protocol_id
+            protocol_transferer = self.protocol_transferers[protocol_id]
+
+            filename = protocol_transferer.start_tar(c)
+
+            mod_time = db_time(time.time())
+            file_size = 0
+
+            completed_tar = filename
+            completed_tar_id = c.insert(self.sql.add_file(filename,
+                    file_store_id, now, mod_time, file_size))
+
+            protocol_transferer.set_tar_db_id(completed_tar_id)
+        else:
+            protocol_transferer.open(file_store_host, file_store_folder)
 
         id_cache = self._file_upload_cache[1]
         if self._file_upload_cache[0] != c:
@@ -137,13 +163,6 @@ class tester_database(object):
 
         if now is None:
             now = db_ms_now()
-
-        if protocol_id not in self.protocol_transferers:
-            raise Exception("Unknown protocol for filestore.")
-
-        protocol_transferer = self.protocol_transferers[protocol_id]
-
-        protocol_transferer.open(file_store_host, file_store_folder)
 
         r = []
 
@@ -161,6 +180,16 @@ class tester_database(object):
                 protocol_transferer.upload(filepath, file_id)
                 id_cache[filepath] = file_id
             r += [ file_id ]
+
+        if protocol_id == tar_transferer.protocol_id:
+            protocol_transferer.finish_tar()
+            real_protocol_transferer.open(file_store_host, file_store_folder)
+            protocol_transferer.upload(completed_tar, completed_tar_id)
+            stat = os.stat(completed_tar)
+            mod_time = db_time(stat.st_mtime)
+            file_size = stat.st_size
+            cmd = self.sql.complete_tar_file(completed_tar_id, mod_time, file_size)
+            c.update(cmd)
 
         return r
 

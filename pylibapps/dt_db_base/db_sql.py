@@ -168,6 +168,18 @@ VALUES('%s', %i, %i, %i, %i)" % \
     def get_filename(self, file_id):
         return "SELECT filename FROM files WHERE files.id=%i" % file_id
 
+    def link_tar_file(self, tar_file_id, file_id):
+        return "\
+INSERT INTO tar_files \
+(parent_file_id, file_id) VALUES(%u, %u)" % (tar_file_id, file_id)
+
+    def complete_tar_file(self, tar_file_id, modtime, filesize):
+        return "\
+UPDATE files modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, tar_file_id)
+
+    def get_tar_id(self, file_id):
+        return "SELECT parent_file_id WHERE file_id=%u" % file_id
+
     """
     ====================================================================
 

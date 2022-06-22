@@ -2,6 +2,8 @@ import os
 import time
 import shutil
 import hashlib
+import uuid
+import tarfile
 from shutil import copyfile
 
 
@@ -242,3 +244,52 @@ class sftp_transferer(object):
 
         self._con.get(remote_filepath, filepath)
         os.utime(filepath, (mod_time, mod_time))
+
+
+class tar_transferer(object):
+    protocol_id=2
+    def __init__(self, database, sql, work_folder):
+        self._work_folder = work_folder
+        self._database = database
+        self._sql = sql
+        self._tar_obj = None
+        self._tar_id = None
+        self._db_cursor = None
+
+    def init(self, file_store_host, file_store_folder):
+        pass
+
+    def open(self, file_store_host, file_store_folder):
+        pass
+
+    def start_tar(self, db_cursor):
+        filename = "/tmp/%s.tar" % str(uuid.uuid4())
+        # TODO : Handle open dangling.
+        self._tar_obj = tarfile.open(filename, mode="w:xz")
+
+    def set_tar_db_id(self, file_id):
+        self._tar_id = file_id
+
+    def finish_tar(self):
+        self._tar_obj.close()
+        self._db_cursor = None
+
+    def clean(self):
+        self._db_cursor = None
+
+    def upload(self, filepath, file_id):
+        cache_file = str(file_id) + os.path.basename(filepath)
+        self._tar_obj.add(filepath, arcname=cache_file)
+        
+        cmd = self._sql.link_tar_file(self._tar_id, file_id)
+        self._db_cursor.insert(cmd)
+
+    def download(self, filepath, file_id, mod_time):
+        cmd = self._sql.get_tar_id(file_id)
+        row = self._db_cursor.query_one(cmd)
+        tar_file_id = row[0]
+        local_tar_file = self._database.get_file_to_local(tar_file_id)
+        os.system("tar x " + local_tar_file)
+        assert os.path.exists(filepath), "File in tar not extract where expected!"
+        os.utime(filepath, (mod_time, mod_time))
+
