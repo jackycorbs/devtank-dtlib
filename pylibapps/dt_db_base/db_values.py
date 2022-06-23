@@ -167,9 +167,11 @@ class value_obj_t(db_obj):
             c = self.db.db.cursor()
         value_field = None
         if db_is_string(value):
+            if isinstance(value, bytes):
+                value = value.decode()
             row = [value, None, None, None]
             value_field="Value_Text"
-            value="'%s'" % value
+            value="'%s'" % value.replace("'",'"')
         elif isinstance(value, int):
             row = [None, value, None, None]
             value_field="Value_Int"
