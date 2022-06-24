@@ -136,6 +136,9 @@ class tester_database(object):
 
         protocol_transferer = self.protocol_transferers[protocol_id]
 
+        if now is None:
+            now = db_ms_now()
+
         if len(filepaths) > 1:
 
             filestore_protocol_transferer = protocol_transferer
@@ -147,9 +150,6 @@ class tester_database(object):
 
             mod_time = db_time(time.time())
             file_size = 0
-
-            if now is None:
-                now = db_ms_now()
 
             completed_tar = filename
             completed_tar_id = c.insert(self.sql.add_file(os.path.basename(filename),
