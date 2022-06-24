@@ -142,12 +142,6 @@ class sql_common(object):
     #                                                  #
     ####################################################
 
-    def get_file_store_protocol_id(self, protocol_name):
-        return f"""
-        SELECT id FROM file_store_protocols 
-        WHERE name='{db_safe_str(protocol_name)}'
-        """
-
     def add_file_store(self, server_name, server_folder, is_writable, protocol_id):
         return f"""
         INSERT INTO file_stores 
