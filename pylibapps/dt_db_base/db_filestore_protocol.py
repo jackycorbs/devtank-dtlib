@@ -282,17 +282,16 @@ class tar_transferer(object):
         self._db_cursor = None
 
     def upload(self, filepath, file_id):
-        cache_file = str(file_id) + os.path.basename(filepath)
+        cache_file = str(file_id) + "/" + os.path.basename(filepath)
         self._tar_obj.add(filepath, arcname=cache_file)
         cmd = self._sql.link_tar_file(self._tar_id, file_id)
         self._db_cursor.insert(cmd)
 
     def download(self, filepath, file_id, mod_time):
         cmd = self._sql.get_tar_id(file_id)
-        row = self._db_cursor.query_one(cmd)
+        row = self._database.db.query_one(cmd)
         tar_file_id = row[0]
         local_tar_file = self._database.get_file_to_local(tar_file_id)
-        os.system("tar x " + local_tar_file)
+        os.system("tar xf '%s' -C '%s' " % (local_tar_file, self._database.work_folder))
         assert os.path.exists(filepath), "File in tar not extract where expected!"
         os.utime(filepath, (mod_time, mod_time))
-
