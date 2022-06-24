@@ -247,7 +247,7 @@ class sftp_transferer(object):
 
 
 class tar_transferer(object):
-    protocol_id=2
+    protocol_id=3
     def __init__(self, database, sql, work_folder):
         self._work_folder = work_folder
         self._database = database
@@ -263,9 +263,13 @@ class tar_transferer(object):
         pass
 
     def start_tar(self, db_cursor):
+        self._db_cursor = db_cursor
         filename = "/tmp/%s.tar" % str(uuid.uuid4())
-        # TODO : Handle open dangling.
-        self._tar_obj = tarfile.open(filename, mode="w:xz")
+        try:
+            self._tar_obj = tarfile.open(filename, mode="w:xz")
+        except tarfile.TarError as e:
+            print(f"Error when opening tarfile {filename}: {e}")
+        return filename
 
     def set_tar_db_id(self, file_id):
         self._tar_id = file_id
@@ -280,7 +284,6 @@ class tar_transferer(object):
     def upload(self, filepath, file_id):
         cache_file = str(file_id) + os.path.basename(filepath)
         self._tar_obj.add(filepath, arcname=cache_file)
-        
         cmd = self._sql.link_tar_file(self._tar_id, file_id)
         self._db_cursor.insert(cmd)
 

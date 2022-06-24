@@ -175,7 +175,7 @@ INSERT INTO tar_files \
 
     def complete_tar_file(self, tar_file_id, modtime, filesize):
         return "\
-UPDATE files modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, tar_file_id)
+UPDATE files SET modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, tar_file_id)
 
     def get_tar_id(self, file_id):
         return "SELECT parent_file_id WHERE file_id=%u" % file_id

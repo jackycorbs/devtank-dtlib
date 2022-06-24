@@ -136,9 +136,9 @@ class tester_database(object):
 
         protocol_transferer = self.protocol_transferers[protocol_id]
 
-        if filepaths > 1:
+        if len(filepaths) > 1:
 
-            real_protocol_transferer = protocol_transferer
+            filestore_protocol_transferer = protocol_transferer
 
             protocol_id = tar_transferer.protocol_id
             protocol_transferer = self.protocol_transferers[protocol_id]
@@ -148,13 +148,18 @@ class tester_database(object):
             mod_time = db_time(time.time())
             file_size = 0
 
+            if now is None:
+                now = db_ms_now()
+
             completed_tar = filename
-            completed_tar_id = c.insert(self.sql.add_file(filename,
+            completed_tar_id = c.insert(self.sql.add_file(os.path.basename(filename),
                     file_store_id, now, mod_time, file_size))
 
             protocol_transferer.set_tar_db_id(completed_tar_id)
 
-            row = self.sql.get_tar_virtual_filestore()
+            row = c.query_one(self.sql.get_tar_virtual_filestore())
+            if not row:
+                raise Exception("Couldn't find tar virtual filestore in the database")
             file_store_id = row[0]
         else:
             protocol_transferer.open(file_store_host, file_store_folder)
@@ -163,9 +168,6 @@ class tester_database(object):
         if self._file_upload_cache[0] != c:
             id_cache = {}
             self._file_upload_cache = (c, id_cache)
-
-        if now is None:
-            now = db_ms_now()
 
         r = []
 
@@ -186,8 +188,8 @@ class tester_database(object):
 
         if protocol_id == tar_transferer.protocol_id:
             protocol_transferer.finish_tar()
-            real_protocol_transferer.open(file_store_host, file_store_folder)
-            protocol_transferer.upload(completed_tar, completed_tar_id)
+            filestore_protocol_transferer.open(file_store_host, file_store_folder)
+            filestore_protocol_transferer.upload(completed_tar, completed_tar_id)
             stat = os.stat(completed_tar)
             mod_time = db_time(stat.st_mtime)
             file_size = stat.st_size

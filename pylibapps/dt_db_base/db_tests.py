@@ -246,6 +246,7 @@ class test_group_obj(db_obj):
 
         result_values = self.db.result_values
 
+        files = []
         for dev_uuid, uuid_results in results.items():
             uuid_test_results = uuid_results['tests']
             for test in tests:
