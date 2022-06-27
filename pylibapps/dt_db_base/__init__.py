@@ -8,7 +8,7 @@ from .base_run_test_group import base_run_group_manager, \
                                  default_group_context
 from .db_backend_open import base_open_db_backend
 from .db_common import *
-from .db_filestore_protocol import *
+from .db_filestore_protocol import smb_transferer, sftp_transferer, tar_transferer
 from .db_inf import *
 from .db_tests import *
 from .db_values import *

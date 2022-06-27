@@ -6,7 +6,6 @@ import hashlib
 import datetime
 import dt_db_base
 
-
 def list_groups(context, cmd_args):
     groups = context.db.get_groups()
     longest_name = 0
@@ -393,8 +392,14 @@ def update_test(context, cmd_args):
 
 def add_tar_filestore(context, cmd_args):
     db = context.db
-    db.add_filestore("VIRTUAL_TARS", "", 0, 3)
-    db.add_filestore_protocol("TAR")
+    tt = dt_db_base.tar_transferer
+    db.add_filestore(tt.server_name, "", 0, tt.protocol_id)
+    db.add_filestore_protocol(tt.protocol_name)
+    vfs_row = db.get_tar_virtual_filestore()
+    if not vfs_row:
+        raise Exception("Empty response from get_tar_virtual_filestore()")
+    if vfs_row[1] != tt.protocol_id:
+        raise Exception(f"Tar protocol ID not equal to {tt.protocol_id}!")
     print("Virtual filestore feature added successfully.")
 
 generic_cmds = {

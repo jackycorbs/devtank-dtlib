@@ -248,6 +248,8 @@ class sftp_transferer(object):
 
 class tar_transferer(object):
     protocol_id=3
+    server_name = "VIRTUAL_TARS"
+    protocol_name = "TAR"
     def __init__(self, database, sql, work_folder):
         self._work_folder = work_folder
         self._database = database

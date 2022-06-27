@@ -8,6 +8,7 @@ import sys
 
 from .db_common import *
 from .c_base import dt_get_build_info
+from .db_filestore_protocol import tar_transferer
 
 
 _id_null = lambda x: ("%i" % x) if x else "NULL"
@@ -181,7 +182,10 @@ UPDATE files SET modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, ta
         return "SELECT parent_file_id FROM tar_files WHERE file_id=%u" % file_id
 
     def get_tar_virtual_filestore(self):
-        return "SELECT id FROM file_stores WHERE server_name = 'VIRTUAL_TARS'"
+        return f"""
+        SELECT id, protocol_id FROM file_stores 
+        WHERE server_name = '{tar_transferer.server_name}'
+        """
 
     def add_file_store_protocol(self, protocol_name):
         return f"""
@@ -210,11 +214,6 @@ UPDATE files SET modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, ta
     def get_tar_id(self, file_id):
         return f"""
         SELECT parent_file_id FROM tar_files WHERE file_id={file_id}
-        """
-
-    def get_tar_virtual_filestore(self):
-        return """
-        SELECT id FROM file_stores WHERE server_name = 'VIRTUAL_TARS'
         """
 
     """

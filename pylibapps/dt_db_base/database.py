@@ -149,7 +149,7 @@ class tester_database(object):
         if now is None:
             now = db_ms_now()
 
-        tar_vstore_row = c.query_one(self.sql.get_tar_virtual_filestore())
+        tar_vstore_row = self.get_tar_virtual_filestore()
 
         if len(filepaths) > 1 and tar_vstore_row:
 
@@ -590,3 +590,9 @@ class tester_database(object):
 
     def get_dev_by_sn(self, serial_number):
         raise NotImplementedError
+
+    def get_tar_virtual_filestore(self):
+        db = self.db
+        sql = self.sql
+        c = db.cursor()
+        return c.query_one(self.sql.get_tar_virtual_filestore())
