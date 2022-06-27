@@ -188,6 +188,35 @@ UPDATE files SET modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, ta
         INSERT INTO file_store_protocols (name) VALUES ('{protocol_name}');
         """
 
+    def get_file_store_protocol_id(self, protocol_name):
+        return f"""
+        SELECT id FROM file_store_protocols 
+        WHERE name='{db_safe_str(protocol_name)}'
+        """
+
+    def link_tar_file(self, tar_file_id, file_id):
+        return f"""
+        INSERT INTO tar_files 
+        (parent_file_id, file_id) VALUES 
+        ({tar_file_id}, {file_id})
+        """
+
+    def complete_tar_file(self, tar_file_id, modtime, filesize):
+        return f"""
+        UPDATE files SET modified_date={modtime}, size={filesize} 
+        WHERE id={tar_file_id}
+        """
+
+    def get_tar_id(self, file_id):
+        return f"""
+        SELECT parent_file_id FROM tar_files WHERE file_id={file_id}
+        """
+
+    def get_tar_virtual_filestore(self):
+        return """
+        SELECT id FROM file_stores WHERE server_name = 'VIRTUAL_TARS'
+        """
+
     """
     ====================================================================
 
