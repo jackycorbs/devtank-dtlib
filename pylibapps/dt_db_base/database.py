@@ -90,7 +90,8 @@ class tester_database(object):
         if protocol_id:
             return
 
-        c.insert(sql.add_file_store_protocol(name))
+        protocol_id = c.insert(sql.add_file_store_protocol(name))
+        db.commit()
 
     def _new_test_group(self, db_id, name, desc, query_time=None):
         return test_group_obj(self, db_id, name, desc, query_time=query_time)
