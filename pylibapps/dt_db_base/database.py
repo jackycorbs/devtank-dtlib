@@ -22,7 +22,6 @@ from .tests_group import tests_group_creator
 from .db_tester import db_tester_machine
 
 
-
 class tester_database(object):
     def __init__(self, db, sql, work_folder):
         self.db = db
@@ -82,6 +81,17 @@ class tester_database(object):
             c.insert(sql.add_file_store(host, folder, 1 if writable else 0, protocol_id ))
         db.commit()
 
+    def add_filestore_protocol(self, name):
+        db = self.db
+        sql = self.sql
+        c = db.cursor()
+
+        protocol_id = c.query(sql.get_file_store_protocol_id(name))
+        if protocol_id:
+            return
+
+        c.insert(sql.add_file_store_protocol(name))
+
     def _new_test_group(self, db_id, name, desc, query_time=None):
         return test_group_obj(self, db_id, name, desc, query_time=query_time)
 
@@ -139,7 +149,9 @@ class tester_database(object):
         if now is None:
             now = db_ms_now()
 
-        if len(filepaths) > 1:
+        tar_vstore_row = c.query_one(self.sql.get_tar_virtual_filestore())
+
+        if len(filepaths) > 1 and tar_vstore_row:
 
             filestore_protocol_transferer = protocol_transferer
 
@@ -157,10 +169,7 @@ class tester_database(object):
 
             protocol_transferer.set_tar_db_id(completed_tar_id)
 
-            row = c.query_one(self.sql.get_tar_virtual_filestore())
-            if not row:
-                raise Exception("Couldn't find tar virtual filestore in the database")
-            file_store_id = row[0]
+            file_store_id = tar_vstore_row[0]
         else:
             protocol_transferer.open(file_store_host, file_store_folder)
 

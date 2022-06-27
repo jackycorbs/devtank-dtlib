@@ -51,6 +51,7 @@ coverage: default
 	$(COVERAGERUN) group_results 3
 	$(COVERAGERUN) group_result 3 0
 	$(COVERAGERUN) add_fail 04 "Sunny Day"
+	$(COVERAGERUN) add_tar_filestore
 	python3-coverage combine
 	python3-coverage html
 	sensible-browser htmlcov/index.html

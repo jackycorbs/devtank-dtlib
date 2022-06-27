@@ -391,27 +391,31 @@ def update_test(context, cmd_args):
 
     db.db.commit()
 
-
-
+def add_tar_filestore(context, cmd_args):
+    db = context.db
+    db.add_filestore("VIRTUAL_TARS", "", 0, 3)
+    db.add_filestore_protocol("TAR")
+    print("Virtual filestore feature added successfully.")
 
 generic_cmds = {
-    "update_tests" : (update_tests, "Update <groups yaml> in database."),
-    "list_groups"  : (list_groups,  "List active groups."),
-    "group_results": (group_results,"Get results for a <named/id> group."),
-    "group_result" : (group_result, "Get result of a <named/id> group of <index>"),
-    "group_dump"   : (group_dump,   "Get all results of <named> group (WARNING >all<)"),
-    "get_file"     : (get_file,     "Get a file by <id>."),
-    "dev_status"   : (dev_status,   "Get status of devices after given <unix time>."),
-    "add_fail"     : (add_fail,     "For <device> add a fake fail for <named> group."),
-    "add_pass"     : (add_pass,     "For <device> add a fake pass for <named> group."),
-    "dev_results"  : (dev_results,  "Get <device> results."),
-    "show_group"   : (show_group,   "Print information about a <test group ID>"),
-    "dry_run_group": (dry_run_group,"Dry run (no DB commit) group <name> on attached <device>."),
-    "run_group"    : (run_group,    "Run group <name> on attached <device>."),
-    "groups_hash"  : (groups_hash,  "Generate hashes for each group (<show tests>)"),
-    "find_group_hash" : (find_group_hash, "Take given <hash> and <name> and search if in given database."),
-    "update_test" : (update_test, "Update given test script used in any test groups."),
-    }
+    "update_tests"      : (update_tests,      "Update <groups yaml> in database."),
+    "list_groups"       : (list_groups,       "List active groups."),
+    "group_results"     : (group_results,     "Get results for a <named/id> group."),
+    "group_result"      : (group_result,      "Get result of a <named/id> group of <index>"),
+    "group_dump"        : (group_dump,        "Get all results of <named> group (WARNING >all<)"),
+    "get_file"          : (get_file,          "Get a file by <id>."),
+    "dev_status"        : (dev_status,        "Get status of devices after given <unix time>."),
+    "add_fail"          : (add_fail,          "For <device> add a fake fail for <named> group."),
+    "add_pass"          : (add_pass,          "For <device> add a fake pass for <named> group."),
+    "dev_results"       : (dev_results,       "Get <device> results."),
+    "show_group"        : (show_group,        "Print information about a <test group ID>"),
+    "dry_run_group"     : (dry_run_group,     "Dry run (no DB commit) group <name> on attached <device>."),
+    "run_group"         : (run_group,         "Run group <name> on attached <device>."),
+    "groups_hash"       : (groups_hash,       "Generate hashes for each group (<show tests>)"),
+    "find_group_hash"   : (find_group_hash,   "Take given <hash> and <name> and search if in given database."),
+    "update_test"       : (update_test,       "Update given test script used in any test groups."),
+    "add_tar_filestore" : (add_tar_filestore, "Enable the tar virtual filestore feature in the database."),
+}
 
 
 def print_cmd_help(cmds):

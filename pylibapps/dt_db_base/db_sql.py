@@ -181,7 +181,12 @@ UPDATE files SET modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, ta
         return "SELECT parent_file_id FROM tar_files WHERE file_id=%u" % file_id
 
     def get_tar_virtual_filestore(self):
-        return "SELECT id FROM file_stores WHERE server_name = 'virtual_tars'"
+        return "SELECT id FROM file_stores WHERE server_name = 'VIRTUAL_TARS'"
+
+    def add_file_store_protocol(self, protocol_name):
+        return f"""
+        INSERT INTO file_store_protocols (name) VALUES ('{protocol_name}');
+        """
 
     """
     ====================================================================
