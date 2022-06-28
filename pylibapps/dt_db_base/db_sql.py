@@ -8,6 +8,7 @@ import sys
 
 from .db_common import *
 from .c_base import dt_get_build_info
+from .db_filestore_protocol import tar_transferer
 
 
 _id_null = lambda x: ("%i" % x) if x else "NULL"
@@ -167,6 +168,53 @@ VALUES('%s', %i, %i, %i, %i)" % \
 
     def get_filename(self, file_id):
         return "SELECT filename FROM files WHERE files.id=%i" % file_id
+
+    def link_tar_file(self, tar_file_id, file_id):
+        return "\
+INSERT INTO tar_files \
+(parent_file_id, file_id) VALUES(%u, %u)" % (tar_file_id, file_id)
+
+    def complete_tar_file(self, tar_file_id, modtime, filesize):
+        return "\
+UPDATE files SET modified_date=%i, size=%u WHERE id=%u" % (modtime, filesize, tar_file_id)
+
+    def get_tar_id(self, file_id):
+        return "SELECT parent_file_id FROM tar_files WHERE file_id=%u" % file_id
+
+    def get_tar_virtual_filestore(self):
+        return f"""
+        SELECT id, protocol_id FROM file_stores 
+        WHERE server_name = '{tar_transferer.server_name}'
+        """
+
+    def add_file_store_protocol(self, protocol_name):
+        return f"""
+        INSERT INTO file_store_protocols (name) VALUES ('{protocol_name}');
+        """
+
+    def get_file_store_protocol_id(self, protocol_name):
+        return f"""
+        SELECT id FROM file_store_protocols 
+        WHERE name='{db_safe_str(protocol_name)}'
+        """
+
+    def link_tar_file(self, tar_file_id, file_id):
+        return f"""
+        INSERT INTO tar_files 
+        (parent_file_id, file_id) VALUES 
+        ({tar_file_id}, {file_id})
+        """
+
+    def complete_tar_file(self, tar_file_id, modtime, filesize):
+        return f"""
+        UPDATE files SET modified_date={modtime}, size={filesize} 
+        WHERE id={tar_file_id}
+        """
+
+    def get_tar_id(self, file_id):
+        return f"""
+        SELECT parent_file_id FROM tar_files WHERE file_id={file_id}
+        """
 
     """
     ====================================================================

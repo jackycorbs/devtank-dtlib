@@ -83,6 +83,14 @@ CREATE TABLE "test_group_results" (
 	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")
 );
 
+CREATE TABLE "tar_files" (
+	"id"	INTEGER PRIMARY KEY AUTOINCREMENT,
+	"file_id"	INTEGER NOT NULL,
+	"parent_file_id"	INTEGER NOT NULL,
+	FOREIGN KEY("file_id") REFERENCES "files" ("id"),
+	FOREIGN KEY("parent_file_id") REFERENCES "files" ("id")
+);
+
 INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 5);
 INSERT INTO "values" ("name", "valid_from") VALUES('settings', 0);
 INSERT INTO "values" ("name", "parent_id", "valid_from") VALUES('defaults', 2, 0);
@@ -91,6 +99,9 @@ INSERT INTO "values" ("name", "valid_from") VALUES('results_values', 0);
 
 INSERT INTO "file_store_protocols" ("name") VALUES('SFTP');
 INSERT INTO "file_store_protocols" ("name") VALUES('SMB');
+INSERT INTO "file_store_protocols" ("name") VALUES('TAR');
+
+INSERT INTO "file_stores" ("protocol_id", "server_name", "base_folder", "is_writable") VALUES(3, 'VIRTUAL_TARS', '', 0);
 
 CREATE INDEX "idx_values" ON "values" ("parent_id", "valid_from", "valid_to");
 CREATE INDEX "idx_filename_files" ON "files" ("filename");

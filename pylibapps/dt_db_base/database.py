@@ -8,10 +8,11 @@ import os
 import sys
 import copy
 import yaml
+import uuid
 
 
 from .test_file_extract import get_args_in_src
-from .db_filestore_protocol import smb_transferer, sftp_transferer
+from .db_filestore_protocol import smb_transferer, sftp_transferer, tar_transferer
 
 from .db_common import *
 from .db_tests import test_script_obj, test_group_obj, test_group_sessions
@@ -19,7 +20,6 @@ from .db_tests import test_script_obj, test_group_obj, test_group_sessions
 from .db_values import value_obj_t
 from .tests_group import tests_group_creator
 from .db_tester import db_tester_machine
-
 
 
 class tester_database(object):
@@ -32,7 +32,8 @@ class tester_database(object):
         self.work_folder = work_folder
         self._known_objs = {}
         self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer(),
-                                     smb_transferer.protocol_id  : smb_transferer() }
+                                     smb_transferer.protocol_id  : smb_transferer(),
+                                     tar_transferer.protocol_id : tar_transferer(self, sql, work_folder) }
         self._file_upload_cache = (None, {})
         self._new_tests_cache = (None, {})
         if not os.path.exists(work_folder):
@@ -78,6 +79,18 @@ class tester_database(object):
 
         if not found:
             c.insert(sql.add_file_store(host, folder, 1 if writable else 0, protocol_id ))
+        db.commit()
+
+    def add_filestore_protocol(self, name):
+        db = self.db
+        sql = self.sql
+        c = db.cursor()
+
+        protocol_id = c.query(sql.get_file_store_protocol_id(name))
+        if protocol_id:
+            return
+
+        protocol_id = c.insert(sql.add_file_store_protocol(name))
         db.commit()
 
     def _new_test_group(self, db_id, name, desc, query_time=None):
@@ -129,21 +142,42 @@ class tester_database(object):
         file_store_host = file_store[1]
         file_store_folder = file_store[2]
         protocol_id = file_store[3]
-
-        id_cache = self._file_upload_cache[1]
-        if self._file_upload_cache[0] != c:
-            id_cache = {}
-            self._file_upload_cache = (c, id_cache)
-
-        if now is None:
-            now = db_ms_now()
-
         if protocol_id not in self.protocol_transferers:
             raise Exception("Unknown protocol for filestore.")
 
         protocol_transferer = self.protocol_transferers[protocol_id]
 
-        protocol_transferer.open(file_store_host, file_store_folder)
+        if now is None:
+            now = db_ms_now()
+
+        tar_vstore_row = self.get_tar_virtual_filestore()
+
+        if len(filepaths) > 1 and tar_vstore_row:
+
+            filestore_protocol_transferer = protocol_transferer
+
+            protocol_id = tar_transferer.protocol_id
+            protocol_transferer = self.protocol_transferers[protocol_id]
+
+            filename = protocol_transferer.start_tar(c)
+
+            mod_time = db_time(time.time())
+            file_size = 0
+
+            completed_tar = filename
+            completed_tar_id = c.insert(self.sql.add_file(os.path.basename(filename),
+                    file_store_id, now, mod_time, file_size))
+
+            protocol_transferer.set_tar_db_id(completed_tar_id)
+
+            file_store_id = tar_vstore_row[0]
+        else:
+            protocol_transferer.open(file_store_host, file_store_folder)
+
+        id_cache = self._file_upload_cache[1]
+        if self._file_upload_cache[0] != c:
+            id_cache = {}
+            self._file_upload_cache = (c, id_cache)
 
         r = []
 
@@ -161,6 +195,16 @@ class tester_database(object):
                 protocol_transferer.upload(filepath, file_id)
                 id_cache[filepath] = file_id
             r += [ file_id ]
+
+        if protocol_id == tar_transferer.protocol_id:
+            protocol_transferer.finish_tar()
+            filestore_protocol_transferer.open(file_store_host, file_store_folder)
+            filestore_protocol_transferer.upload(completed_tar, completed_tar_id)
+            stat = os.stat(completed_tar)
+            mod_time = db_time(stat.st_mtime)
+            file_size = stat.st_size
+            cmd = self.sql.complete_tar_file(completed_tar_id, mod_time, file_size)
+            c.update(cmd)
 
         return r
 
@@ -547,3 +591,9 @@ class tester_database(object):
 
     def get_dev_by_sn(self, serial_number):
         raise NotImplementedError
+
+    def get_tar_virtual_filestore(self):
+        db = self.db
+        sql = self.sql
+        c = db.cursor()
+        return c.query_one(self.sql.get_tar_virtual_filestore())
