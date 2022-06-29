@@ -20,3 +20,8 @@ rn "${dirs[@]}"
 files=("$(find "$dir" -type f)")
 rn "${files[@]}"
 sed -i "s/$replace/$name/g" ${files[@]//$replace/$name}
+
+replace_upper=$(echo $replace | tr '[:lower:]' '[:upper:]')
+name_upper=$(echo $name | tr '[:lower:]' '[:upper:]')
+
+sed -i "s/$replace_upper/$name_upper/g" ${files[@]//$replace/$name}
