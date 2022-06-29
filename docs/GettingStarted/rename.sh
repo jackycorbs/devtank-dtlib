@@ -17,9 +17,8 @@ name=$1
 dir='.'
 [ -n "$2" ] && dir="$2"
 
+dirs=("$(find "$dir" -type d)")
+rn "${dirs[@]}"
 files=("$(find "$dir" -type f)")
-all=("$(find "$dir" -type d)")
-all+=("${files[@]}")
-
-rn "${all[@]}"
+rn "${files[@]}"
 sed -i "s/$replace/$name/g" ${files[@]//$replace/$name}
