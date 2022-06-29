@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# If you get errors, try running this script again.
-
 rn(){
     arr=("$@")
     rename -v "s/$replace/$name/" ${arr[@]}
