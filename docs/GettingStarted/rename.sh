@@ -1,16 +1,25 @@
-#! /bin/bash
+#!/bin/bash
 
-if [ $# -ne 1 ]; then
-    echo "1 argument expected"
+# If you get errors, try running this script again.
+
+rn(){
+    arr=("$@")
+    rename -v "s/$replace/$name/" ${arr[@]}
+}
+
+if [ -z "$1" ]; then
+    echo "$0 <new-name> [replace-dir]"
     exit -1
 fi
+
+replace="example"
 name=$1
+dir='.'
+[ -n "$2" ] && dir="$2"
 
-find . -type d -exec rename -v "s/example/$name/" {} +
-#echo "Replaced directory names with : '$name'"
+files=("$(find "$dir" -type f)")
+all=("$(find "$dir" -type d)")
+all+=("${files[@]}")
 
-find . -type f -exec rename -v "s/example/$name/" {} +
-#echo "Replaced filenames with : '$name'"
-
-find . -type f -exec sed -i -e "s/example/$name/g" {} +
-#echo "Replaced contents with : '$name'"
+rn "${all[@]}"
+sed -i "s/$replace/$name/g" ${files[@]//$replace/$name}
