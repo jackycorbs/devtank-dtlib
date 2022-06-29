@@ -1,16 +1,27 @@
-#! /bin/bash
+#!/bin/bash
 
-if [ $# -ne 1 ]; then
-    echo "1 argument expected"
+rn(){
+    arr=("$@")
+    rename -v "s/$replace/$name/" ${arr[@]}
+}
+
+if [ -z "$1" ]; then
+    echo "$0 <new-name> [replace-dir]"
     exit -1
 fi
+
+replace="example"
 name=$1
+dir='.'
+[ -n "$2" ] && dir="$2"
 
-find . -type d -exec rename -v "s/example/$name/" {} +
-#echo "Replaced directory names with : '$name'"
+dirs=("$(find "$dir" -type d)")
+rn "${dirs[@]}"
+files=("$(find "$dir" -type f)")
+rn "${files[@]}"
+sed -i "s/$replace/$name/g" ${files[@]//$replace/$name}
 
-find . -type f -exec rename -v "s/example/$name/" {} +
-#echo "Replaced filenames with : '$name'"
+replace_upper=$(echo $replace | tr '[:lower:]' '[:upper:]')
+name_upper=$(echo $name | tr '[:lower:]' '[:upper:]')
 
-find . -type f -exec sed -i -e "s/example/$name/g" {} +
-#echo "Replaced contents with : '$name'"
+sed -i "s/$replace_upper/$name_upper/g" ${files[@]//$replace/$name}
