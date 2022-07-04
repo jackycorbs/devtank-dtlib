@@ -21,7 +21,11 @@ from .db_common import db_std_str
 if sys.version_info[0] >= 3:
     def execfile(test_file, args):
         with open(test_file) as f:
-            exec(f.read(), args)
+            s = f.read()
+            if s[0].encode() == b'\xef\xbb\xbf':
+                # Argh, BOM, kill it with fire
+                s = s[1:]
+            exec(s, args)
     get_monotonic = time.monotonic
 else:
     get_monotonic = time.time
