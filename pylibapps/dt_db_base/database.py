@@ -608,10 +608,10 @@ class tester_database(object):
         try:
             with open(outfile, 'w', newline='', encoding='utf-8') as csv_file:
                 csv_writer = csv.writer(csv_file, dialect='excel')
-                csv_writer.writerow(("Serial Number", "Result", "Timestamp"))
+                csv_writer.writerow(("Test Group", "Serial Number", "Result", "Timestamp"))
                 for i in csv_results:
                     row = list(i)
-                    row[1] = "PASS" if row[1] else "FAIL"
+                    row[2] = "PASS" if row[2] else "FAIL"
                     csv_writer.writerow(row)
         except Exception as e:
             print(f"Error: couldn't open file {outfile}:\n{e}", flush=True)

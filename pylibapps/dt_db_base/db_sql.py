@@ -563,12 +563,14 @@ class sql_common(object):
 
     def get_csv_results(self, before=None, after=None):
         r = f"""
-        SELECT serial_number,
+        SELECT name,
+               serial_number,
                pass_fail,
                DATETIME(ROUND(time_of_tests / 1000000), 'unixepoch', 'localtime') AS time_of_tests
         FROM {self.devices_table_name} as dd
         JOIN {self.dev_result_table_name} AS tr ON dd.id = tr.{self.device_key_name}
-        JOIN test_group_results AS gr ON tr.group_result_id = gr.id;
+        JOIN test_group_results AS gr ON tr.group_result_id = gr.id
+        JOIN test_groups AS tg ON gr.group_id = tg.id;
         """
         if before:
             if after:
