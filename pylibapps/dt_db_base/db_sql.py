@@ -561,16 +561,24 @@ class sql_common(object):
         (test_result_id, value_id) VALUES ({int(result_id)}, {int(value_id)})
         """
 
-    def get_csv_results(self):
-        return """
-        SELECT serial_number, pass_fail,
-        DATETIME(ROUND(time_of_tests / 1000000), 'unixepoch', 'localtime')
-        AS time_of_tests FROM demo_devs as dd
-        INNER JOIN demo_dev_test_results AS tr
-        ON dd.id = tr.demo_dev_id
-        INNER JOIN test_group_results AS gr
-        ON tr.group_result_id = gr.id;
+    def get_csv_results(self, before=None, after=None):
+        r = f"""
+        SELECT serial_number,
+               pass_fail,
+               DATETIME(ROUND(time_of_tests / 1000000), 'unixepoch', 'localtime') AS time_of_tests
+        FROM {self.devices_table_name} as dd
+        JOIN {self.dev_result_table_name} AS tr ON dd.id = tr.{self.device_key_name}
+        JOIN test_group_results AS gr ON tr.group_result_id = gr.id;
         """
+        if before:
+            if after:
+                return r + f" WHERE time_of_tests < {before} AND time_of_tests > {after}"
+            else:
+                return r + f" WHERE time_of_tests < {before}"
+        elif after:
+            return r + f" WHERE time_of_tests > {after}"
+        else:
+            return r
 
     ######################################################
     #                                                    #
