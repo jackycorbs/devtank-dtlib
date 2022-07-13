@@ -570,17 +570,16 @@ class sql_common(object):
         FROM {self.devices_table_name} as dd
         JOIN {self.dev_result_table_name} AS tr ON dd.id = tr.{self.device_key_name}
         JOIN test_group_results AS gr ON tr.group_result_id = gr.id
-        JOIN test_groups AS tg ON gr.group_id = tg.id;
+        JOIN test_groups AS tg ON gr.group_id = tg.id
         """
         if before:
+            r += f"WHERE time_of_tests < {before}"
             if after:
-                return r + f" WHERE time_of_tests < {before} AND time_of_tests > {after}"
-            else:
-                return r + f" WHERE time_of_tests < {before}"
+                r += f" AND time_of_tests > {after}"
         elif after:
-            return r + f" WHERE time_of_tests > {after}"
-        else:
-            return r
+            r += f" WHERE time_of_tests > {after}"
+
+        return r + ";"
 
     ######################################################
     #                                                    #

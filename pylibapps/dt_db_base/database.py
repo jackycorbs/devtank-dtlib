@@ -600,11 +600,11 @@ class tester_database(object):
         c = db.cursor()
         return c.query_one(self.sql.get_tar_virtual_filestore())
 
-    def generate_csv(self, outfile):
+    def generate_csv(self, outfile, before=None, after=None):
         db = self.db
         sql = self.sql
         c = db.cursor()
-        csv_results = c.query(sql.get_csv_results())
+        csv_results = c.query(sql.get_csv_results(before, after))
         try:
             with open(outfile, 'w', newline='', encoding='utf-8') as csv_file:
                 csv_writer = csv.writer(csv_file, dialect='excel')

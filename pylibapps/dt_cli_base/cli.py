@@ -5,6 +5,7 @@ import yaml
 import hashlib
 import datetime
 import dt_db_base
+from datetime import datetime
 
 def list_groups(context, cmd_args):
     groups = context.db.get_groups()
@@ -402,6 +403,27 @@ def add_tar_filestore(context, cmd_args):
         raise Exception(f"Tar protocol ID not equal to {tt.protocol_id}!")
     print("Virtual filestore feature added successfully.")
 
+def export_csv(context, cmd_args):
+    nargs = len(cmd_args)
+    if nargs < 1:
+        print_cmd_help()
+        return
+    filename = cmd_args[0]
+    before = None
+    after = None
+    if nargs > 1:
+        to_micro = lambda t: \
+        int(datetime.fromisoformat(t).timestamp()) * 1000000
+        try:
+            before = to_micro(cmd_args[1])
+            if nargs > 2:
+                after = to_micro(cmd_args[2])
+        except ValueError as e:
+            print(f"Error parsing timestamp: {e}")
+            return
+    context.db.generate_csv(filename, before, after)
+
+
 generic_cmds = {
     "update_tests"      : (update_tests,      "Update <groups yaml> in database."),
     "list_groups"       : (list_groups,       "List active groups."),
@@ -420,6 +442,7 @@ generic_cmds = {
     "find_group_hash"   : (find_group_hash,   "Take given <hash> and <name> and search if in given database."),
     "update_test"       : (update_test,       "Update given test script used in any test groups."),
     "add_tar_filestore" : (add_tar_filestore, "Enable the tar virtual filestore feature in the database."),
+    "export_csv"        : (export_csv,        "export_csv <filename> [before] [after] : Export a CSV dump of database results in <filename>. Optional dates take the format YYYY-MM-DD:HH:MM:SS")
 }
 
 
