@@ -12,7 +12,7 @@ def dt_py_log_hook_init():
             log.setLevel(logging.DEBUG)
 
         def emit(self, record):
-            msg = '<%s> "%s"' % (record.module, record.msg)
+            msg = 'PyLog: [%s] : "%s"' % (record.module, record.msg % record.args)
             if record.levelno < 30:
                 info_msg(msg)
             elif record.levelno < 40:
