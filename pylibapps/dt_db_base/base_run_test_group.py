@@ -16,6 +16,7 @@ from multiprocessing import Process, Queue
 
 from . import c_base
 from . import db_values
+from .py_log import dt_py_log_hook_init
 from .db_common import db_std_str
 
 if sys.version_info[0] >= 3:
@@ -129,6 +130,8 @@ class base_run_group_context(object):
 
 
 def _thread_test(test_context):
+
+    dt_py_log_hook_init()
 
     lib_inf = test_context.lib_inf
 
