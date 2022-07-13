@@ -9,6 +9,7 @@ import sys
 import copy
 import yaml
 import uuid
+import csv
 
 
 from .test_file_extract import get_args_in_src
@@ -48,6 +49,7 @@ class tester_database(object):
         for protocol_transferer in self.protocol_transferers.values():
             protocol_transferer.clean()
         self.db.clean()
+        self.generate_csv("/mnt/data/ocean-electric/hiltop_results/results.csv")
 
     def get_filestore_protocol_id(self, protocol_name):
         cmd = self.sql.get_file_store_protocol_id(protocol_name)
@@ -597,3 +599,21 @@ class tester_database(object):
         sql = self.sql
         c = db.cursor()
         return c.query_one(self.sql.get_tar_virtual_filestore())
+
+    def generate_csv(self, outfile):
+        db = self.db
+        sql = self.sql
+        c = db.cursor()
+        csv_results = c.query(sql.get_csv_results())
+        try:
+            with open(outfile, 'w', newline='', encoding='utf-8') as csv_file:
+                csv_writer = csv.writer(csv_file, dialect='excel')
+                csv_writer.writerow(("Test Group", "Serial Number", "Result", "Timestamp"))
+                for i in csv_results:
+                    row = list(i)
+                    row[2] = "PASS" if row[2] else "FAIL"
+                    csv_writer.writerow(row)
+        except Exception as e:
+            print(f"Error: couldn't open file {outfile}:\n{e}", flush=True)
+            return False
+        return True
