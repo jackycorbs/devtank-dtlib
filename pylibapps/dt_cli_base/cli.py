@@ -3,7 +3,6 @@ import os
 import sys
 import yaml
 import hashlib
-import datetime
 import dt_db_base
 from datetime import datetime
 
@@ -68,7 +67,7 @@ def group_results(context, cmd_args):
 
 def print_session(session):
     print("=" * 72)
-    print("Time :", datetime.datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S'))
+    print("Time :", datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S'))
     print("Overall :", "passed" if session.pass_fail else "FAILED")
     print("Session :", session.id)
     machine = session.get_tester_line_str()
@@ -328,7 +327,7 @@ def find_group_hash(context, cmd_args):
     for ts, group_version in versions:
         group_hash = _get_group_hash(group_version, False)
         if group_hash == target_hash:
-            print("FOUND at", datetime.datetime.fromtimestamp(dt_db_base.db2py_time(ts)))
+            print("FOUND at", datetime.fromtimestamp(dt_db_base.db2py_time(ts)))
 
 
 def update_test(context, cmd_args):
