@@ -49,7 +49,6 @@ class tester_database(object):
         for protocol_transferer in self.protocol_transferers.values():
             protocol_transferer.clean()
         self.db.clean()
-        self.generate_csv("/mnt/data/ocean-electric/hiltop_results/results.csv")
 
     def get_filestore_protocol_id(self, protocol_name):
         cmd = self.sql.get_file_store_protocol_id(protocol_name)
