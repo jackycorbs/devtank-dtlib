@@ -254,6 +254,7 @@ class tar_transferer(object):
         self._work_folder = work_folder
         self._database = database
         self._sql = sql
+        self._tar_paths = []
         self._tar_obj = None
         self._tar_id = None
         self._db_cursor = None
@@ -265,8 +266,10 @@ class tar_transferer(object):
         pass
 
     def start_tar(self, db_cursor):
+        assert self._tar_id is None, "Tar already open"
         self._db_cursor = db_cursor
         filename = "/tmp/%s.tar" % str(uuid.uuid4())
+        self._tar_paths  += [ filename ]
         try:
             self._tar_obj = tarfile.open(filename, mode="w:xz")
         except tarfile.TarError as e:
@@ -277,11 +280,18 @@ class tar_transferer(object):
         self._tar_id = file_id
 
     def finish_tar(self):
-        self._tar_obj.close()
+        if self._tar_obj:
+            self._tar_obj.close()
+            self._tar_obj = None
+        self._tar_id = None
         self._db_cursor = None
 
     def clean(self):
-        self._db_cursor = None
+        self.finish_tar()
+        for tar_path in self._tar_paths:
+            if os.path.exists(tar_path):
+                os.unlink(tar_path)
+        self._tar_paths = []
 
     def upload(self, filepath, file_id):
         cache_file = str(file_id) + "/" + os.path.basename(filepath)
