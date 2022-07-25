@@ -153,7 +153,22 @@ class tester_database(object):
 
         tar_vstore_row = self.get_tar_virtual_filestore()
 
-        if len(filepaths) > 1 and tar_vstore_row:
+        id_cache = self._file_upload_cache[1]
+        if self._file_upload_cache[0] != c:
+            id_cache = {}
+            self._file_upload_cache = (c, id_cache)
+
+        fresh_files_to_upload = []
+        r = []
+
+        for filepath in filepaths:
+            file_id = id_cache.get(filepath, None)
+            if file_id is None:
+                fresh_files_to_upload += [filepath]
+            else:
+                r += [ file_id ]
+
+        if len(fresh_files_to_upload) > 1 and tar_vstore_row:
 
             filestore_protocol_transferer = protocol_transferer
 
@@ -175,26 +190,17 @@ class tester_database(object):
         else:
             protocol_transferer.open(file_store_host, file_store_folder)
 
-        id_cache = self._file_upload_cache[1]
-        if self._file_upload_cache[0] != c:
-            id_cache = {}
-            self._file_upload_cache = (c, id_cache)
-
-        r = []
-
-        for filepath in filepaths:
-            file_id = id_cache.get(filepath, None)
-            if file_id is None:
-                filename = os.path.basename(filepath)
-                stat = os.stat(filepath)
-                mod_time = db_time(stat.st_mtime)
-                file_size = stat.st_size
-                file_id = c.insert(self.sql.add_file(filename,
-                    file_store_id, now, mod_time, file_size))
-                if not file_id:
-                    raise Exception("Adding file \"%s\" failed" % filename)
-                protocol_transferer.upload(filepath, file_id)
-                id_cache[filepath] = file_id
+        for filepath in fresh_files_to_upload:
+            filename = os.path.basename(filepath)
+            stat = os.stat(filepath)
+            mod_time = db_time(stat.st_mtime)
+            file_size = stat.st_size
+            file_id = c.insert(self.sql.add_file(filename,
+                file_store_id, now, mod_time, file_size))
+            if not file_id:
+                raise Exception("Adding file \"%s\" failed" % filename)
+            protocol_transferer.upload(filepath, file_id)
+            id_cache[filepath] = file_id
             r += [ file_id ]
 
         if protocol_id == tar_transferer.protocol_id:
