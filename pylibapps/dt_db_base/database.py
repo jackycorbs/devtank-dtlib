@@ -158,15 +158,12 @@ class tester_database(object):
             id_cache = {}
             self._file_upload_cache = (c, id_cache)
 
-        fresh_files_to_upload = []
-        r = []
+        fresh_files_to_upload = set()
 
+        # Boil down to unique files that will be acturally added.
         for filepath in filepaths:
-            file_id = id_cache.get(filepath, None)
-            if file_id is None:
-                fresh_files_to_upload += [filepath]
-            else:
-                r += [ file_id ]
+            if filepath not in id_cache:
+                fresh_files_to_upload.add(filepath)
 
         if len(fresh_files_to_upload) > 1 and tar_vstore_row:
 
@@ -201,7 +198,6 @@ class tester_database(object):
                 raise Exception("Adding file \"%s\" failed" % filename)
             protocol_transferer.upload(filepath, file_id)
             id_cache[filepath] = file_id
-            r += [ file_id ]
 
         if protocol_id == tar_transferer.protocol_id:
             protocol_transferer.finish_tar()
@@ -213,6 +209,12 @@ class tester_database(object):
             cmd = self.sql.complete_tar_file(completed_tar_id, mod_time, file_size)
             c.update(cmd)
 
+        # Return id array in same order as original files array.
+        r = []
+        for filepath in filepaths:
+            file_id = id_cache.get(filepath, None)
+            if file_id:
+                r += [ file_id ]
         return r
 
     def add_files(self, filepaths, db_cursor=None, now=None):
