@@ -342,7 +342,7 @@ class base_run_group_manager(object):
                      "STATUS_TEST":   lambda args:     self._test_status(args),
                      "STATUS_DEV":    lambda passfail: self._dev_status(passfail == "True"),
                      "SET_UUID":      lambda new_uuid: self._dev_set_uuid(new_uuid),
-                     "STORE_VALUE":   lambda data:     self._store_value(data),
+                     "STORE_VALUE":   lambda data:     self._store_value_picked(data),
                      "FREEZE":        lambda args:     self._freeze(),
                      }
 
@@ -468,10 +468,15 @@ class base_run_group_manager(object):
                 dev.uuid = new_uuid
         self.current_device = new_uuid
 
-    def _store_value(self, data):
+    def _store_value_picked(self, data):
         data = pickle.loads(data.replace(b"<NL>",b"\n"))
         name = data[0]
         value = data[1]
+        self._store_value(name, value)
+
+    def _store_value(self, name, value):
+        if not self.current_device or not self.current_test:
+            return
         test_dict = self.session_results[self.current_device]['tests'][self.current_test]
         test_dict.setdefault("stored_values", {})
         test_dict["stored_values"][name] = value
@@ -617,6 +622,7 @@ class base_run_group_manager(object):
             # Give time for signal to get slave process.
             time.sleep(0.1)
             self._complete_stop()
+            self._store_value("SUB_FAIL_N", "SCRIPT CANCELLED")
 
         self._finished()
 
