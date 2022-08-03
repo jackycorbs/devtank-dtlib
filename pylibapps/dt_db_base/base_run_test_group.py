@@ -410,6 +410,8 @@ class base_run_group_manager(object):
         if self.logfile:
             self.logfile.close()
             self.logfile = None
+        self.current_test = None
+        self.current_device = None
 
     def _select_testfile(self, testfile):
         self.current_test = testfile
