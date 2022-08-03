@@ -416,7 +416,7 @@ class base_run_group_manager(object):
         self.session_results[self.current_device]['tests'][self.current_test] = {'passfail' : False}
 
     def _select_dev(self, dev_uuid):
-        self.current_device = dev_uuid
+        self.current_device = dev_uuid.strip()
         self.session_results[self.current_device] = {'tests': {}}
 
     def _start_outfile(self, outfile):
@@ -459,6 +459,7 @@ class base_run_group_manager(object):
         self.session_results[self.current_device]['tests'][self.current_test]['passfail'] = passfail
 
     def _dev_set_uuid(self, new_uuid):
+        new_uuid = new_uuid.strip()
         dev_values = self.session_results.pop(self.current_device)
         if "old_uuid" not in dev_values:
             dev_values["old_uuid"] = self.current_device
