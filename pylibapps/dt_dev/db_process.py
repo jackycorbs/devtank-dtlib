@@ -1,5 +1,5 @@
 from __future__ import print_function
-import mysql.connector as mysqlconn
+import pymysql
 import paramiko
 import sqlite3
 import socket
@@ -127,13 +127,13 @@ class db_process_t(object):
 
     def _db_dict_open(self, db_def):
         print ('Opening "%s" on "%s"' % (db_def["dbname"], db_def["host"]), file=sys.stderr)
-        db = mysqlconn.connect(database=db_def["dbname"],
-                               user=db_def["user"],
-                               password=db_def["password"],
-                               host=db_def["host"],
-                               port=db_def.get("port", 3306))
-        db.sql_mode = 'ANSI'
-        c = db.cursor(buffered=True)
+        db = pymysql.connect(database=db_def["dbname"],
+                             user=db_def["user"],
+                             password=db_def["password"],
+                             host=db_def["host"],
+                             port=db_def.get("port", 3306),
+                             sql_mode='ANSI_QUOTES')
+        c = db.cursor()
         self.dbrefs[c] = db
         self.db_paths[c] = db_def
         return c
@@ -447,7 +447,7 @@ class db_process_t(object):
 
         cmd += "ORDER BY test_groups.id, test_group_entries.order_position DESC, test_group_entry_properties.id DESC"
         c.execute(cmd)
-        rows = c.fetchall()
+        rows = list(c.fetchall())
 
         groups_id_map = {}
         groups_name_map = {}
