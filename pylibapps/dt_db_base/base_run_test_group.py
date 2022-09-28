@@ -38,7 +38,13 @@ _IPC_TIMEOUT = 1
 
 class ForceExitException(Exception):
     """Raise an exception exit is forced."""
-    pass
+    def __init__(self, exit_code, *args):
+        super().__init__(args)
+        self.exit_code = exit_code
+
+
+class EarlyExitException(Exception):
+    """Raise an exception early exit is requested."""
 
 
 
@@ -86,8 +92,11 @@ class base_run_group_context(object):
     def get_bus(self):
         return self.bus
 
-    def forced_exit(self):
-        raise ForceExitException
+    def forced_exit(self, exit_code=-1):
+        if exit_code:
+            raise ForceExitException(exit_code)
+        else:
+            raise EarlyExitException
 
     def test_check(self, test_name, args, results, result, desc):
         r = False
@@ -236,19 +245,14 @@ def _thread_test(test_context):
                     if hasattr(dev, "set_test_functions"):
                         dev.set_test_functions(test_check, threshold_check, exact_check, store_value)
                     execfile(test_file, test_exec_map)
-                    lib_inf.enable_info_msgs(False)
                     duration = time.time() - start_time
-                    post_dev_uuid = dev.uuid.rstrip('\0')
-                    if dev_uuid != post_dev_uuid:
-                        test_context.send_cmd("SET_UUID %s" % post_dev_uuid)
-                        dev_uuid = post_dev_uuid
-                    bus_con.poll_devices()
-                except ForceExitException as e:
+                except ForceExitException:
                     duration = time.time() - start_time
                     results[name] = False
                     lib_inf.output_bad("Forced Exit")
-                    lib_inf.enable_info_msgs(False)
                     store_value("SUB_FAIL_N", "SCRIPT EXITED")
+                except EarlyExitException:
+                    duration = time.time() - start_time
                 except Exception as e:
                     duration = time.time() - start_time
                     results[name] = False
@@ -259,7 +263,13 @@ def _thread_test(test_context):
                     lib_inf.output_bad("Backtrace:")
                     for line in traceback.format_exc().splitlines():
                         lib_inf.output_bad(line)
-                    lib_inf.enable_info_msgs(False)
+
+                post_dev_uuid = dev.uuid.rstrip('\0')
+                if dev_uuid != post_dev_uuid:
+                    test_context.send_cmd("SET_UUID %s" % post_dev_uuid)
+                    dev_uuid = post_dev_uuid
+                bus_con.poll_devices()
+                lib_inf.enable_info_msgs(False)
 
                 test_pass = results.get(name, False)
 
