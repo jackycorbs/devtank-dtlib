@@ -87,27 +87,26 @@ A short guide for beginners to using the HILTOP Production Testing Framework. Co
 \end{abstract}
 %\vspace{11mm}
 
-\tableofcontents
+
 \newpage
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Globals}
 \label{sec: globals}
 
 \subsection{Device}
 \label{ssec: globalsDev}
 
-The device under test is made into the python object, \url{dev}, and will contain the information to be tested in the scripts. It is constructed in \url{example_hw.py}, see Section \ref{sec: examplehw} The device is given a UUID which is a universally unique identifier that is assigned to a device but is expected to change, accounted for in database storage. The initial UUID is generated through random numbers but it is often replaced by hardware MAC address when found.
+The device under test is made into the python object, \url{dev}, and will contain the information to be tested in the scripts. It is constructed in \url{apps/gui/example_lib/example_hw.py}, see Section \ref{sec: examplehw} The device is given a UUID which is a universally unique identifier that is assigned to a device but is expected to change, accounted for in database storage. The initial UUID is generated through random numbers but it is often replaced by hardware MAC address when found.
 
 \subsection{Tests and Test Groups}
 \label{globalTests}
 
-Tests are arranged into test groups and these will be executed by the testing framework. Test groups are found in \url{./apps/app/tests/groups.yaml} and the group that will be used when the GUI is starts is set in \url{./apps/app/mb_prod_lib_gui/start_gui.py}. They are in simple yaml `default\_flow\_style' and the order of the tests will determine the order executed.
+Tests are arranged into test groups and these will be executed by the testing framework. Test groups are found in \url{./apps/gui/tests/groups.yaml} and the group that will be used when the GUI is started is set in \url{./apps/gui/example_lib_gui/start_gui.py}. They are in simple yaml `default\_flow\_style' and the order of the tests will determine the order executed.
 
 \subsection{Adjustable Arguments}
 \label{ssec: globalsArgs}
 
-Inside the \url{groups.yaml} file, arguments can be set for each test script. Argument `example' can be called by \lstinline{example = args["example"]}{. To create these arguments, they must be defined in \url{./apps/app/args.yaml} and given a type and description. Additional attributes can be given such as max, min, range and default where applicable. These arguments will be entered into the database for the associated device and test group. 
+Inside the \url{groups.yaml} file, arguments can be set for each test script. Argument `example' can be called by \lstinline{example = args["example"]}{. To create these arguments, they must be defined in \url{./apps/gui/tests/args.yaml} and given a type and description. Additional attributes can be given such as max, min, range and default where applicable. These arguments will be entered into the database for the associated device and test group. 
 
 \subsection{Checks}
 \label{ssec: globalsChecks}
@@ -159,7 +158,7 @@ There is a final output command, \lstinline{info_msg}{ that works similarally to
 	\label{fig: examplehw}
 \end{wrapfigure}
 
-The binding contains three of the core classes that are used to communicate with the hardware connected, although more can be added at your discretion. The example binding location is \url{./apps/app/example_lib/example_hw.py}.
+The binding contains three of the core classes that are used to communicate with the hardware connected, although more can be added at your discretion. The example binding location is \url{./apps/gui/example_lib/example_hw.py}.
 
 The bus class contains attributes and functions for the bus. It is instantiated when the GUI opens and has “open” and “close” functions which are executed (pythonically) at the start and exit of the object (which is likely the start and end of the program).
 
@@ -224,13 +223,14 @@ if stdout.readlines() != dev.hostname:
 \end{figure} 
 
 With the scripts in Fig. \ref{lst: examplehwExample1} inside a test group, they would execute consecutively in the order defined in \url{groups.yaml}. In Listing \ref{lst: examplehwExample1c} it would be recommended to instead use \lstinline{dev.hostname = args["hostname"]}{ and so arguments could be given to the scripts, as described in Section \ref{ssec: globalsArgs}.
+
 \newpage
 \subsection{Building}
 \label{ssec: buildingStruct}
 
 While this document only touches on python parts of the production testing structure, there is also a significant amount comprised of C (for lower level mostly) and so a build is required. 
 
-If being used on a non-specialised local machine this can be done by navigating to \url{./apps/app/} and first clearing the database (required when test scripts are added/groups ammended as these are stored in the database, see Section \ref{ssec: testsDatabase}) with \lstinline[language=bash]{make local_db_clean}. Once the database is cleaned, use \lstinline[language=bash]{make} to build and \lstinline{./output/bin/example_tester_gui.sh --production --desktop}{ to start the testing GUI. The arguments applied cause the GUI to run in production mode (not admin) and desktop (not full screen), respectively. 
+If being used on a non-specialised local machine this can be done by navigating to \url{./apps/gui/} and first clearing the database (required when test scripts are added/groups ammended as these are stored in the database, see Section \ref{ssec: testsDatabase}) with \lstinline[language=bash]{make local_db_clean}. Once the database is cleaned, use \lstinline[language=bash]{make} to build and \lstinline{./output/bin/example_tester_gui.sh --production --desktop}{ to start the testing GUI. The arguments applied cause the GUI to run in production mode (not admin) and desktop (not full screen), respectively. 
 
 If being run on a HILTOP then it should be built on startup, but you may need to update the test group list which is done by \lstinline{./output/bin/example_tester_gui.sh update_tests tests/calibration/your_test_group.yaml}{ with your\_test\_group.yaml being the group.yaml for your test group.
 
@@ -239,7 +239,7 @@ If being run on a HILTOP then it should be built on startup, but you may need to
 \section{Database}
 \label{sec: Database}
 
-The connected database can either be SQLite or MySQL, for local or remote functionality. On startup it will be set to MySQL, to change to SQLite use\newline \lstinline{./apps/app/output/bin/example_tester_gui.sh --config config_sqlite_db.yaml}{.
+The connected database can either be SQLite or MySQL, for local or remote functionality. On startup it will be set to MySQL, to change to SQLite use\newline \lstinline{./apps/gui/output/bin/example_tester_gui.sh --config config_sqlite_db.yaml}{.
 
 \subsection{Devices}
 \label{ssec: devicesDatabase}
@@ -270,4 +270,5 @@ Values inside the database are stored in the `values' table, it has an ID that i
 %\end{thebibliography}
 %}
 %
+
 \end{document}
