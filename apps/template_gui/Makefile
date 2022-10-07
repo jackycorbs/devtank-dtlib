@@ -1,5 +1,5 @@
 OUTDIR := output
-LIBDEVTANKROOT:=../..
+LIBDEVTANKROOT:=../../dtlib
 
 EXAMPLE_TESTER_PY_MODS := \
     $(OUTDIR)/build/dt_db_base \
