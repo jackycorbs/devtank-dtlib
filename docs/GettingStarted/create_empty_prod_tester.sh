@@ -1,4 +1,8 @@
 #!/bin/bash
+if [[ $# -eq 0 ]] ; then
+    echo './create_empty_prod_tester.sh [project_name]'
+    exit 0
+fi
 
 SUBM=$(git remote get-url origin)
 CWD=$(pwd)
