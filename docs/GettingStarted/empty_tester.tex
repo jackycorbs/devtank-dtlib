@@ -1,0 +1,113 @@
+\documentclass[a4paper,12pt, notitlepage]{article}
+
+\usepackage[top=25mm,bottom=25mm,left=25mm,right=25mm]{geometry}
+%\usepackage{amsmath} 
+\usepackage{graphicx}
+%\usepackage{epstopdf}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{url}
+\usepackage{setspace} 
+%\usepackage[square, numbers]{natbib}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[ddmmyyyy]{datetime}
+
+\setstretch{1.44}
+\setlength{\columnsep}{6mm}
+\titleformat{\section}{\bfseries\large\scshape\filright}{\thesection}{1em}{}
+\titleformat{\subsection}{\bfseries\normalsize\scshape\filright}{\thesubsection}{1em}{}
+
+
+\renewcommand{\abstractname}{}
+\newcommand{\captionfonts}{\footnotesize}
+\renewcommand\thesection{\arabic{section}.}
+\renewcommand\thesubsection{\arabic{section}.\arabic{subsection}}
+
+\makeatletter
+\long\def\@makecaption#1#2{
+  \vskip\abovecaptionskip
+  \sbox\@tempboxa{{\captionfonts #1: #2}}
+  \ifdim \wd\@tempboxa >\hsize
+    {\captionfonts #1: #2\par}
+  \else
+    \hbox to\hsize{\hfil\box\@tempboxa\hfil}
+  \fi
+  \vskip\belowcaptionskip}
+    
+\makeatother
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+	language=python,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	numberstyle=\tiny\color{gray},
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{mauve},
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=3
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Create Empty Production Tester}
+\lhead{\includegraphics[height=1cm]{./Images/logo.pdf}}
+\rfoot{Page \thepage}
+\lfoot{}
+
+\renewcommand{\dateseparator}{.}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{\textbf{\large{Create Empty Production Tester}}}
+
+\author{\normalsize{Devtank Ltd.} \\
+        \small\textit{
+        Marcus Holder}}
+\date{\today}
+
+\maketitle 
+\thispagestyle{fancy}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract} 
+\noindent
+This is an overview of getting started with building your own production tester using an existing template.
+\end{abstract}
+\vspace{11mm}
+
+\newpage
+\tableofcontents
+\newpage
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Starting}
+\label{sec: start}
+
+\subsection{Run script.}
+\label{renameStart}
+
+To create an empty production tester, you will need to execute the \url{create_empty_prod_tester.sh} script. It is located in \url{/dtlib/docs/GettingStarted/}. It requires an argument which will be the name of your project, the script takes this name and creates a git repository of this name and applies the name to all of the applications in the template GUI and CLI.
+
+It will also place \url{dtlib} inside your new project as a git submodule. To create a project called \url{first_prod_tester}, run \url{./create_empty_prod_tester.sh} \url{first_prod_tester}.
+
+\subsection{Run GUI}
+
+The git repository is located in your home directory. To run the production tester, type \url{cd} \url{~/first_prod_tester/first_prod_tester_gui/} and then run \url{./output/bin/first_prod_tester_tester_gui.sh} \url{--desktop} \url{--production}.
+
+The only tests that will be run include a test to read the serial number and one to read the UID.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
