@@ -1,11 +1,11 @@
 #!/bin/bash
 
+SUBM=$(git remote get-url origin)
 CWD=$(pwd)
-echo $CWD
 mkdir ~/$1
 git init ~/$1
 cd ~/$1
-git submodule add git.devtank.co.uk:/git/devtank-dtlib dtlib
+git submodule add $SUBM dtlib
 git commit -m "Added dtlib submodule to repository."
 mkdir apps
 cd $CWD
