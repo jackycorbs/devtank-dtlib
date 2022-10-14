@@ -17,7 +17,7 @@ from gi.repository import Gtk, Gdk, GLib
 parser = argparse.ArgumentParser(description='Graphical interface for Example tester')
 parser.add_argument('-v','--verbose', help='Increase log information', action='store_true')
 parser.add_argument('--desktop', help='Running on a desktop', action='store_true')
-parser.add_argument('--production', help='Hide advanced and quit.', action='store_true')
+parser.add_argument('--production', help='Hide advanced and quit.', action='store_true', default=True)
 parser.add_argument('--admin', help='Show Test Groups', action='store_true')
 parser.add_argument('--config', help='DB config file to use', type=str)
 parser.add_argument('--freeze_on_fail', help='Freeze on a failure', action='store_true')
@@ -36,6 +36,8 @@ def main():
     print("Running Example Tester GUI", datetime.datetime.utcnow())
 
     args = vars(parser.parse_args())
+    if args['admin']:
+        args['production'] = False
 
     if args['verbose']:
         example_lib.enable_info_msgs(True)
