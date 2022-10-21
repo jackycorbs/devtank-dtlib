@@ -11,7 +11,7 @@ from gi.repository import GLib
 from dt_gui_base import scan_box_base, open_query_gui, open_dev_tests_sessions_results
 
 
-_default_test_group = "Sunny Day"
+_default_test_group = "Empty Test Group"
 
 _singleton = None
 

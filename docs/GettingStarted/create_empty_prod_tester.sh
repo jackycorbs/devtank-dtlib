@@ -1,23 +1,24 @@
 #!/bin/bash
-if [[ $# -eq 0 ]] ; then
+if [[ $# -ne 1 ]] ; then
     echo './create_empty_prod_tester.sh [project_name]'
     exit 0
 fi
 
-PRO_NAME=$(basename $1)
+PRO_NAME=$(basename "$1")
 echo Project name = $PRO_NAME
 
 SUBM=$(git remote get-url origin)
+echo Submodule - $SUBM
 CWD=$(pwd)
 echo current working directory = $CWD
 
 {
-    mkdir $1
+    mkdir -p "$1"
 } || {
     exit 0
 }
-git init $1
-cd $1
+git init "$1"
+cd "$1"
 echo Full path = $1
 
 git submodule add $SUBM dtlib
@@ -26,13 +27,13 @@ mkdir apps
 cd $CWD
 
 echo About to copy template and cli to apps
-cp -R ../../apps/template_gui $1/apps
-cp -R ../../apps/template_cli $1/apps
+cp -R ../../apps/template_gui "$1"/apps
+cp -R ../../apps/template_cli "$1"/apps
 echo $about to move $1/apps/template_gui to $1/apps/"$PRO_NAME"_gui
 
-mv $1/apps/template_gui $1/apps/"$PRO_NAME"_gui
-mv $1/apps/template_cli $1/apps/"$PRO_NAME"_cli
-cd $1
+mv "$1"/apps/template_gui "$1"/apps/"$PRO_NAME"_gui
+mv "$1"/apps/template_cli "$1"/apps/"$PRO_NAME"_cli
+cd "$1"
 ./dtlib/docs/GettingStarted/rename.sh $PRO_NAME apps/
 cd apps/"$PRO_NAME"_cli
 rm -r example_lib resources tests
