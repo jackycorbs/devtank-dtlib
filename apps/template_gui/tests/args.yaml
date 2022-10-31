@@ -1,0 +1,4 @@
+{
+    "template_arg" : { 'type' : 'bool',
+                       'desc' : "Template argument." }
+}

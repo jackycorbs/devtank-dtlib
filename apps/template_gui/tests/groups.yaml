@@ -1,0 +1,12 @@
+{
+    groups : [
+        {
+            name : "Empty Test Group",
+            desc : "Empty Test Group for template.",
+            tests:
+            [
+                [ "empty.py", {} ]
+            ]
+        }
+    ]
+}
