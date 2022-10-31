@@ -99,15 +99,13 @@ This is an overview of getting started with building your own production tester 
 \subsection{Run script.}
 \label{renameStart}
 
-To create an empty production tester, you will need to execute the \url{create_empty_prod_tester.sh} script. It is located in \url{/dtlib/docs/GettingStarted/}. It requires an argument which will be the name of your project, the script takes this name and creates a git repository of this name and applies the name to all of the applications in the template GUI and CLI.
-
-It will also place \url{dtlib} inside your new project as a git submodule. To create a project called \url{first_prod_tester}, run \url{./create_empty_prod_tester.sh} \url{first_prod_tester}.
+To create an empty production tester, you will need to execute the \url{create_empty_prod_tester.sh} script. It is located in \url{/dtlib/docs/GettingStarted/}. Before running the script, move to the location where you want to store the production tester, e.g. \url{cd ~/Documents/my_prod_tester_work}, then run the script with \url{./$DTLIB/docs/GettingStarted/create_empty_prod_tester.sh} \url{my_prod_tester}. The argument \url{my_prod_tester} is the name of your empty production tester and the applications inside it. Note that \url{$DTLIB} defines your version of the dtlib git repository. The script will also place a fresh \url{dtlib} inside your new project as a git submodule. 
 
 \subsection{Run GUI}
 
-The git repository is located in your home directory. To run the production tester, type \url{cd} \url{~/first_prod_tester/first_prod_tester_gui/} and then run \url{./output/bin/first_prod_tester_tester_gui.sh} \url{--desktop} \url{--production}.
+To run the production tester, enter the \url{apps} directory and then the template gui directory which will be located in \url{~/Documents/my_prod_tester_work/my_prod_tester_gui/} and then run \url{./output/bin/my_prod_tester_tester_gui.sh} \url{--desktop}.
 
-The only tests that will be run include a test to read the serial number and one to read the UID.
+Once the gui starts you will be asked for a barcode scan, as we are just in production mode you can enter a matching number. The --desktop argument if removed will open the gui in full screen mode. In the next window, select 'Yes' when asked if the board has been placed in the fixture and you will be able to see the one example test run.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \end{document}
