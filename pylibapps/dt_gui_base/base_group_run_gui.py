@@ -50,11 +50,11 @@ class base_run_context(object):
         self.info_btn = builder.get_object("run_info_btn") # AKA "Output"
 
         # Define button connections
-        self.run_cancel_btn.connect("clicked", lambda btn: self.on_cancel())
         self.run_ok_btn.connect("clicked",     lambda btn: self.on_ok())
-        self.info_btn.connect("toggled",       lambda btn: self.on_info())
+        self.run_cancel_btn.connect("clicked", lambda btn: self.on_cancel())
         self.redo_btn.connect("clicked",       lambda btn: self.on_redo())
         self.unfreeze_btn.connect("clicked",   lambda btn: self.on_unfreeze())
+        self.info_btn.connect("clicked",       lambda btn: self.on_info())
         
         """ Define TestGroupRunnerInfo Objects """
 
@@ -129,22 +129,21 @@ class base_run_context(object):
         context.view_objs["RunGroupViewObj"] = self
 
     def show_view(self):
-
-        self.context.force_view("TestGroupRunner")
-
-        self.info_btn.set_active(False)
-        self.run_info.set_visible(False)
-        self.unfreeze_btn.set_visible(False)
-
+        """ Kicks off the test """
+        self.context.force_view("TestGroupRunnerMain")
+        self.unfreeze_btn.set_sensitive(False)
         if not self.run_group_man.readonly:
             self.start_test_group()
 
     def update_status_time(self):
+        """ Calculate the elapsed test time, update the title label """
+
+        # If the test has stopped, stop updating progress bar, remove grey-out on test list
         if not self.run_group_man.live:
             self._stop_update()
             self.test_list.set_sensitive(True)
-            self.dev_list.set_sensitive(True)
             return
+
         total_seconds = time.time() - self.test_start_time
         total_minutes = int(total_seconds / 60)
         total_hours   = total_minutes / 60
@@ -159,7 +158,6 @@ class base_run_context(object):
 
         self.run_ok_btn.set_sensitive(True)
         self.test_list.set_sensitive(True)
-        self.dev_list.set_sensitive(True)
         self.progress_bar.set_fraction(1)
 
         if not len(self.run_group_man.session_results):
@@ -180,7 +178,6 @@ class base_run_context(object):
                     None, False, 0, 0)
                 self.out_buf.set_text("")
                 break
-
 
     def select_dev(self, select_dev_uuid):
         dev_list = self.dev_list
