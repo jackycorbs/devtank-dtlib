@@ -2026,6 +2026,11 @@
     <property name="can-focus">False</property>
     <property name="stock">gtk-info</property>
   </object>
+  <object class="GtkImage" id="run_info_img_main">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="stock">gtk-info</property>
+  </object>
   <object class="GtkImage" id="unfreeze_img">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
@@ -2447,12 +2452,12 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkToggleButton" id="run_info_btn">
+                  <object class="GtkButton" id="run_info_btn">
                     <property name="label" translatable="yes">Output</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">True</property>
-                    <property name="image">run_info_img1</property>
+                    <property name="image">run_info_img_main</property>
                     <property name="always-show-image">True</property>
                   </object>
                   <packing>
