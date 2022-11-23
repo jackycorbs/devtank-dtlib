@@ -60,6 +60,7 @@ class base_run_context(object):
 
         # Define buttons
         self.info_back_btn = builder.get_object("info_back_btn")
+        self.info_back_btn.connect("clicked", lambda btn: self.on_back())
 
         # Define status area
         self.info_status_box = builder.get_object("test_info_status_box")
@@ -106,11 +107,11 @@ class base_run_context(object):
             self._info_line,  self._warning_line,  self._error_line,
             {"FINISHED":      lambda args:     self.finished(),
              "SELECT_TEST":   lambda testfile: self.select_testfile(testfile),
-             "SELECT_DEV" :   lambda dev_uuid: self.select_dev(dev_uuid),
+             "SELECT_DEV" :   lambda dev_uuid: self.select_dev(),
              "START_OUTPUT":  lambda outfile:  self.start_outfile(outfile),
              "START_LOGFILE": lambda logfile:  self.start_logfile(logfile),
              "STATUS_TEST":   lambda args:     self.test_status(args),
-             "STATUS_DEV":    lambda passfail: self.dev_status(passfail == "True"),
+             "STATUS_DEV":    lambda passfail: None,
              "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid),
              "FREEZE":        lambda args:     self.freeze(),
             }
@@ -162,7 +163,8 @@ class base_run_context(object):
 
         self.run_ok_btn.set_sensitive(True)
         self.test_list.set_sensitive(True)
-        self.progress_bar.set_fraction(1)
+        for bar in self.progress_bars:
+            bar.set_fraction(1)
 
         if not len(self.run_group_man.session_results):
             open_notify_gui(self.context, "No Results.\nNo Devices?")
@@ -269,12 +271,12 @@ class base_run_context(object):
         self.update_run_lab()
 
     def on_info(self, passfail=None):
-        context.push_view()
-        context.change_view("TestGroupRunnerInfo")
+        self.context.push_view()
+        self.context.force_view("TestGroupRunnerInfo")
 
     def on_back(self):
-        context.push_view()
-        context.change_view("TestGroupRunnerMain")
+        self.context.push_view()
+        self.context.pop_view()
 
     def update_info_status(self, passfail=None):
         """ Updates the test info label/icon on the logger window """
@@ -285,10 +287,10 @@ class base_run_context(object):
             msg = "Success"
         else:
             msg = "Failed"
-        self.test_info_status_label(f"({self.current_test_number}/{number_of_tests}) {msg}")
+        self.info_status_label.set_text(f"({self.current_test_number}/{number_of_tests}) {msg}")
         # The test group completed, replace the spinner with a tick or cross
         if passfail is not None:
-            self.info_status_box.remove("test_info_status_spinner")
+            self.info_status_box.remove(self.info_status_spinner)
             if passfail:
                 icon = self.context.good_icon
             else:
@@ -310,7 +312,8 @@ class base_run_context(object):
         context = self.context
         tests_group = context.tests_group
 
-        self.progress_bar.set_fraction(0)
+        for bar in self.progress_bars:
+            bar.set_fraction(0)
         if tests_group.duration:
             self.total_duration = tests_group.duration * len(context.devices)
         else:
@@ -374,11 +377,15 @@ class base_run_context(object):
 
             fraction = self.total_test_time / self.total_duration
 
-            self.progress_bar.set_fraction(fraction)
+            for bar in self.progress_bars:
+                bar.set_fraction(fraction)
 
         self.update_status_time()
 
         return True
+
+    def select_dev(self):
+        pass
 
     def select_dev_list(self):
         if not self.run_group_man.readonly:
@@ -400,23 +407,20 @@ class base_run_context(object):
                 test_result[1] = None
         self.load_info()
 
-    # def load_info(self):
-    #     if not self.run_group_man.readonly:
-    #         return
-    #     test_sel = self.test_list.get_selection()
+    def load_info(self):
+        if not self.run_group_man.readonly:
+            return
+        test_sel = self.test_list.get_selection()
 
-    #     test_model, test_iters = test_sel.get_selected_rows()
+        test_model, test_iters = test_sel.get_selected_rows()
 
-    #     self.log_text.get_buffer().set_text("")
-    #     self.out_text.get_buffer().set_text("")
+        self.log_text.get_buffer().set_text("")
+        self.out_text.get_buffer().set_text("")
 
-    #     if not self.run_info.get_visible():
-    #         return
+        if len(dev_iters) and len(test_iters):
+            test = test_model[test_iters[0]][0]
 
-    #     if len(dev_iters) and len(test_iters):
-    #         test = test_model[test_iters[0]][0]
-
-    #         self.run_group_man.load_files(dev, test)
+            self.run_group_man.load_files(dev, test)
 
 
     def load_session(self, session):
@@ -428,7 +432,8 @@ class base_run_context(object):
         for name in session.tests:
             test_list_store.append([name, None, None])
 
-        self.progress_bar.set_fraction(1)
+        for bar in self.progress_bars:
+            bar.set_fraction(1)
         self.test_list.set_sensitive(True)
         self.dev_list.set_sensitive(True)
 
