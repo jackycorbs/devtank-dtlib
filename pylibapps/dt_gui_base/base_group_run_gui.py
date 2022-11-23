@@ -179,21 +179,6 @@ class base_run_context(object):
                 self.out_buf.set_text("")
                 break
 
-    def select_dev(self, select_dev_uuid):
-        dev_list = self.dev_list
-        selector = dev_list.get_selection()
-        dev_list_store = dev_list.get_model()
-        for dev_uuid in dev_list_store:
-            if dev_uuid[0] == select_dev_uuid:
-                selector.select_iter(dev_uuid.iter)
-                dev_list.scroll_to_cell(
-                    dev_list_store.get_path(dev_uuid.iter),
-                    None, False, 0, 0)
-                break
-        test_list_store = self.test_list.get_model()
-        for treeiter in test_list_store:
-            treeiter[1] = None
-
     def start_outfile(self, outfile):
         self.test_time = time.time()
         self.out_text.get_buffer().set_text("")
@@ -212,30 +197,11 @@ class base_run_context(object):
             test_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
         self.test_time = 0
 
-    def dev_status(self, passfail):
-        dev_list = self.dev_list
-        selection = dev_list.get_selection()
-        dev_list_store = dev_list.get_model()
-        treeiters = selection.get_selected_rows()[1]
-        for treeiter in treeiters:
-            dev_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
-
-    def dev_set_uuid(self, new_uuid):
-        dev_list = self.dev_list
-        selection = dev_list.get_selection()
-        dev_list_store = dev_list.get_model()
-        treeiters = selection.get_selected_rows()[1]
-        for treeiter in treeiters:
-            dev_list_store[treeiter][0] = new_uuid
-
     def freeze(self):
-        self.unfreeze_btn.set_visible(True)
-        width = self.window.get_parent_window().get_width()
-        self.info_btn.set_active(True)
-        self.run_split_box.set_position(width * 0.3)
+        self.unfreeze_btn.set_sensitive(True)
 
     def on_unfreeze(self):
-        self.unfreeze_btn.set_visible(False)
+        self.unfreeze_btn.set_sensitive(False)
         self.run_group_man.unfreeze()
 
     def _stop_update(self):
@@ -248,45 +214,41 @@ class base_run_context(object):
         self.total_duration = None
         self.context.pop_view()
 
-
     def on_ok(self):
-
         self.run_group_man.submit()
-
         self.go_back()
 
-
     def force_stop(self):
-        self.unfreeze_btn.set_visible(False)
+        self.unfreeze_btn.set_sensitive(False)
         self.run_group_man.stop()
         self._stop_update()
-
 
     def on_cancel(self):
         if self.run_group_man.live:
             self.force_stop()
             self.test_list.set_sensitive(True)
-            self.dev_list.set_sensitive(True)
             self.run_group_man.readonly = True
         else:
             # If test finished, cancel is same as ok.
             self.on_ok()
 
     def update_run_lab(self, stamp=None):
+        """ Update the top title label with timestamp """
         tests_group = self.context.tests_group
 
         line = tests_group.name
 
         if tests_group.note:
-            line += " (%s)" % tests_group.note
+            line += f" ({tests_group.note})"
 
         if stamp:
             if isinstance(stamp, tuple):
                 line += "- %02u:%02u:%02u.%02u" % stamp
             else:
-                line = '"%s"\n @ %s' % (line, str(stamp))
+                line = f'"{line}"\n @ {str(stamp)}'
 
-        self.run_lab.set_text(line)
+        for label in self.run_labels:
+            label.set_text(line)
 
     def on_redo(self):
         self.force_stop()
@@ -298,17 +260,12 @@ class base_run_context(object):
         self.update_run_lab()
 
     def on_info(self):
-        self.run_info.set_visible(self.info_btn.get_active())
-        btn_r = self.info_btn.get_allocation()
-        self.run_split_box.set_position(btn_r.width)
-        if self.run_group_man.readonly and self.info_btn.get_active():
-            self.load_info()
-
+        len(self.test_list.get_model())
+        raise NotImplementedError
 
     def _run(self):
         self.run_ok_btn.set_sensitive(False)
         self.test_list.set_sensitive(False)
-        self.dev_list.set_sensitive(False)
 
         self.out_buf.set_text("")
 
@@ -329,20 +286,12 @@ class base_run_context(object):
         if not self.run_group_man.start():
             self.finished()
 
-
     def start_test_group(self):
-
         test_list_store = self.test_list.get_model()
-        dev_list_store = self.dev_list.get_model()
-
         test_list_store.clear()
-        dev_list_store.clear()
 
         for test in self.context.tests_group.tests:
             test_list_store.append([test.name, None, test])
-
-        for dev in self.context.devices:
-            dev_list_store.append([dev.uuid, None])
 
         self._run()
 
@@ -412,51 +361,40 @@ class base_run_context(object):
                 test_result[1] = None
         self.load_info()
 
-    def load_info(self):
-        if not self.run_group_man.readonly:
-            return
-        test_sel = self.test_list.get_selection()
+    # def load_info(self):
+    #     if not self.run_group_man.readonly:
+    #         return
+    #     test_sel = self.test_list.get_selection()
 
-        test_model, test_iters = test_sel.get_selected_rows()
+    #     test_model, test_iters = test_sel.get_selected_rows()
 
-        self.log_text.get_buffer().set_text("")
-        self.out_text.get_buffer().set_text("")
+    #     self.log_text.get_buffer().set_text("")
+    #     self.out_text.get_buffer().set_text("")
 
-        if not self.run_info.get_visible():
-            return
+    #     if not self.run_info.get_visible():
+    #         return
 
-        if len(dev_iters) and len(test_iters):
-            dev = dev_model[dev_iters[0]][0]
-            test = test_model[test_iters[0]][0]
+    #     if len(dev_iters) and len(test_iters):
+    #         test = test_model[test_iters[0]][0]
 
-            self.run_group_man.load_files(dev, test)
+    #         self.run_group_man.load_files(dev, test)
 
 
     def load_session(self, session):
 
         self.run_group_man.load_session(session)
 
-        dev_list_store = self.dev_list.get_model()
-        dev_list_store.clear()
-        for uuid, dev_results in session.devices.items():
-            dev_list_store.append([uuid, self.context.get_pass_fail_icon_name(dev_results.pass_fail)])
-
         test_list_store = self.test_list.get_model()
         test_list_store.clear()
         for name in session.tests:
             test_list_store.append([name, None, None])
 
-        selector = self.dev_list.get_selection()
-        for dev_uuid in dev_list_store:
-            selector.select_iter(dev_uuid.iter)
-            break
         self.progress_bar.set_fraction(1)
         self.test_list.set_sensitive(True)
         self.dev_list.set_sensitive(True)
 
     def set_run_ready(self):
         self.run_group_man.readonly = False
-
 
 
 def set_run_context_singleton(_custom_run_context):
