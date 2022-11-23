@@ -1,52 +1,75 @@
-from __future__ import print_function, absolute_import
-
-import os
 import time
 import datetime
-import sys
 
 from .notify_gui import open_notify_gui
-
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, Pango, GdkPixbuf
 
-
-
-
 class base_run_context(object):
+    """ This class deals with the GUI side of running the actual tests. """
     def __init__(self, context, run_group_manager_class):
-        builder = context.builder
 
+        builder = context.builder
         self.context = context
 
-        self.window = builder.get_object("TestGroupRunner")
-        self.run_lab = builder.get_object("run_lab")
+        # Define Windows
+        self.main_window = builder.get_object("TestGroupRunnerMain")
+        self.info_window = builder.get_object("TestGroupRunnerInfo")
 
-        self.run_lab.modify_font(Pango.FontDescription('Mono'))
+        # Define labels
+        self.run_labels = (
+            builder.get_object("run_lab_main"),
+            builder.get_object("run_lab_info")
+        )
+        for label in self.run_labels:
+            label.modify_font(Pango.FontDescription('Mono'))
 
+        # Define progress bars
+        self.progress_bars = (
+            builder.get_object("running_time_main"),
+            builder.get_object("running_time_info")
+        )
+
+        """ Define TestGroupRunnerMain Objects """
+
+        # Define running list of tests in main window
         self.test_list = builder.get_object("RunTestsList")
-        self.dev_list = builder.get_object("RunDevList")
-
-        self.dev_list.set_model(Gtk.ListStore(str, GdkPixbuf.Pixbuf))
-        self.dev_list.append_column(Gtk.TreeViewColumn("Device", Gtk.CellRendererText(), text=0))
-        self.dev_list.append_column(Gtk.TreeViewColumn("Status", Gtk.CellRendererPixbuf(), pixbuf=1))
-
         self.test_list.set_model(Gtk.ListStore(str, GdkPixbuf.Pixbuf, object))
         self.test_list.append_column(Gtk.TreeViewColumn("Test", Gtk.CellRendererText(), text=0))
         self.test_list.append_column(Gtk.TreeViewColumn("Status", Gtk.CellRendererPixbuf(), pixbuf=1))
+        selection = self.test_list.get_selection()
+        selection.connect("changed", lambda sel : self.load_info())
 
-        self.run_cancel_btn = builder.get_object("run_cancel_btn")
+        # Define buttons
         self.run_ok_btn = builder.get_object("run_ok_btn")
-        self.info_btn = builder.get_object("run_info_btn")
-        self.run_info = builder.get_object("run_info")
+        self.run_cancel_btn = builder.get_object("run_cancel_btn")
         self.redo_btn = builder.get_object("run_redo_btn")
-        self.unfreeze_btn = builder.get_object("run_unfreeze_btn")
-        self.run_split_box = builder.get_object("run_split_box")
+        self.unfreeze_btn = builder.get_object("run_unfreeze_btn") # AKA "Resume"
+        self.info_btn = builder.get_object("run_info_btn") # AKA "Output"
 
+        # Define button connections
+        self.run_cancel_btn.connect("clicked", lambda btn: self.on_cancel())
+        self.run_ok_btn.connect("clicked",     lambda btn: self.on_ok())
+        self.info_btn.connect("toggled",       lambda btn: self.on_info())
+        self.redo_btn.connect("clicked",       lambda btn: self.on_redo())
+        self.unfreeze_btn.connect("clicked",   lambda btn: self.on_unfreeze())
+        
+        """ Define TestGroupRunnerInfo Objects """
+
+        # Define buttons
+        self.info_back_btn = builder.get_object("info_back_btn")
+
+        # Define status area
+        self.info_status_spinner = builder.get_object("test_info_status_spinner")
+        self.info_status_label = builder.get_object("test_info_status_label")
+
+        # Define textviews and buffers
         self.out_text = builder.get_object("test_output_text")
         self.log_text = builder.get_object("test_log_text")
+        self.out_text.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
+        self.log_text.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
 
         is_desktop = True if context.args['desktop'] else False
         self.out_text.set_sensitive(is_desktop)
@@ -55,21 +78,27 @@ class base_run_context(object):
         self.out_text.connect("size-allocate", self._scroll_to_end)
         self.log_text.connect("size-allocate", self._scroll_to_end)
 
-        self.out_text.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
-        self.log_text.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
-
+        # Define Buffers
         self.out_buf = self.out_text.get_buffer()
         self.log_buf = self.log_text.get_buffer()
 
+        # Define tags
         self.good_tag = self.out_buf.create_tag("good", foreground="#00FF00")
         self.bad_tag  = self.out_buf.create_tag("bad", foreground="#FF0000")
         self.norm_tag = self.out_buf.create_tag("norm", foreground="#FFFFFF")
-
         self.err_tag  = self.log_buf.create_tag("error", foreground="#FF0000")
         self.warn_tag = self.log_buf.create_tag("warn", foreground="#FFFF00")
         self.info_tag = self.log_buf.create_tag("info", foreground="#FFFFFF")
 
-        self.run_group_man = run_group_manager_class(context,
+        """
+        The run group manager is the base_run_group_manager class
+        defined in dt_db_base/base_run_test_group.py.
+        It is responsible for the actual running of the test process,
+        interpreting the output line-by-line, and running any needed callbacks.
+        Here, we define any callbacks we need to run under various conditions.
+        """
+        self.run_group_man = run_group_manager_class(
+            context,
             self._good_line,  self._bad_line,  self._normal_line,
             self._info_line,  self._warning_line,  self._error_line,
             {"FINISHED":      lambda args:     self.finished(),
@@ -81,30 +110,21 @@ class base_run_context(object):
              "STATUS_DEV":    lambda passfail: self.dev_status(passfail == "True"),
              "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid),
              "FREEZE":        lambda args:     self.freeze(),
-            })
+            }
+        )
 
         self.total_duration = None
-        self.progress_bar = builder.get_object("running_time")
-
         self.test_time = 0
         self.total_test_time = 0
         self.test_start_time = 0
 
+        """
+        We call GLib.timeout_add() to run update_progress() at regular intervals,
+        which updates the progress bar. This variable stores that job ID later.
+        """
         self.update_id = None
 
-        self.run_cancel_btn.connect("clicked", lambda btn: self.on_cancel())
-        self.run_ok_btn.connect("clicked",     lambda btn: self.on_ok())
-        self.info_btn.connect("toggled",       lambda btn: self.on_info())
-        self.redo_btn.connect("clicked",       lambda btn: self.on_redo())
-        self.unfreeze_btn.connect("clicked",   lambda btn: self.on_unfreeze())
-
         context.on_exit_cbs.insert(0, self.force_stop)
-
-        selection = self.dev_list.get_selection()
-        selection.connect("changed", lambda sel : self.select_dev_list())
-
-        selection = self.test_list.get_selection()
-        selection.connect("changed", lambda sel : self.load_info())
 
         context.view_objs["RunGroupViewObj"] = self
 
@@ -398,10 +418,8 @@ class base_run_context(object):
     def load_info(self):
         if not self.run_group_man.readonly:
             return
-        dev_sel = self.dev_list.get_selection()
         test_sel = self.test_list.get_selection()
 
-        dev_model, dev_iters = dev_sel.get_selected_rows()
         test_model, test_iters = test_sel.get_selected_rows()
 
         self.log_text.get_buffer().set_text("")
