@@ -292,13 +292,7 @@ class base_run_context(object):
         if self.run_group_man.current_test is not None:
             self.current_test = self.run_group_man.current_test
         self.number_of_tests = len(self.test_list.get_model())
-        if passfail is None:
-            msg = self.current_test
-        elif passfail:
-            msg = "Success"
-        else:
-            msg = f"{self.current_test} failed"
-        self.info_status_label.set_text(f"({self.current_test_number}/{self.number_of_tests}) {msg}")
+        self.info_status_label.set_text(f"({self.current_test_number}/{self.number_of_tests}) {self.current_test}")
         self.info_status_spinner.start()
 
     def update_info_status_icon(self, passfail=None):
