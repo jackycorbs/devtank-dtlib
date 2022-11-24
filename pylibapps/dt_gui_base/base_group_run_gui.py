@@ -121,6 +121,7 @@ class base_run_context(object):
         self.test_time = 0
         self.total_test_time = 0
         self.test_start_time = 0
+
         self.current_test_number = 1
 
         """
@@ -134,7 +135,6 @@ class base_run_context(object):
         context.view_objs["RunGroupViewObj"] = self
 
     def show_view(self):
-        """ Kicks off the test """
         self.context.force_view("TestGroupRunnerMain")
         self.unfreeze_btn.set_sensitive(False)
         if not self.run_group_man.readonly:
@@ -185,6 +185,7 @@ class base_run_context(object):
                     None, False, 0, 0)
                 self.out_buf.set_text("")
                 break
+        self.update_info_status()
 
     def start_outfile(self, outfile):
         self.test_time = time.time()
@@ -203,7 +204,9 @@ class base_run_context(object):
         for treeiter in treeiters:
             test_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
         self.test_time = 0
-        self.current_test_number += 1
+        if self.current_test_number < self.number_of_tests:
+            self.current_test_number += 1
+        self.info_status_spinner.start()
         self.update_info_status()
 
     def freeze(self):
@@ -271,23 +274,21 @@ class base_run_context(object):
         self.update_run_lab()
 
     def on_info(self, passfail=None):
-        self.context.push_view()
-        self.context.force_view("TestGroupRunnerInfo")
+        self.context.change_view("TestGroupRunnerInfo")
 
     def on_back(self):
-        self.context.push_view()
-        self.context.pop_view()
+        self.context.change_view("TestGroupRunnerMain")
 
     def update_info_status(self, passfail=None):
         """ Updates the test info label/icon on the logger window """
-        number_of_tests = len(self.test_list.get_model())
+        self.number_of_tests = len(self.test_list.get_model())
         if passfail is None:
             msg = self.run_group_man.current_test
-        elif passfail:
+        elif passfail == "True":
             msg = "Success"
         else:
-            msg = "Failed"
-        self.info_status_label.set_text(f"({self.current_test_number}/{number_of_tests}) {msg}")
+            msg = f"{self.run_group_man.current_test} Failed"
+        self.info_status_label.set_text(f"({self.current_test_number}/{self.number_of_tests}) {msg}")
         # The test group completed, replace the spinner with a tick or cross
         if passfail is not None:
             self.info_status_box.remove(self.info_status_spinner)
@@ -308,7 +309,6 @@ class base_run_context(object):
         self.test_list.set_sensitive(False)
 
         self.out_buf.set_text("")
-        self.info_status_spinner.start()
         context = self.context
         tests_group = context.tests_group
 
@@ -336,7 +336,6 @@ class base_run_context(object):
             test_list_store.append([test.name, None, test])
 
         self._run()
-
 
     def _scroll_to_end(self, widget, alloc):
         adj = widget.get_vadjustment()
