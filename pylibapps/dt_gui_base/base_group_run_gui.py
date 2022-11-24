@@ -112,7 +112,7 @@ class base_run_context(object):
              "START_OUTPUT":  lambda outfile:  self.start_outfile(outfile),
              "START_LOGFILE": lambda logfile:  self.start_logfile(logfile),
              "STATUS_TEST":   lambda args:     self.test_status(args),
-             "STATUS_DEV":    lambda passfail: self.status_dev(passfail),
+             "STATUS_DEV":    lambda passfail: None,
              "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid),
              "FREEZE":        lambda args:     self.freeze(),
             }
@@ -123,6 +123,7 @@ class base_run_context(object):
         self.total_test_time = 0
         self.test_start_time = 0
 
+        self.last_test_result = None
         self.current_test = None
         self.current_test_number = 1
 
@@ -141,6 +142,7 @@ class base_run_context(object):
         self.unfreeze_btn.set_sensitive(False)
         if not self.run_group_man.readonly:
             self.start_test_group()
+        self.info_status_spinner.start()
 
     def update_status_time(self):
         """ Calculate the elapsed test time, update the title label """
@@ -173,6 +175,9 @@ class base_run_context(object):
 
         self.update_status_time()
         self._stop_update()
+        if self.last_test_result is not None:
+            self.update_info_status(self.last_test_result)
+            self.update_info_status_icon(self.last_test_result)
 
     def select_testfile(self, select_testfile):
         test_list = self.test_list
@@ -187,6 +192,7 @@ class base_run_context(object):
                 self.out_buf.set_text("")
                 break
         self.update_info_status()
+        self.update_info_status_icon()
 
     def start_outfile(self, outfile):
         self.test_time = time.time()
@@ -198,6 +204,7 @@ class base_run_context(object):
     def test_status(self, args):
         passfail = args.split(' ')[0]
         passfail = passfail == "True"
+        self.last_test_result = passfail
         test_list = self.test_list
         selection = test_list.get_selection()
         test_list_store = test_list.get_model()
@@ -209,10 +216,6 @@ class base_run_context(object):
             self.current_test_number += 1
         self.info_status_spinner.start()
         self.update_info_status()
-
-    def status_dev(self, passfail):
-        """ Runs when a device/group test is finished """
-        self.update_info_status(passfail)
 
     def freeze(self):
         self.unfreeze_btn.set_sensitive(True)
@@ -285,7 +288,7 @@ class base_run_context(object):
         self.context.change_view("TestGroupRunnerMain")
 
     def update_info_status(self, passfail=None):
-        """ Updates the test info label/icon on the logger window """
+        """ Updates the test info label on the logger window """
         if self.run_group_man.current_test is not None:
             self.current_test = self.run_group_man.current_test
         self.number_of_tests = len(self.test_list.get_model())
@@ -294,23 +297,35 @@ class base_run_context(object):
         elif passfail:
             msg = "Success"
         else:
-            msg = f"{self.current_test} Failed"
+            msg = f"{self.current_test} failed"
         self.info_status_label.set_text(f"({self.current_test_number}/{self.number_of_tests}) {msg}")
-        # The test group completed, replace the spinner with a tick or cross
-        if passfail is not None:
-            self.info_status_box.remove(self.info_status_spinner)
+        self.info_status_spinner.start()
+
+    def update_info_status_icon(self, passfail=None):
+        """ If passfail is none, reinstate the spinner,
+        else change the icon to tick or cross """
+        if passfail is None:
+            to_remove = self.info_status_icon
+            to_add = self.info_status_spinner
+            self.info_status_spinner.start()
+        else:
             if passfail:
                 icon = self.context.good_icon
             else:
                 icon = self.context.bad_icon
             self.info_status_icon.set_from_pixbuf(icon)
-            self.info_status_box.add(self.info_status_icon)
-            self.info_status_box.reorder_child(
-                self.info_status_icon,
-                0
-            )
-            self.info_status_icon.set_margin_end(2)
-            self.info_status_icon.show()
+            to_remove = self.info_status_spinner
+            to_add = self.info_status_icon
+
+        self.info_status_box.remove(to_remove)
+        self.info_status_box.add(to_add)
+        self.info_status_box.reorder_child(
+            to_add,
+            0
+        )
+        to_add.set_margin_end(2)
+        to_add.show()
+
 
     def _run(self):
         self.run_ok_btn.set_sensitive(False)
