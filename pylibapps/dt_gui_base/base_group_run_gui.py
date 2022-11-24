@@ -143,6 +143,7 @@ class base_run_context(object):
         if not self.run_group_man.readonly:
             self.start_test_group()
         self.info_status_spinner.start()
+        self.current_test_number = 1
 
     def update_status_time(self):
         """ Calculate the elapsed test time, update the title label """
@@ -212,7 +213,7 @@ class base_run_context(object):
         for treeiter in treeiters:
             test_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
         self.test_time = 0
-        if self.current_test_number < self.number_of_tests:
+        if self.current_test_number < self.number_of_tests and passfail:
             self.current_test_number += 1
         self.info_status_spinner.start()
         self.update_info_status()
