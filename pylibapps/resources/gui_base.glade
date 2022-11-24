@@ -2326,9 +2326,13 @@
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkProgressBar" id="running_time_main">
+          <object class="GtkLabel" id="run_lab_main">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="justify">center</property>
+            <attributes>
+              <attribute name="scale" value="0.66600000000000004"/>
+            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -2337,13 +2341,9 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="run_lab_main">
+          <object class="GtkProgressBar" id="running_time_main">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="justify">center</property>
-            <attributes>
-              <attribute name="scale" value="0.66600000000000004"/>
-            </attributes>
           </object>
           <packing>
             <property name="expand">False</property>
