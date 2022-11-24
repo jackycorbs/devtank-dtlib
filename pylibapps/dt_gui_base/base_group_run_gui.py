@@ -143,7 +143,6 @@ class base_run_context(object):
         if not self.run_group_man.readonly:
             self.start_test_group()
         self.info_status_spinner.start()
-        self.current_test_number = 1
 
     def update_status_time(self):
         """ Calculate the elapsed test time, update the title label """
@@ -329,6 +328,7 @@ class base_run_context(object):
 
 
     def _run(self):
+        self.current_test_number = 1
         self.run_ok_btn.set_sensitive(False)
         self.test_list.set_sensitive(False)
 
