@@ -310,6 +310,7 @@ class base_run_context(object):
                 0
             )
             self.info_status_icon.set_margin_end(2)
+            self.info_status_icon.show()
 
     def _run(self):
         self.run_ok_btn.set_sensitive(False)
