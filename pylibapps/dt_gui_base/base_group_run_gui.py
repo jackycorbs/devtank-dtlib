@@ -105,13 +105,14 @@ class base_run_context(object):
             context,
             self._good_line,  self._bad_line,  self._normal_line,
             self._info_line,  self._warning_line,  self._error_line,
-            {"FINISHED":      lambda args:     self.finished(),
+            {
+             "FINISHED":      lambda args:     self.finished(),
              "SELECT_TEST":   lambda testfile: self.select_testfile(testfile),
              "SELECT_DEV" :   lambda dev_uuid: self.select_dev(),
              "START_OUTPUT":  lambda outfile:  self.start_outfile(outfile),
              "START_LOGFILE": lambda logfile:  self.start_logfile(logfile),
              "STATUS_TEST":   lambda args:     self.test_status(args),
-             "STATUS_DEV":    lambda passfail: None,
+             "STATUS_DEV":    lambda passfail: self.status_dev(passfail),
              "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid),
              "FREEZE":        lambda args:     self.freeze(),
             }
@@ -122,6 +123,7 @@ class base_run_context(object):
         self.total_test_time = 0
         self.test_start_time = 0
 
+        self.current_test = None
         self.current_test_number = 1
 
         """
@@ -171,7 +173,6 @@ class base_run_context(object):
 
         self.update_status_time()
         self._stop_update()
-        self.update_info_status(self.run_group_man.session_results)
 
     def select_testfile(self, select_testfile):
         test_list = self.test_list
@@ -208,6 +209,10 @@ class base_run_context(object):
             self.current_test_number += 1
         self.info_status_spinner.start()
         self.update_info_status()
+
+    def status_dev(self, passfail):
+        """ Runs when a device/group test is finished """
+        self.update_info_status(passfail)
 
     def freeze(self):
         self.unfreeze_btn.set_sensitive(True)
@@ -273,7 +278,7 @@ class base_run_context(object):
         self.start_test_group()
         self.update_run_lab()
 
-    def on_info(self, passfail=None):
+    def on_info(self):
         self.context.change_view("TestGroupRunnerInfo")
 
     def on_back(self):
@@ -281,13 +286,15 @@ class base_run_context(object):
 
     def update_info_status(self, passfail=None):
         """ Updates the test info label/icon on the logger window """
+        if self.run_group_man.current_test is not None:
+            self.current_test = self.run_group_man.current_test
         self.number_of_tests = len(self.test_list.get_model())
         if passfail is None:
-            msg = self.run_group_man.current_test
-        elif passfail == "True":
+            msg = self.current_test
+        elif passfail:
             msg = "Success"
         else:
-            msg = f"{self.run_group_man.current_test} Failed"
+            msg = f"{self.current_test} Failed"
         self.info_status_label.set_text(f"({self.current_test_number}/{self.number_of_tests}) {msg}")
         # The test group completed, replace the spinner with a tick or cross
         if passfail is not None:
