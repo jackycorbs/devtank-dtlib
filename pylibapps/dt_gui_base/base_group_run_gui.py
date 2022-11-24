@@ -108,7 +108,7 @@ class base_run_context(object):
             {
              "FINISHED":      lambda args:     self.finished(),
              "SELECT_TEST":   lambda testfile: self.select_testfile(testfile),
-             "SELECT_DEV" :   lambda dev_uuid: self.select_dev(),
+             "SELECT_DEV" :   lambda dev_uuid: self.select_dev(dev_uuid),
              "START_OUTPUT":  lambda outfile:  self.start_outfile(outfile),
              "START_LOGFILE": lambda logfile:  self.start_logfile(logfile),
              "STATUS_TEST":   lambda args:     self.test_status(args),
@@ -124,6 +124,8 @@ class base_run_context(object):
         self.test_start_time = 0
 
         self.last_test_result = None
+
+        self.current_dev = None
         self.current_test = None
         self.current_test_number = 1
 
@@ -401,8 +403,8 @@ class base_run_context(object):
 
         return True
 
-    def select_dev(self):
-        pass
+    def select_dev(self, dev_uuid):
+        self.current_dev = dev_uuid
 
     def select_dev_list(self):
         if not self.run_group_man.readonly:
@@ -434,10 +436,10 @@ class base_run_context(object):
         self.log_text.get_buffer().set_text("")
         self.out_text.get_buffer().set_text("")
 
-        if len(dev_iters) and len(test_iters):
+        if len(test_iters) and self.current_dev is not None:
             test = test_model[test_iters[0]][0]
 
-            self.run_group_man.load_files(dev, test)
+            self.run_group_man.load_files(self.current_dev, test)
 
 
     def load_session(self, session):
