@@ -404,26 +404,6 @@ class base_run_context(object):
     def select_dev(self, dev_uuid):
         self.current_dev = dev_uuid
 
-    def select_dev_list(self):
-        if not self.run_group_man.readonly:
-            return
-        test_list_store = self.test_list.get_model()
-        dev_sel = self.dev_list.get_selection()
-        dev_model, dev_iters = dev_sel.get_selected_rows()
-        if len(dev_iters):
-            dev = dev_model[dev_iters[0]][0]
-            for test_result in test_list_store:
-                test = test_result[0]
-                pass_fail = self.run_group_man.is_pass(dev, test)
-                if pass_fail < 0:
-                    test_result[1] = None
-                else:
-                    test_result[1] = self.context.get_pass_fail_icon_name(pass_fail)
-        else:
-            for test_result in test_list_store:
-                test_result[1] = None
-        self.load_info()
-
     def load_info(self):
         if not self.run_group_man.readonly:
             return
@@ -441,8 +421,7 @@ class base_run_context(object):
 
 
     def load_session(self, session):
-
-        self.run_group_man.load_session(session)
+        self.current_dev = session.devs_uuid[0]
 
         test_list_store = self.test_list.get_model()
         test_list_store.clear()
@@ -452,7 +431,8 @@ class base_run_context(object):
         for bar in self.progress_bars:
             bar.set_fraction(1)
         self.test_list.set_sensitive(True)
-        self.dev_list.set_sensitive(True)
+        self.run_group_man.load_session(session)
+
 
     def set_run_ready(self):
         self.run_group_man.readonly = False
