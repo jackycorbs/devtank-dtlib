@@ -126,6 +126,7 @@ class base_run_context(object):
         self.current_dev = None
         self.current_test = None
         self.current_test_number = 1
+        self.tests = []
 
         """
         We call GLib.timeout_add() to run update_progress() at regular intervals,
@@ -415,9 +416,16 @@ class base_run_context(object):
         self.out_text.get_buffer().set_text("")
 
         if len(test_iters) and self.current_dev is not None:
-            test = test_model[test_iters[0]][0]
-
-            self.run_group_man.load_files(self.current_dev, test)
+            self.current_test = test_model[test_iters[0]][0]
+            self.current_test_number = 1 + self.tests.index(self.current_test)
+            dev_result = self.run_group_man.session_results.get(self.current_dev, None)
+            if not dev_result:
+                self.current_dev, dev_result = list(self.run_group_man.session_results.items())[0]
+            if self.current_dev:
+                pass_fail = dev_result['tests'][self.current_test]
+                self.run_group_man.load_files(self.current_dev, self.current_test)
+                self.update_info_status(pass_fail)
+                self.update_info_status_icon(pass_fail)
 
 
     def load_session(self, session):
@@ -426,10 +434,12 @@ class base_run_context(object):
 
         test_list_store = self.test_list.get_model()
         test_list_store.clear()
+        self.tests = []
         for test_result in dev_result.results:
-            test_list_store.append([test_result[1],
-                                    self.context.get_pass_fail_icon_name(test_result[0]),
-                                    None])
+            name = test_result[1]
+            icon = self.context.get_pass_fail_icon_name(test_result[0])
+            test_list_store.append([name, icon, None])
+            self.tests += [name]
 
         for bar in self.progress_bars:
             bar.set_fraction(1)
@@ -438,6 +448,8 @@ class base_run_context(object):
 
 
     def set_run_ready(self):
+        self.tests = [ test_obj.name for test_obj in
+                       self.context.tests_group.tests ]
         self.run_group_man.readonly = False
 
 
