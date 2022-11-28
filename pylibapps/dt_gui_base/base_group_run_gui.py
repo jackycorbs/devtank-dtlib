@@ -422,11 +422,14 @@ class base_run_context(object):
 
     def load_session(self, session):
         self.current_dev = session.devs_uuid[0]
+        dev_result = session.devices[self.current_dev]
 
         test_list_store = self.test_list.get_model()
         test_list_store.clear()
-        for name in session.tests:
-            test_list_store.append([name, None, None])
+        for test_result in dev_result.results:
+            test_list_store.append([test_result[1],
+                                    self.context.get_pass_fail_icon_name(test_result[0]),
+                                    None])
 
         for bar in self.progress_bars:
             bar.set_fraction(1)
