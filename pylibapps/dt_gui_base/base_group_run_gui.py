@@ -125,7 +125,6 @@ class base_run_context(object):
 
         self.current_dev = None
         self.current_test = None
-        self.current_test_number = 1
         self.tests = []
 
         """
@@ -213,8 +212,6 @@ class base_run_context(object):
         for treeiter in treeiters:
             test_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
         self.test_time = 0
-        if self.current_test_number < self.number_of_tests and passfail:
-            self.current_test_number += 1
         self.info_status_spinner.start()
         self.update_info_status()
 
@@ -293,7 +290,8 @@ class base_run_context(object):
         if self.run_group_man.current_test is not None:
             self.current_test = self.run_group_man.current_test
         self.number_of_tests = len(self.test_list.get_model())
-        self.info_status_label.set_text(f"({self.current_test_number}/{self.number_of_tests}) {self.current_test}")
+        current_test_number = 1 + self.tests.index(self.current_test)
+        self.info_status_label.set_text(f"({current_test_number}/{self.number_of_tests}) {self.current_test}")
         self.info_status_spinner.start()
 
     def update_info_status_icon(self, passfail=None):
@@ -323,7 +321,6 @@ class base_run_context(object):
 
 
     def _run(self):
-        self.current_test_number = 1
         self.run_ok_btn.set_sensitive(False)
         self.test_list.set_sensitive(False)
 
@@ -417,7 +414,6 @@ class base_run_context(object):
 
         if len(test_iters) and self.current_dev is not None:
             self.current_test = test_model[test_iters[0]][0]
-            self.current_test_number = 1 + self.tests.index(self.current_test)
             dev_result = self.run_group_man.session_results.get(self.current_dev, None)
             if not dev_result:
                 self.current_dev, dev_result = list(self.run_group_man.session_results.items())[0]
@@ -430,8 +426,8 @@ class base_run_context(object):
 
     def load_session(self, session):
         self.current_dev = session.devs_uuid[0]
+        self.current_test = None
         dev_result = session.devices[self.current_dev]
-
         test_list_store = self.test_list.get_model()
         test_list_store.clear()
         self.tests = []
@@ -445,6 +441,8 @@ class base_run_context(object):
             bar.set_fraction(1)
         self.test_list.set_sensitive(True)
         self.run_group_man.load_session(session)
+        self.info_status_label.set_text(f"No test selected")
+        self.update_info_status_icon(dev_result.pass_fail)
 
 
     def set_run_ready(self):
