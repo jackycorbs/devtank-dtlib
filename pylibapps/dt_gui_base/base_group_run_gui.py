@@ -112,8 +112,6 @@ class base_run_context(object):
              "START_OUTPUT":  lambda outfile:  self.start_outfile(outfile),
              "START_LOGFILE": lambda logfile:  self.start_logfile(logfile),
              "STATUS_TEST":   lambda args:     self.test_status(args),
-             "STATUS_DEV":    lambda passfail: None,
-             "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid),
              "FREEZE":        lambda args:     self.freeze(),
             }
         )
