@@ -44,6 +44,37 @@ class EarlyExitException(Exception):
     """Raise an exception early exit is requested."""
 
 
+class test_error_base:
+    def get_text(self, passfail, **args):
+        raise NotImplemented
+
+    def get_error_no(self, passfail, **args):
+        raise NotImplemented
+
+
+class basic_test_error_base(test_error_base):
+    def __init__(self, desc, error_no):
+        self.desc = desc
+        self.error_no = error_no
+
+    def get_text(self, passfail, **args):
+        if "margin" in args:
+            msg = "%s %g%s is %g%s +/- %g" % (self.desc, args["sbj"], args['unit'], args['ref'], args['unit'], args['margin'])
+        elif "ref" in args:
+            mag = "%s (%s is ref %s) check" % (self.desc, args["sbj"], args['ref'])
+        else:
+            msg = self.desc
+
+        if passfail:
+            return msg + " - passed"
+        else:
+            return msg + " - FAILED"
+
+    def get_error_no(self, passfail, **args):
+        if passfail:
+            return None
+        return self.error_no
+
 
 class base_run_group_context(object):
     def __init__(self, context, bus, last_end_time, stdout_out,
@@ -93,16 +124,8 @@ class base_run_group_context(object):
         else:
             raise EarlyExitException
 
-    def test_check(self, test_name, args, results, result, desc):
-        r = False
-        desc = db_std_str(desc)
-        if result:
-            self.lib_inf.output_good("%s - passed" % desc)
-            r = True
-        else:
-            results[test_name] = False
-            msg = "%s - FAILED" % desc
-            self.lib_inf.output_bad(msg)
+    def _complete_check(self, passfail, msg):
+        if not passfail:
             self.store_value("SUB_FAIL_%u" % self.sub_test_count, msg)
             if self.args.get("freeze_on_fail", False):
                 self.lib_inf.output_normal(">>>>FROZEN UNTIL USER CONTINUES<<<<")
@@ -111,17 +134,54 @@ class base_run_group_context(object):
             if args.get("exit_on_fail", False):
                 self.forced_exit()
         self.sub_test_count += 1
-        return r
+
+    def _error_code_process(self, results, passfail, **args):
+            error_num = desc.get_error_no(passfail, args)
+            error_text = desc.get_text(passfail, args)
+
+            if passfail:
+                self.lib_inf.output_good(error_text)
+            else:
+                self.store_value("SUB_FAIL_CODE_%u" % self.sub_test_count, error_num)
+                self.lib_inf.output_bad(error_text)
+                self.lib_inf.output_bad("ERROR CODE: %u", error_num)
+
+            self._complete_check(passfail, error_text)
+
+    def test_check(self, test_name, args, results, result, desc):
+        if isinstance(desc, test_error_base):
+            return self._error_code_process(results, result)
+
+        ret = False
+        desc = db_std_str(desc)
+
+        if result:
+            self.lib_inf.output_good(f"%s - passed" % desc)
+            ret = True
+        else:
+            results[test_name] = False
+            msg = "%s - FAILED" % desc
+            self.lib_inf.output_bad(msg)
+        self._complete_check(result, msg)
+
+        return ret
 
     def threshold_check(self, test_name, args, results, sbj, ref, margin, unit, desc):
+        passfail = abs(sbj - ref) <= margin
+        if isinstance(desc, test_error_base):
+            return self._error_code_process(results, passfail, sbj=sbj, ref=ref, margin=margin, unit=unit)
         unit = db_std_str(unit)
         desc = db_std_str(desc)
         margin = abs(margin)
-        return self.test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
+        passfail = abs(sbj - ref) <= margin
+        return self.test_check(test_name, args, results, passfail, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
+        passfail = sbj == ref
+        if isinstance(desc, test_error_base):
+            return self._error_code_process(results, passfail, sbj=sbj, ref=ref)
         desc = db_std_str(desc)
-        return self.test_check(test_name, args, results, sbj == ref, "%s (%s is ref %s) check" % (desc, str(sbj), str(ref)))
+        return self.test_check(test_name, args, results, passfail, "%s (%s is ref %s) check" % (desc, str(sbj), str(ref)))
 
     def store_value(self, n, v):
         data = pickle.dumps((n, v)).replace(b"\n",b"<NL>") # Base64 includes a newline
