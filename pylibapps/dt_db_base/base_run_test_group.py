@@ -53,7 +53,7 @@ class test_error_base:
 
 
 class basic_test_error_base(test_error_base):
-    def __init__(self, desc, error_no):
+    def __init__(self, error_no, desc):
         self.desc = desc
         self.error_no = error_no
 
@@ -61,7 +61,7 @@ class basic_test_error_base(test_error_base):
         if "margin" in args:
             msg = "%s %g%s is %g%s +/- %g" % (self.desc, args["sbj"], args['unit'], args['ref'], args['unit'], args['margin'])
         elif "ref" in args:
-            mag = "%s (%s is ref %s) check" % (self.desc, args["sbj"], args['ref'])
+            msg = "%s (%s is ref %s) check" % (self.desc, args["sbj"], args['ref'])
         else:
             msg = self.desc
 
@@ -131,32 +131,33 @@ class base_run_group_context(object):
                 self.lib_inf.output_normal(">>>>FROZEN UNTIL USER CONTINUES<<<<")
                 self.freeze()
 
-            if args.get("exit_on_fail", False):
+            if self.args.get("exit_on_fail", False):
                 self.forced_exit()
         self.sub_test_count += 1
 
-    def _error_code_process(self, results, passfail, **args):
-            error_num = desc.get_error_no(passfail, args)
-            error_text = desc.get_text(passfail, args)
+    def _error_code_process(self, results, passfail, desc, **args):
+            error_num = desc.get_error_no(passfail)
+            error_text = desc.get_text(passfail)
 
             if passfail:
                 self.lib_inf.output_good(error_text)
             else:
                 self.store_value("SUB_FAIL_CODE_%u" % self.sub_test_count, error_num)
                 self.lib_inf.output_bad(error_text)
-                self.lib_inf.output_bad("ERROR CODE: %u", error_num)
+                self.lib_inf.output_bad(f"ERROR CODE: {error_num}")
 
             self._complete_check(passfail, error_text)
 
     def test_check(self, test_name, args, results, result, desc):
         if isinstance(desc, test_error_base):
-            return self._error_code_process(results, result)
+            return self._error_code_process(results, result, desc)
 
         ret = False
         desc = db_std_str(desc)
 
         if result:
-            self.lib_inf.output_good(f"%s - passed" % desc)
+            msg = "%s - passed" % desc
+            self.lib_inf.output_good(msg)
             ret = True
         else:
             results[test_name] = False
@@ -169,7 +170,7 @@ class base_run_group_context(object):
     def threshold_check(self, test_name, args, results, sbj, ref, margin, unit, desc):
         passfail = abs(sbj - ref) <= margin
         if isinstance(desc, test_error_base):
-            return self._error_code_process(results, passfail, sbj=sbj, ref=ref, margin=margin, unit=unit)
+            return self._error_code_process(results, passfail, desc, sbj=sbj, ref=ref, margin=margin, unit=unit)
         unit = db_std_str(unit)
         desc = db_std_str(desc)
         margin = abs(margin)
@@ -179,7 +180,7 @@ class base_run_group_context(object):
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
         passfail = sbj == ref
         if isinstance(desc, test_error_base):
-            return self._error_code_process(results, passfail, sbj=sbj, ref=ref)
+            return self._error_code_process(results, passfail, desc, sbj=sbj, ref=ref)
         desc = db_std_str(desc)
         return self.test_check(test_name, args, results, passfail, "%s (%s is ref %s) check" % (desc, str(sbj), str(ref)))
 
