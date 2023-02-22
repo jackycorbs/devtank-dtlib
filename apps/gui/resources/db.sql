@@ -30,9 +30,9 @@ CREATE TABLE "example_dev_test_results_values" (
 	FOREIGN KEY("value_id") REFERENCES "values" ("id")
 );
 
-INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_table',                2, 0, "example_devs");
-INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_table',        2, 0, "example_dev_test_results");
-INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_table_key',    2, 0, "example_dev_id");
-INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_values_table', 2, 0, "example_dev_test_results_values");
+INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_table',                2, 0, 'example_devs');
+INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_table',        2, 0, 'example_dev_test_results');
+INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_table_key',    2, 0, 'example_dev_id');
+INSERT INTO "values" ("name", "parent_id", "valid_from", "value_text") VALUES('dev_results_values_table', 2, 0, 'example_dev_test_results_values');
 
 COMMIT;
