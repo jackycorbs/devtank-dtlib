@@ -162,6 +162,7 @@ def _thread_test(test_context):
                 'error_msg': lib_inf.error_msg,
                 'warning_msg' : lib_inf.warning_msg,
                 'info_msg' : lib_inf.info_msg,
+                'freeze_test' : test_context.freeze
                 }
 
     with bus as bus_con:
@@ -325,6 +326,7 @@ class base_run_group_manager(object):
 
         self.live = False
         self.readonly = False
+        self.frozen = False
 
         self.outfile = None
         self.logfile = None
@@ -495,10 +497,14 @@ class base_run_group_manager(object):
         test_dict["stored_values"][name] = value
 
     def _freeze(self):
-        pass
+        self.frozen = True
 
     def unfreeze(self):
         self.test_context.input_queue.put(True)
+        self.frozen = False
+
+    def is_frozen(self):
+        return self.frozen and self.live
 
     def process_line(self, line):
         if not self.live:
@@ -588,6 +594,7 @@ class base_run_group_manager(object):
             self.process = Process(target=_thread_test,
                                   args=(self.test_context,))
             GLib.timeout_add_seconds(1, self._process_die_catch)
+            self.frozen = False
             self.process.start()
             return True
 
@@ -627,6 +634,7 @@ class base_run_group_manager(object):
         self.last_end_time = time.time()
         self.context.release_bus()
         self.live = False # Should already be False, but concurrence means it could have changed before process stopped.
+        self.frozen = False
 
     def stop(self):
         self.live = False

@@ -139,7 +139,7 @@ class base_run_context(object):
 
     def show_view(self):
         self.context.force_view("TestGroupRunnerMain")
-        self.unfreeze_btn.set_sensitive(False)
+        self.unfreeze_btn.hide()
         if not self.run_group_man.readonly:
             self.start_test_group()
         self.info_status_spinner.start()
@@ -216,11 +216,11 @@ class base_run_context(object):
         self.update_info_status()
 
     def freeze(self):
-        self.unfreeze_btn.set_sensitive(True)
+        self.unfreeze_btn.show_all()
         self.info_status_spinner.stop()
 
     def on_unfreeze(self):
-        self.unfreeze_btn.set_sensitive(False)
+        self.unfreeze_btn.hide()
         self.run_group_man.unfreeze()
         self.info_status_spinner.start()
 
@@ -239,7 +239,7 @@ class base_run_context(object):
         self.go_back()
 
     def force_stop(self):
-        self.unfreeze_btn.set_sensitive(False)
+        self.unfreeze_btn.hide()
         self.run_group_man.stop()
         self._stop_update()
 
@@ -284,6 +284,7 @@ class base_run_context(object):
 
     def on_back(self):
         self.context.change_view("TestGroupRunnerMain")
+        self.unfreeze_btn.set_visible(self.run_group_man.is_frozen())
 
     def update_info_status(self, passfail=None):
         """ Updates the test info label on the logger window """
