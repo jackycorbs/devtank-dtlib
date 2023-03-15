@@ -1,52 +1,79 @@
-from __future__ import print_function, absolute_import
-
-import os
 import time
 import datetime
-import sys
 
 from .notify_gui import open_notify_gui
-
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, Pango, GdkPixbuf
 
-
-
-
 class base_run_context(object):
+    """ This class deals with the GUI side of running the actual tests. """
     def __init__(self, context, run_group_manager_class):
-        builder = context.builder
 
+        builder = context.builder
         self.context = context
 
-        self.window = builder.get_object("TestGroupRunner")
-        self.run_lab = builder.get_object("run_lab")
+        # Define Windows
+        self.main_window = builder.get_object("TestGroupRunnerMain")
+        self.info_window = builder.get_object("TestGroupRunnerInfo")
 
-        self.run_lab.modify_font(Pango.FontDescription('Mono'))
+        # Define labels
+        self.run_labels = (
+            builder.get_object("run_lab_main"),
+            builder.get_object("run_lab_info")
+        )
+        for label in self.run_labels:
+            label.modify_font(Pango.FontDescription('Mono'))
 
+        # Define progress bars
+        self.progress_bars = (
+            builder.get_object("running_time_main"),
+            builder.get_object("running_time_info")
+        )
+
+        """ Define TestGroupRunnerMain Objects """
+
+        # Define running list of tests in main window
         self.test_list = builder.get_object("RunTestsList")
-        self.dev_list = builder.get_object("RunDevList")
-
-        self.dev_list.set_model(Gtk.ListStore(str, GdkPixbuf.Pixbuf))
-        self.dev_list.append_column(Gtk.TreeViewColumn("Device", Gtk.CellRendererText(), text=0))
-        self.dev_list.append_column(Gtk.TreeViewColumn("Status", Gtk.CellRendererPixbuf(), pixbuf=1))
-
         self.test_list.set_model(Gtk.ListStore(str, GdkPixbuf.Pixbuf, object))
         self.test_list.append_column(Gtk.TreeViewColumn("Test", Gtk.CellRendererText(), text=0))
         self.test_list.append_column(Gtk.TreeViewColumn("Status", Gtk.CellRendererPixbuf(), pixbuf=1))
+        selection = self.test_list.get_selection()
+        selection.connect("changed", lambda sel : self.load_info())
 
-        self.run_cancel_btn = builder.get_object("run_cancel_btn")
+        # Define buttons
         self.run_ok_btn = builder.get_object("run_ok_btn")
-        self.info_btn = builder.get_object("run_info_btn")
-        self.run_info = builder.get_object("run_info")
+        self.run_cancel_btn = builder.get_object("run_cancel_btn")
         self.redo_btn = builder.get_object("run_redo_btn")
-        self.unfreeze_btn = builder.get_object("run_unfreeze_btn")
-        self.run_split_box = builder.get_object("run_split_box")
+        self.unfreeze_btn = builder.get_object("run_unfreeze_btn") # AKA "Resume"
+        self.info_btn = builder.get_object("run_info_btn") # AKA "Output"
 
+        # Define button connections
+        self.run_ok_btn.connect("clicked",     lambda btn: self.on_ok())
+        self.run_cancel_btn.connect("clicked", lambda btn: self.on_cancel())
+        self.redo_btn.connect("clicked",       lambda btn: self.on_redo())
+        self.unfreeze_btn.connect("clicked",   lambda btn: self.on_unfreeze())
+        self.info_btn.connect("clicked",       lambda btn: self.on_info())
+        
+        """ Define TestGroupRunnerInfo Objects """
+
+        # Define buttons
+        self.info_back_btn = builder.get_object("info_back_btn")
+        self.info_back_btn.connect("clicked", lambda btn: self.on_back())
+
+        # Define status area
+        self.info_status_box = builder.get_object("test_info_status_box")
+        self.info_status_spinner = builder.get_object("test_info_status_spinner")
+        self.info_status_label = builder.get_object("test_info_status_label")
+        # Spinner is replaced with this pass/fail icon when the test finishes
+        self.info_status_icon = Gtk.Image()
+
+        # Define textviews and buffers
         self.out_text = builder.get_object("test_output_text")
         self.log_text = builder.get_object("test_log_text")
+        self.out_text.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
+        self.log_text.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
 
         is_desktop = True if context.args['desktop'] else False
         self.out_text.set_sensitive(is_desktop)
@@ -55,76 +82,77 @@ class base_run_context(object):
         self.out_text.connect("size-allocate", self._scroll_to_end)
         self.log_text.connect("size-allocate", self._scroll_to_end)
 
-        self.out_text.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
-        self.log_text.override_background_color(Gtk.StateFlags.NORMAL, Gdk.RGBA(0, 0, 0, 1))
-
+        # Define Buffers
         self.out_buf = self.out_text.get_buffer()
         self.log_buf = self.log_text.get_buffer()
 
+        # Define tags
         self.good_tag = self.out_buf.create_tag("good", foreground="#00FF00")
         self.bad_tag  = self.out_buf.create_tag("bad", foreground="#FF0000")
         self.norm_tag = self.out_buf.create_tag("norm", foreground="#FFFFFF")
-
         self.err_tag  = self.log_buf.create_tag("error", foreground="#FF0000")
         self.warn_tag = self.log_buf.create_tag("warn", foreground="#FFFF00")
         self.info_tag = self.log_buf.create_tag("info", foreground="#FFFFFF")
 
-        self.run_group_man = run_group_manager_class(context,
+        """
+        The run group manager is the base_run_group_manager class
+        defined in dt_db_base/base_run_test_group.py.
+        It is responsible for the actual running of the test process,
+        interpreting the output line-by-line, and running any needed callbacks.
+        Here, we define any callbacks we need to run under various conditions.
+        """
+        self.run_group_man = run_group_manager_class(
+            context,
             self._good_line,  self._bad_line,  self._normal_line,
             self._info_line,  self._warning_line,  self._error_line,
-            {"FINISHED":      lambda args:     self.finished(),
+            {
+             "FINISHED":      lambda args:     self.finished(),
              "SELECT_TEST":   lambda testfile: self.select_testfile(testfile),
              "SELECT_DEV" :   lambda dev_uuid: self.select_dev(dev_uuid),
              "START_OUTPUT":  lambda outfile:  self.start_outfile(outfile),
              "START_LOGFILE": lambda logfile:  self.start_logfile(logfile),
              "STATUS_TEST":   lambda args:     self.test_status(args),
-             "STATUS_DEV":    lambda passfail: self.dev_status(passfail == "True"),
-             "SET_UUID":      lambda new_uuid: self.dev_set_uuid(new_uuid),
              "FREEZE":        lambda args:     self.freeze(),
-            })
+            }
+        )
 
         self.total_duration = None
-        self.progress_bar = builder.get_object("running_time")
-
         self.test_time = 0
         self.total_test_time = 0
         self.test_start_time = 0
 
+        self.last_test_result = None
+
+        self.current_dev = None
+        self.current_test = None
+        self.tests = []
+
+        """
+        We call GLib.timeout_add() to run update_progress() at regular intervals,
+        which updates the progress bar. This variable stores that job ID later.
+        """
         self.update_id = None
 
-        self.run_cancel_btn.connect("clicked", lambda btn: self.on_cancel())
-        self.run_ok_btn.connect("clicked",     lambda btn: self.on_ok())
-        self.info_btn.connect("toggled",       lambda btn: self.on_info())
-        self.redo_btn.connect("clicked",       lambda btn: self.on_redo())
-        self.unfreeze_btn.connect("clicked",   lambda btn: self.on_unfreeze())
-
         context.on_exit_cbs.insert(0, self.force_stop)
-
-        selection = self.dev_list.get_selection()
-        selection.connect("changed", lambda sel : self.select_dev_list())
-
-        selection = self.test_list.get_selection()
-        selection.connect("changed", lambda sel : self.load_info())
 
         context.view_objs["RunGroupViewObj"] = self
 
     def show_view(self):
-
-        self.context.force_view("TestGroupRunner")
-
-        self.info_btn.set_active(False)
-        self.run_info.set_visible(False)
-        self.unfreeze_btn.set_visible(False)
-
+        self.context.force_view("TestGroupRunnerMain")
+        self.unfreeze_btn.hide()
         if not self.run_group_man.readonly:
             self.start_test_group()
+        self.info_status_spinner.start()
 
     def update_status_time(self):
+        """ Calculate the elapsed test time, update the title label """
+
+        # If the test has stopped, stop updating progress bar, remove grey-out on test list
         if not self.run_group_man.live:
             self._stop_update()
             self.test_list.set_sensitive(True)
-            self.dev_list.set_sensitive(True)
             return
+
         total_seconds = time.time() - self.test_start_time
         total_minutes = int(total_seconds / 60)
         total_hours   = total_minutes / 60
@@ -139,14 +167,17 @@ class base_run_context(object):
 
         self.run_ok_btn.set_sensitive(True)
         self.test_list.set_sensitive(True)
-        self.dev_list.set_sensitive(True)
-        self.progress_bar.set_fraction(1)
+        for bar in self.progress_bars:
+            bar.set_fraction(1)
 
         if not len(self.run_group_man.session_results):
             open_notify_gui(self.context, "No Results.\nNo Devices?")
 
         self.update_status_time()
         self._stop_update()
+        if self.last_test_result is not None:
+            self.update_info_status(self.last_test_result)
+            self.update_info_status_icon(self.last_test_result)
 
     def select_testfile(self, select_testfile):
         test_list = self.test_list
@@ -160,22 +191,8 @@ class base_run_context(object):
                     None, False, 0, 0)
                 self.out_buf.set_text("")
                 break
-
-
-    def select_dev(self, select_dev_uuid):
-        dev_list = self.dev_list
-        selector = dev_list.get_selection()
-        dev_list_store = dev_list.get_model()
-        for dev_uuid in dev_list_store:
-            if dev_uuid[0] == select_dev_uuid:
-                selector.select_iter(dev_uuid.iter)
-                dev_list.scroll_to_cell(
-                    dev_list_store.get_path(dev_uuid.iter),
-                    None, False, 0, 0)
-                break
-        test_list_store = self.test_list.get_model()
-        for treeiter in test_list_store:
-            treeiter[1] = None
+        self.update_info_status()
+        self.update_info_status_icon()
 
     def start_outfile(self, outfile):
         self.test_time = time.time()
@@ -187,6 +204,7 @@ class base_run_context(object):
     def test_status(self, args):
         passfail = args.split(' ')[0]
         passfail = passfail == "True"
+        self.last_test_result = passfail
         test_list = self.test_list
         selection = test_list.get_selection()
         test_list_store = test_list.get_model()
@@ -194,32 +212,17 @@ class base_run_context(object):
         for treeiter in treeiters:
             test_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
         self.test_time = 0
-
-    def dev_status(self, passfail):
-        dev_list = self.dev_list
-        selection = dev_list.get_selection()
-        dev_list_store = dev_list.get_model()
-        treeiters = selection.get_selected_rows()[1]
-        for treeiter in treeiters:
-            dev_list_store[treeiter][1] = self.context.get_pass_fail_icon_name(passfail)
-
-    def dev_set_uuid(self, new_uuid):
-        dev_list = self.dev_list
-        selection = dev_list.get_selection()
-        dev_list_store = dev_list.get_model()
-        treeiters = selection.get_selected_rows()[1]
-        for treeiter in treeiters:
-            dev_list_store[treeiter][0] = new_uuid
+        self.info_status_spinner.start()
+        self.update_info_status()
 
     def freeze(self):
-        self.unfreeze_btn.set_visible(True)
-        width = self.window.get_parent_window().get_width()
-        self.info_btn.set_active(True)
-        self.run_split_box.set_position(width * 0.3)
+        self.unfreeze_btn.show_all()
+        self.info_status_spinner.stop()
 
     def on_unfreeze(self):
-        self.unfreeze_btn.set_visible(False)
+        self.unfreeze_btn.hide()
         self.run_group_man.unfreeze()
+        self.info_status_spinner.start()
 
     def _stop_update(self):
         if not self.update_id is None:
@@ -231,45 +234,41 @@ class base_run_context(object):
         self.total_duration = None
         self.context.pop_view()
 
-
     def on_ok(self):
-
         self.run_group_man.submit()
-
         self.go_back()
 
-
     def force_stop(self):
-        self.unfreeze_btn.set_visible(False)
+        self.unfreeze_btn.hide()
         self.run_group_man.stop()
         self._stop_update()
-
 
     def on_cancel(self):
         if self.run_group_man.live:
             self.force_stop()
             self.test_list.set_sensitive(True)
-            self.dev_list.set_sensitive(True)
             self.run_group_man.readonly = True
         else:
             # If test finished, cancel is same as ok.
             self.on_ok()
 
     def update_run_lab(self, stamp=None):
+        """ Update the top title label with timestamp """
         tests_group = self.context.tests_group
 
         line = tests_group.name
 
         if tests_group.note:
-            line += " (%s)" % tests_group.note
+            line += f" ({tests_group.note})"
 
         if stamp:
             if isinstance(stamp, tuple):
                 line += "- %02u:%02u:%02u.%02u" % stamp
             else:
-                line = '"%s"\n @ %s' % (line, str(stamp))
+                line = f'"{line}"\n @ {str(stamp)}'
 
-        self.run_lab.set_text(line)
+        for label in self.run_labels:
+            label.set_text(line)
 
     def on_redo(self):
         self.force_stop()
@@ -281,24 +280,57 @@ class base_run_context(object):
         self.update_run_lab()
 
     def on_info(self):
-        self.run_info.set_visible(self.info_btn.get_active())
-        btn_r = self.info_btn.get_allocation()
-        self.run_split_box.set_position(btn_r.width)
-        if self.run_group_man.readonly and self.info_btn.get_active():
-            self.load_info()
+        self.context.change_view("TestGroupRunnerInfo")
+
+    def on_back(self):
+        self.context.change_view("TestGroupRunnerMain")
+        self.unfreeze_btn.set_visible(self.run_group_man.is_frozen())
+
+    def update_info_status(self, passfail=None):
+        """ Updates the test info label on the logger window """
+        if self.run_group_man.current_test is not None:
+            self.current_test = self.run_group_man.current_test
+        self.number_of_tests = len(self.test_list.get_model())
+        current_test_number = 1 + self.tests.index(self.current_test)
+        self.info_status_label.set_text(f"({current_test_number}/{self.number_of_tests}) {self.current_test}")
+        self.info_status_spinner.start()
+
+    def update_info_status_icon(self, passfail=None):
+        """ If passfail is none, reinstate the spinner,
+        else change the icon to tick or cross """
+        if passfail is None:
+            to_remove = self.info_status_icon
+            to_add = self.info_status_spinner
+            self.info_status_spinner.start()
+        else:
+            if passfail:
+                icon = self.context.good_icon
+            else:
+                icon = self.context.bad_icon
+            self.info_status_icon.set_from_pixbuf(icon)
+            to_remove = self.info_status_spinner
+            to_add = self.info_status_icon
+
+        self.info_status_box.remove(to_remove)
+        self.info_status_box.add(to_add)
+        self.info_status_box.reorder_child(
+            to_add,
+            0
+        )
+        to_add.set_margin_end(2)
+        to_add.show()
 
 
     def _run(self):
         self.run_ok_btn.set_sensitive(False)
         self.test_list.set_sensitive(False)
-        self.dev_list.set_sensitive(False)
 
         self.out_buf.set_text("")
-
         context = self.context
         tests_group = context.tests_group
 
-        self.progress_bar.set_fraction(0)
+        for bar in self.progress_bars:
+            bar.set_fraction(0)
         if tests_group.duration:
             self.total_duration = tests_group.duration * len(context.devices)
         else:
@@ -314,21 +346,13 @@ class base_run_context(object):
 
 
     def start_test_group(self):
-
         test_list_store = self.test_list.get_model()
-        dev_list_store = self.dev_list.get_model()
-
         test_list_store.clear()
-        dev_list_store.clear()
 
         for test in self.context.tests_group.tests:
             test_list_store.append([test.name, None, test])
 
-        for dev in self.context.devices:
-            dev_list_store.append([dev.uuid, None])
-
         self._run()
-
 
     def _scroll_to_end(self, widget, alloc):
         adj = widget.get_vadjustment()
@@ -369,79 +393,63 @@ class base_run_context(object):
 
             fraction = self.total_test_time / self.total_duration
 
-            self.progress_bar.set_fraction(fraction)
+            for bar in self.progress_bars:
+                bar.set_fraction(fraction)
 
         self.update_status_time()
 
         return True
 
-    def select_dev_list(self):
-        if not self.run_group_man.readonly:
-            return
-        test_list_store = self.test_list.get_model()
-        dev_sel = self.dev_list.get_selection()
-        dev_model, dev_iters = dev_sel.get_selected_rows()
-        if len(dev_iters):
-            dev = dev_model[dev_iters[0]][0]
-            for test_result in test_list_store:
-                test = test_result[0]
-                pass_fail = self.run_group_man.is_pass(dev, test)
-                if pass_fail < 0:
-                    test_result[1] = None
-                else:
-                    test_result[1] = self.context.get_pass_fail_icon_name(pass_fail)
-        else:
-            for test_result in test_list_store:
-                test_result[1] = None
-        self.load_info()
+    def select_dev(self, dev_uuid):
+        self.current_dev = dev_uuid
 
     def load_info(self):
         if not self.run_group_man.readonly:
             return
-        dev_sel = self.dev_list.get_selection()
         test_sel = self.test_list.get_selection()
 
-        dev_model, dev_iters = dev_sel.get_selected_rows()
         test_model, test_iters = test_sel.get_selected_rows()
 
         self.log_text.get_buffer().set_text("")
         self.out_text.get_buffer().set_text("")
 
-        if not self.run_info.get_visible():
-            return
-
-        if len(dev_iters) and len(test_iters):
-            dev = dev_model[dev_iters[0]][0]
-            test = test_model[test_iters[0]][0]
-
-            self.run_group_man.load_files(dev, test)
+        if len(test_iters) and self.current_dev is not None:
+            self.current_test = test_model[test_iters[0]][0]
+            dev_result = self.run_group_man.session_results.get(self.current_dev, None)
+            if not dev_result:
+                self.current_dev, dev_result = list(self.run_group_man.session_results.items())[0]
+            if self.current_dev:
+                pass_fail = dev_result['tests'][self.current_test]
+                self.run_group_man.load_files(self.current_dev, self.current_test)
+                self.update_info_status(pass_fail)
+                self.update_info_status_icon(pass_fail)
 
 
     def load_session(self, session):
-
-        self.run_group_man.load_session(session)
-
-        dev_list_store = self.dev_list.get_model()
-        dev_list_store.clear()
-        for uuid, dev_results in session.devices.items():
-            dev_list_store.append([uuid, self.context.get_pass_fail_icon_name(dev_results.pass_fail)])
-
+        self.current_dev = session.devs_uuid[0]
+        self.current_test = None
+        dev_result = session.devices[self.current_dev]
         test_list_store = self.test_list.get_model()
         test_list_store.clear()
-        for name in session.tests:
-            test_list_store.append([name, None, None])
+        self.tests = []
+        for test_result in dev_result.results:
+            name = test_result[1]
+            icon = self.context.get_pass_fail_icon_name(test_result[0])
+            test_list_store.append([name, icon, None])
+            self.tests += [name]
 
-        selector = self.dev_list.get_selection()
-        for dev_uuid in dev_list_store:
-            selector.select_iter(dev_uuid.iter)
-            break
-        self.progress_bar.set_fraction(1)
+        for bar in self.progress_bars:
+            bar.set_fraction(1)
         self.test_list.set_sensitive(True)
-        self.dev_list.set_sensitive(True)
+        self.run_group_man.load_session(session)
+        self.info_status_label.set_text(f"No test selected")
+        self.update_info_status_icon(dev_result.pass_fail)
+
 
     def set_run_ready(self):
+        self.tests = [ test_obj.name for test_obj in
+                       self.context.tests_group.tests ]
         self.run_group_man.readonly = False
-
 
 
 def set_run_context_singleton(_custom_run_context):

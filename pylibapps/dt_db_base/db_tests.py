@@ -395,6 +395,7 @@ class test_group_sessions(object):
             self.pass_fail = False
 
         devs = {}
+        devs_uuid = []
         serial_numbers = {}
 
         for row in rows:
@@ -417,6 +418,7 @@ class test_group_sessions(object):
             else:
                 dev_results = dev_results_builder()
                 devs[dev_uuid] = dev_results
+                devs_uuid += [dev_uuid]
 
             serial_numbers[serial_num] = True
 
@@ -428,6 +430,7 @@ class test_group_sessions(object):
                 dev_results.pass_fail = min([result[0] for result in dev_results.results])
 
         self.devices = devs
+        self.devs_uuid = devs_uuid
         self.dev_serials = list(serial_numbers.keys())
 
         all_tests = []
@@ -452,4 +455,3 @@ class test_group_sessions(object):
         elif self.tester_hostname:
             return self.tester_hostname
         return None
-
