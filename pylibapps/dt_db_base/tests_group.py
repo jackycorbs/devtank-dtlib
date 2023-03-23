@@ -84,7 +84,7 @@ class tests_group_creator:
 
         self.passed = min(to_reduce.values()) if len(to_reduce) else False
 
-        self.db_group.add_tests_results(results, self.tests)
+        return self.db_group.add_tests_results(results, self.tests)
 
     def override_tests_properties(self, overrides):
         for test in self.tests:

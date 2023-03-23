@@ -298,10 +298,17 @@ class test_group_obj(db_obj):
                     output = file_ids_map[output]
 
                 dev = self.db.get_dev(dev_uuid)
-                if not dev and old_uuid:
-                    dev = self.db.get_dev(old_uuid)
-                    if dev:
-                        dev.update_uuid(dev_uuid)
+                if dev:
+                    if old_uuid:
+                        old_dev = self.db.get_dev(old_uuid)
+                        if old_dev and dev.id != old_dev.id:
+                            print(f"Change to UUID used by other device {dev_uuid} -> {old_uuid}")
+                            return False
+                else:
+                    if old_uuid:
+                        dev = self.db.get_dev(old_uuid)
+                        if dev:
+                            dev.update_uuid(dev_uuid)
                 if dev:
                     result_id = c.insert(sql.add_dev_result(results_id,
                                                   dev.id,
@@ -318,8 +325,10 @@ class test_group_obj(db_obj):
                             print("Stored value but no table to put it.")
                 else:
                     print("Unknown UUID %s, can't store results." % dev_uuid)
+                    return False
         if not db_cursor:
             db.commit()
+        return True
 
     def get_sessions_count(self):
         cmd = self.db.sql.get_test_group_results_count(self.id)
