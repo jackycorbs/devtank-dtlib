@@ -733,7 +733,7 @@ class base_run_group_manager(object):
             r = self.context.tests_group.add_tests_results(self.session_results)
             self.clean_files()
             return r
-        return False
+        return True
 
 
 

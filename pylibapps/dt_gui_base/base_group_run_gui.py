@@ -235,8 +235,10 @@ class base_run_context(object):
         self.context.pop_view()
 
     def on_ok(self):
-        self.run_group_man.submit()
+        r = self.run_group_man.submit()
         self.go_back()
+        if not r:
+            open_notify_gui(self.context, "Submitting result to DB failed")
 
     def force_stop(self):
         self.unfreeze_btn.hide()
