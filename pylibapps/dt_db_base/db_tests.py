@@ -224,7 +224,7 @@ class test_group_obj(db_obj):
         if not db_cursor:
             db.commit()
 
-    def add_tests_results(self, results, tests, db_cursor=None, now=None):
+    def add_tests_results(self, devs, results, tests, db_cursor=None, now=None):
         if not results:
             return
 
@@ -309,6 +309,11 @@ class test_group_obj(db_obj):
                         dev = self.db.get_dev(old_uuid)
                         if dev:
                             dev.update_uuid(dev_uuid)
+
+                if dev.id not in [d.id for d in devs]:
+                    print(f"Device not in current context....")
+                    return False
+
                 if dev:
                     result_id = c.insert(sql.add_dev_result(results_id,
                                                   dev.id,

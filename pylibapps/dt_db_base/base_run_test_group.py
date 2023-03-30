@@ -730,7 +730,7 @@ class base_run_group_manager(object):
 
     def submit(self):
         if self.has_new:
-            r = self.context.tests_group.add_tests_results(self.session_results)
+            r = self.context.tests_group.add_tests_results(self.context.devices, self.session_results)
             self.clean_files()
             return r
         return True
