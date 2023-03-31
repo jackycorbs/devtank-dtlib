@@ -310,8 +310,12 @@ class test_group_obj(db_obj):
                         if dev:
                             dev.update_uuid(dev_uuid)
 
+                if not min([isinstance(d, db_obj) for d in devs]):
+                    print("Not given DB devices..", devs)
+                    return False
+
                 if dev.id not in [d.id for d in devs]:
-                    print(f"Device not in current context....")
+                    print(f"Device not in current context....", devs)
                     return False
 
                 if dev:

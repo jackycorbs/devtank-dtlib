@@ -166,7 +166,7 @@ def add_fail(context, cmd_args):
 
     results = {uid : {'tests': {tests[0].name : {'passfail' : False } } } }
 
-    db_group.add_tests_results(results, tests)
+    db_group.add_tests_results([dev], results, tests)
 
 
 def add_pass(context, cmd_args):
@@ -184,7 +184,7 @@ def add_pass(context, cmd_args):
 
     results = {uid : {'tests': dict([(test.name, {'passfail' : True}) for test in tests]) } }
 
-    db_group.add_tests_results(results, tests)
+    db_group.add_tests_results([dev], results, tests)
 
 
 
