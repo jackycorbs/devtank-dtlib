@@ -135,22 +135,22 @@ class base_run_group_context(object):
                 self.forced_exit()
         self.sub_test_count += 1
 
-    def _error_code_process(self, results, passfail, desc, **args):
+    def _error_code_process(self, test_name, results, passfail, desc, **args):
             error_num = desc.get_error_no(passfail)
             error_text = desc.get_text(passfail)
 
             if passfail:
                 self.lib_inf.output_good(error_text)
             else:
+                results[test_name] = False
                 self.store_value("SUB_FAIL_CODE_%u" % self.sub_test_count, error_num)
-                self.lib_inf.output_bad(error_text)
-                self.lib_inf.output_bad(f"ERROR CODE: {error_num}")
+                self.lib_inf.output_bad(error_text + f" [ERROR CODE: {error_num}]")
 
             self._complete_check(passfail, error_text)
 
     def test_check(self, test_name, args, results, result, desc):
         if isinstance(desc, test_error_base):
-            return self._error_code_process(results, result, desc)
+            return self._error_code_process(test_name, results, result, desc)
 
         ret = False
         desc = db_std_str(desc)
@@ -170,7 +170,7 @@ class base_run_group_context(object):
     def threshold_check(self, test_name, args, results, sbj, ref, margin, unit, desc):
         passfail = abs(sbj - ref) <= margin
         if isinstance(desc, test_error_base):
-            return self._error_code_process(results, passfail, desc, sbj=sbj, ref=ref, margin=margin, unit=unit)
+            return self._error_code_process(test_name, results, passfail, desc, sbj=sbj, ref=ref, margin=margin, unit=unit)
         unit = db_std_str(unit)
         desc = db_std_str(desc)
         margin = abs(margin)
@@ -180,7 +180,7 @@ class base_run_group_context(object):
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
         passfail = sbj == ref
         if isinstance(desc, test_error_base):
-            return self._error_code_process(results, passfail, desc, sbj=sbj, ref=ref)
+            return self._error_code_process(test_name, results, passfail, desc, sbj=sbj, ref=ref)
         desc = db_std_str(desc)
         return self.test_check(test_name, args, results, passfail, "%s (%s is ref %s) check" % (desc, str(sbj), str(ref)))
 
