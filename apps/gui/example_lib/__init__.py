@@ -27,3 +27,5 @@ from .db_example_dev import db_example_dev
 from .example_hw import example_dev, example_bus_con, example_bus
 
 from .context import cli_context_object
+
+from .error_codes import EXAMPLE_ERRORS
