@@ -18,7 +18,7 @@
             tests:
             [
                 [ "basics.py",  { "expected_mV" : 5000, "expected_mA" : 2000,  "hw_rev" : 102, "exit_on_fail" : False} ],
-                [ "program.py", { "firmware" : "fw.img", "serial" : "Morning World", "write_enable" : False, "exit_on_fail" : False } ],
+                [ "program.py", { "firmware" : "fw.img", "serial" : "Hello New World", "write_enable" : False, "exit_on_fail" : False } ],
                 [ "read_id.py", { "exit_on_fail" : False} ]
             ]
         },

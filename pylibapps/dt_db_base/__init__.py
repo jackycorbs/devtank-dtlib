@@ -4,8 +4,8 @@ from .base_run_test_group import base_run_group_manager, \
                                  base_run_group_context, \
                                  default_run_group_manager, \
                                  default_group_context, \
-                                 test_error_base, \
-                                 basic_test_error_base
+                                 test_desc_base, \
+                                 basic_test_desc
 from .db_backend_open import base_open_db_backend
 from .db_common import *
 from .db_filestore_protocol import smb_transferer, sftp_transferer, tar_transferer

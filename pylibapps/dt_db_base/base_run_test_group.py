@@ -44,7 +44,7 @@ class EarlyExitException(Exception):
     """Raise an exception early exit is requested."""
 
 
-class test_error_base:
+class test_desc_base:
     def get_text(self, passfail, args):
         raise NotImplemented
 
@@ -52,7 +52,7 @@ class test_error_base:
         raise NotImplemented
 
 
-class basic_test_error_base(test_error_base):
+class basic_test_desc(test_desc_base):
     def __init__(self, error_no, desc):
         self.desc = desc
         self.error_no = error_no
@@ -159,7 +159,7 @@ class base_run_group_context(object):
         self._complete_check(passfail, error_text)
 
     def test_check(self, test_name, args, results, result, desc):
-        if isinstance(desc, test_error_base):
+        if isinstance(desc, test_desc_base):
             return self._error_code_process(test_name, results, result, desc)
 
         ret = False
@@ -180,7 +180,7 @@ class base_run_group_context(object):
     def threshold_check(self, test_name, args, results, sbj, ref, margin, unit, desc):
         margin = abs(margin)
         passfail = abs(sbj - ref) <= margin
-        if isinstance(desc, test_error_base):
+        if isinstance(desc, test_desc_base):
             return self._error_code_process(test_name, results, passfail, desc, sbj=sbj, ref=ref, margin=margin, unit=unit)
         unit = db_std_str(unit)
         desc = db_std_str(desc)
@@ -188,7 +188,7 @@ class base_run_group_context(object):
 
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
         passfail = sbj == ref
-        if isinstance(desc, test_error_base):
+        if isinstance(desc, test_desc_base):
             return self._error_code_process(test_name, results, passfail, desc, sbj=sbj, ref=ref)
         desc = db_std_str(desc)
         statement = "is" if passfail else "is not"

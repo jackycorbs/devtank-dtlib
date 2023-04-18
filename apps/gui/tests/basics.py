@@ -15,7 +15,7 @@ Test Specific Arguments:
 
 '''
 
-from example_lib import EXAMPLE_ERRORS
+from example_lib import CHECK_DESCS
 
 expected_hw_rev = args["hw_rev"]
 expected_mV = args["expected_mV"]
@@ -29,14 +29,14 @@ output_good("Welcome")
 output_normal("Reading device 3.3V power rail.")
 mV = dev.read_3v3_rail()
 store_value("V3.3 power rail mV", mV)
-threshold_check(mV, expected_mV, 90, "mV",  EXAMPLE_ERRORS.POWER_RAIL_3V3)
+threshold_check(mV, expected_mV, 90, "mV",  CHECK_DESCS.POWER_RAIL_3V3)
 
 output_normal("Checking device current draw.")
 mA = dev.read_current()
 store_value("mA draw", mA)
-threshold_check(mA, expected_mA, 10, "mA", EXAMPLE_ERRORS.POWER_RAIL_CURRENT)
+threshold_check(mA, expected_mA, 10, "mA", CHECK_DESCS.POWER_RAIL_CURRENT)
 
 output_normal("Read hardware revision from device pull ups.")
 hw_rev = dev.read_revision()
 store_value("HW Rev", hw_rev)
-exact_check(hw_rev, expected_hw_rev, EXAMPLE_ERRORS.HW_REV)
+exact_check(hw_rev, expected_hw_rev, CHECK_DESCS.HW_REV)
