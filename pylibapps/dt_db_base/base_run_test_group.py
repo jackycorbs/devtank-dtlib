@@ -48,7 +48,7 @@ class test_desc_base:
     def get_text(self, passfail, args):
         raise NotImplemented
 
-    def get_error_no(self, passfail):
+    def get_error_no(self):
         raise NotImplemented
 
 
@@ -80,9 +80,7 @@ class basic_test_desc(test_desc_base):
         else:
             return msg + " - FAILED"
 
-    def get_error_no(self, passfail):
-        if passfail:
-            return None
+    def get_error_no(self):
         return self.error_no
 
 
@@ -146,7 +144,7 @@ class base_run_group_context(object):
         self.sub_test_count += 1
 
     def _error_code_process(self, test_name, results, passfail, desc, **args):
-        error_num = desc.get_error_no(passfail)
+        error_num = desc.get_error_no()
         error_text = desc.get_text(passfail, args)
 
         if passfail:
