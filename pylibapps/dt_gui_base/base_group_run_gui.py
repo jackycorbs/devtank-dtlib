@@ -67,7 +67,7 @@ class base_run_context(object):
         self.info_status_spinner = builder.get_object("test_info_status_spinner")
         self.info_status_label = builder.get_object("test_info_status_label")
         # Spinner is replaced with this pass/fail icon when the test finishes
-        self.info_status_icon = Gtk.Image()
+        self.info_status_icon = builder.get_object("info_status_img")
 
         # Define textviews and buffers
         self.out_text = builder.get_object("test_output_text")
@@ -313,13 +313,7 @@ class base_run_context(object):
             to_remove = self.info_status_spinner
             to_add = self.info_status_icon
 
-        self.info_status_box.remove(to_remove)
-        self.info_status_box.add(to_add)
-        self.info_status_box.reorder_child(
-            to_add,
-            0
-        )
-        to_add.set_margin_end(2)
+        to_remove.hide()
         to_add.show()
 
 
