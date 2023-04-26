@@ -24,7 +24,7 @@ from .db_tester import db_tester_machine
 
 
 class tester_database(object):
-    def __init__(self, db, sql, work_folder):
+    def __init__(self, db, sql, work_folder, db_def):
         self.db = db
         self.sql = sql
         sql.setup(db)
@@ -32,7 +32,7 @@ class tester_database(object):
 
         self.work_folder = work_folder
         self._known_objs = {}
-        self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer(),
+        self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer(db_def),
                                      smb_transferer.protocol_id  : smb_transferer(),
                                      tar_transferer.protocol_id : tar_transferer(self, sql, work_folder) }
         self._file_upload_cache = (None, {})

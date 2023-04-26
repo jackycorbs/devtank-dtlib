@@ -41,7 +41,7 @@ class pg_db_inf(db_inf):
     def cursor(self):
         return pg_db_cursor(self)
 
-
+#pg_tester_database class untested/unmaintained
 class pg_tester_database(tester_database):
     def __init__(self, db, sql, work_folder):
         tester_database.__init__(self, db, sql, work_folder)

@@ -12,7 +12,7 @@ from .db_inf import db_inf
 
 class sqlite_tester_database(tester_database):
     def __init__(self, db, sql, work_folder):
-        tester_database.__init__(self, db, sql, work_folder)
+        tester_database.__init__(self, db, sql, work_folder, None)
 
     def get_db_now():
         return datetime.datetime.utcnow()

@@ -32,7 +32,7 @@ class login_smb_transferer(smb_transferer):
     def _get_smb_domain(self):
         return self.domain
 
-
+#mssql_tester_database class untested/unmaintained
 class mssql_tester_database(tester_database):
     def __init__(self, db, work_folder, db_def):
         tester_database.__init__(self, db, db_def['sql'], work_folder)

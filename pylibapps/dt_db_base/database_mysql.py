@@ -8,7 +8,6 @@ import pytz
 
 
 from .database import tester_database
-from .db_filestore_protocol import sftp_transferer, smb_transferer, tar_transferer
 from .db_inf import db_inf, db_cursor
 
 _MYSQL_AUTO_DISCONNECT = 60 * 5
@@ -44,15 +43,10 @@ class mysql_db_inf(db_inf):
     def cursor(self):
         return mysql_db_cursor(self)
 
-    
-
 
 class mysql_tester_database(tester_database):
     def __init__(self, db, sql, work_folder, db_def):
-        tester_database.__init__(self, db, sql, work_folder)
-        self.protocol_transferers = {sftp_transferer.protocol_id : sftp_transferer(db_def),
-                                     smb_transferer.protocol_id  : smb_transferer(),
-                                     tar_transferer.protocol_id : tar_transferer(self, sql, work_folder) }
+        tester_database.__init__(self, db, sql, work_folder, db_def)
 
     def get_db_now():
         row = self.db.query_one("SELECT NOW()")
