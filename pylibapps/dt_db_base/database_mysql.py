@@ -45,9 +45,6 @@ class mysql_db_inf(db_inf):
 
 
 class mysql_tester_database(tester_database):
-    def __init__(self, db, sql, work_folder, db_def):
-        tester_database.__init__(self, db, sql, work_folder, db_def)
-
     def get_db_now():
         row = self.db.query_one("SELECT NOW()")
         return row[0].astimezone(pytz.utc)

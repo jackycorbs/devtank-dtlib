@@ -11,9 +11,6 @@ from .db_inf import db_inf
 
 
 class sqlite_tester_database(tester_database):
-    def __init__(self, db, sql, work_folder):
-        tester_database.__init__(self, db, sql, work_folder, None)
-
     def get_db_now():
         return datetime.datetime.utcnow()
 
@@ -39,7 +36,8 @@ class sqlite_db_backend(object):
     def open(self, work_folder):
         return sqlite_tester_database(sqlite_db_inf(self.db_def),
                                       self.db_def["sql"],
-                                      work_folder)
+                                      work_folder,
+                                      None)
 
     def is_empty(self):
         filename = self.db_def["filename"]
