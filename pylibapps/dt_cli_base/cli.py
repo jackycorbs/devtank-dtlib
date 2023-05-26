@@ -423,6 +423,19 @@ def export_csv(context, cmd_args):
     context.db.generate_csv(filename, before, after)
 
 
+def grep_files(context, cmd_args):
+    assert len(cmd_args) > 1, "Wrong argument count."
+
+    needle = cmd_args[0]
+
+    n = 1
+    while n < len(cmd_args):
+        file_id = int(cmd_args[n])
+        local_path = context.db.get_file_to_local(file_id)
+        os.system(f'grep "{needle}" "{local_path}"')
+        n += 1
+
+
 generic_cmds = {
     "update_tests"      : (update_tests,      "Update <groups yaml> in database."),
     "list_groups"       : (list_groups,       "List active groups."),
@@ -441,7 +454,8 @@ generic_cmds = {
     "find_group_hash"   : (find_group_hash,   "Take given <hash> and <name> and search if in given database."),
     "update_test"       : (update_test,       "Update given test script used in any test groups."),
     "add_tar_filestore" : (add_tar_filestore, "Enable the tar virtual filestore feature in the database."),
-    "export_csv"        : (export_csv,        "export_csv <filename> [before] [after] : Export a CSV dump of database results in <filename>. Optional dates take the format YYYY-MM-DD:HH:MM:SS")
+    "export_csv"        : (export_csv,        "export_csv <filename> [before] [after] : Export a CSV dump of database results in <filename>. Optional dates take the format YYYY-MM-DD:HH:MM:SS"),
+    "grep_files"        : (grep_files,        "Grep for given text in given files."),
 }
 
 
