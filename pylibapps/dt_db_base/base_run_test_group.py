@@ -121,6 +121,7 @@ class base_run_group_context(object):
     def threshold_check(self, test_name, args, results, sbj, ref, margin, unit, desc):
         unit = db_std_str(unit)
         desc = db_std_str(desc)
+        margin = abs(margin)
         return self.test_check(test_name, args, results, abs(sbj - ref) <= margin, "%s %g%s is %g%s +/- %g" % (desc, sbj, unit, ref, unit, margin))
 
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
