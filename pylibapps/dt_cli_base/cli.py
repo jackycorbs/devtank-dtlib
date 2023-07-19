@@ -432,7 +432,7 @@ def grep_files(context, cmd_args):
     while n < len(cmd_args):
         file_id = int(cmd_args[n])
         local_path = context.db.get_file_to_local(file_id)
-        os.system(f'grep "{needle}" "{local_path}"')
+        os.system(f'grep -H "{needle}" "{local_path}"')
         n += 1
 
 
