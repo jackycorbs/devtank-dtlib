@@ -2,7 +2,7 @@ import os
 import sys
 
 
-from tokenize import tokenize, NAME, OP
+from tokenize import tokenize, NAME, OP, STRING
 
 def get_args_in_src(test_file):
     args = {'exit_on_fail': True}
@@ -11,12 +11,15 @@ def get_args_in_src(test_file):
             tokens = list(tokenize(f.readline))
             for n in range(0, len(tokens)):
                 token = tokens[n]
-                if token[0] == NAME and token[1] == "args" and n < (len(tokens)-2):
+                if token.type == NAME and token.string == "args":
                     op_token = tokens[n+1]
                     arg_token = tokens[n+2]
-                    if op_token[0] == OP and op_token[1] == "[" \
-                      and arg_token[0] == NAME:
-                        args[arg_token[1]] = True
+                    if op_token.type == OP and op_token.string == "[" \
+                       and arg_token.type == STRING:
+                        name = arg_token.string
+                        name = "".join([c if c not in "\"'" else '' \
+                                       for c in name])
+                        args[name] = True
         except Exception as e:
             raise Exception('Failed to parse file "%s":\n\t%s' % (os.path.basename(test_file), str(e)))
     return args
