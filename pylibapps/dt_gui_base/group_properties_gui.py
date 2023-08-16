@@ -111,20 +111,19 @@ class group_properties_singleton(object):
                               step_increment=t(entry['step']))
 
 
-    def _add_arg(self, tests_group, test, arg, box, all_files):
+    def _add_arg(self, tests_group, test, arg, grid, all_files):
         context = self.context
         assert arg in tests_group.props_defaults
         entry = copy.copy(tests_group.props_defaults[arg])
         val_type = entry['type']
         test_props_values = test.pending_properties
         val_value = test_props_values[arg] if arg in test_props_values else None
-        box2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         lab = Gtk.Label(arg)
         if val_value is None:
             lab.modify_fg(Gtk.StateFlags.NORMAL, Gdk.color_parse("red"))
             val_value = entry['default'] if 'default' in entry else None
         entry['value'] = val_value
-        box2.add(lab)
+        grid.add(lab)
         if db_is_str_class(val_type):
             if self._only_unset:
                 scan_grid = Gtk.Grid(column_spacing=10,row_spacing=10)
@@ -134,7 +133,7 @@ class group_properties_singleton(object):
                 scan_b = Gtk.Entry()
                 scan_grid.attach(scan_a, 1, 0, 1, 1)
                 scan_grid.attach(scan_b, 1, 1, 1, 1)
-                box2.add(scan_grid)
+                grid.attach_next_to(scan_grid, lab, Gtk.PositionType.RIGHT, 1, 1)
                 scan_grid.set_sensitive(False)
                 scan_box = _prop_scan(self, test, arg, scan_grid, scan_a, scan_b)
                 self._scans += [ scan_box ]
@@ -143,25 +142,25 @@ class group_properties_singleton(object):
                 if val_value is not None:
                     entrybox.set_text(str(val_value))
                 entrybox.connect("changed", lambda x: self._value_change(test, arg, lab, x.get_text()))
-                box2.add(entrybox)
+                grid.attach_next_to(entrybox, lab, Gtk.PositionType.RIGHT, 1, 1)
         elif val_type is int:
             adjustment = self._adjuster_from_entry(entry, 0)
             spin = Gtk.SpinButton(adjustment=adjustment)
             spin.connect("value-changed", lambda x: self._value_change(test, arg, lab, x.get_value_as_int()))
-            box2.add(spin)
+            grid.attach_next_to(spin, lab, Gtk.PositionType.RIGHT, 1, 1)
         elif val_type is float:
             places = get_float_prop_digits(entry)
             adjustment = self._adjuster_from_entry(entry, places)
             spin = Gtk.SpinButton(adjustment=adjustment)
             spin.connect("value-changed", lambda x: self._value_change(test, arg, lab, x.get_value()))
             spin.set_digits(places)
-            box2.add(spin)
+            grid.attach_next_to(spin, lab, Gtk.PositionType.RIGHT, 1, 1)
         elif val_type is bool:
             btn = Gtk.CheckButton()
             if val_value is not None:
                 btn.set_active(bool(val_value))
             btn.connect("toggled", lambda x: self._value_change(test, arg, lab, x.get_active()))
-            box2.add(btn)
+            grid.attach_next_to(btn, lab, Gtk.PositionType.RIGHT, 1, 1)
         elif val_type is dbfile:
             files_store = Gtk.ListStore(str, int)
             files_drop = Gtk.ComboBox()
@@ -173,13 +172,13 @@ class group_properties_singleton(object):
             for file_id in all_file_ids:
                 filename = all_files[file_id]
                 files_store.append(["%i:%s" % (file_id, filename), file_id])
-            box2.add(files_drop)
+            grid.attach_next_to(files_drop, lab, Gtk.PositionType.RIGHT, 1, 1)
             if val_value is not None and val_value[2] is not None:
                 files_drop.set_active(all_file_ids.index(val_value[2]))
             btn = Gtk.FileChooserButton()
             if val_value is not None and val_value[2] is None:
                 btn.set_filename(val_value[1])
-            box2.add(btn)
+            grid.attach_next_to(btn, files_drop, Gtk.PositionType.RIGHT, 1, 1)
 
             files_drop.connect("changed", lambda x: self._value_change(
                 test, arg, lab,
@@ -193,7 +192,6 @@ class group_properties_singleton(object):
                 (dbfile, x.get_filename(), None, (files_drop, btn))))
         else:
             raise Exception("Unknown property type : %s" % str(val_type))
-        box.add(box2)
 
 
     def _on_list_selection_changed(self, text_obj, test_paras, tests_group, selection):
@@ -215,15 +213,17 @@ class group_properties_singleton(object):
             doc_text = get_test_doc(test_file)
             text_obj.get_buffer().set_text(doc_text)
 
-            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-            box.set_border_width(10)
-            test_props.add(box)
+            grid = Gtk.Grid(orientation=Gtk.Orientation.VERTICAL)
+            grid.set_border_width(10)
+            grid.set_row_spacing(10)
+            grid.set_column_spacing(10)
+            test_props.add(grid)
 
             for arg_name, arg_value in test.pending_properties.items():
                 if self._only_unset:
                     if arg_value is not None:
                         continue
-                self._add_arg(tests_group, model[treeiter][1], arg_name, box, all_files)
+                self._add_arg(tests_group, model[treeiter][1], arg_name, grid, all_files)
 
             if len(self._scans):
                 self._scans[0].open()
