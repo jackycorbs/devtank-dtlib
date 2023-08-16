@@ -1,17 +1,12 @@
 import sys
 import time
 
-if sys.version_info[0] < 3:
-    dbfile = file
-    db_is_string = lambda s : isinstance(s, str) or isinstance(s, unicode)
-    db_is_str_class = lambda s : s is str or s is unicode
-    db_std_str = lambda s : str(s) if isinstance(s, unicode) else s
-else:
-    from collections import namedtuple
-    dbfile = namedtuple("dbfile", [])
-    db_std_str = lambda s : s.decode() if isinstance(s, bytes) else s
-    db_is_str_class = lambda s : s is str or s is bytes
-    db_is_string = lambda s : isinstance(s, str) or isinstance(s, bytes)
+from collections import namedtuple
+dbfile = namedtuple("dbfile", [])
+db_std_str = lambda s : s.decode() if isinstance(s, bytes) else s
+db_is_str_class = lambda s : s is str or s is bytes
+db_is_string = lambda s : isinstance(s, str) or isinstance(s, bytes)
+
 
 def db_time(py_time):
     if py_time is None:

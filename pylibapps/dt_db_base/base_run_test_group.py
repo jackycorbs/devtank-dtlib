@@ -19,17 +19,15 @@ from . import db_values
 from .py_log import dt_py_log_hook_init
 from .db_common import db_std_str
 
-if sys.version_info[0] >= 3:
-    def execfile(test_file, args):
-        with open(test_file) as f:
-            s = f.read()
-            if s[0].encode() == b'\xef\xbb\xbf':
-                # Argh, BOM, kill it with fire
-                s = s[1:]
-            exec(s, args)
-    get_monotonic = time.monotonic
-else:
-    get_monotonic = time.time
+def execfile(test_file, args):
+    with open(test_file) as f:
+        s = f.read()
+        if s[0].encode() == b'\xef\xbb\xbf':
+            # Argh, BOM, kill it with fire
+            s = s[1:]
+        exec(s, args)
+
+get_monotonic = time.monotonic
 
 
 _IPC_CMD = b"IPC_CMD:"
@@ -527,7 +525,7 @@ class base_run_group_manager(object):
             if cb:
                 cb(opt)
         else:
-            if isinstance(line, bytes) and sys.version_info[0] >= 3:
+            if isinstance(line, bytes):
                 line = line.decode(errors='replace')
             ansi = None
             if len(line) > 22 and \

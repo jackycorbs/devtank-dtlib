@@ -70,18 +70,11 @@ class base_context_object(object):
 
         db.db.error_handler = lambda e: self._db_fail(e)
 
-        if sys.version_info[0] < 3:
-            db.get_dev = MethodType(lambda db, uuid: \
-                        get_dev(db, uuid), db, db.__class__)
-            if get_dev_by_sn:
-                db.get_dev_by_sn = MethodType(lambda db, serial_number: \
-                        get_dev_by_sn(db, serial_number), db, db.__class__)
-        else:
-            db.get_dev = MethodType(lambda db, uuid: \
-                        get_dev(db, uuid), db)
-            if get_dev_by_sn:
-                db.get_dev_by_sn = MethodType(lambda db, serial_number: \
-                        get_dev_by_sn(db, serial_number), db)
+        db.get_dev = MethodType(lambda db, uuid: \
+                    get_dev(db, uuid), db)
+        if get_dev_by_sn:
+            db.get_dev_by_sn = MethodType(lambda db, serial_number: \
+                    get_dev_by_sn(db, serial_number), db)
         return True
 
     def db_init(self):

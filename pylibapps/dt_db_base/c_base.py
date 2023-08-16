@@ -63,15 +63,10 @@ USEC_SECOND = 1000000
 ## Microseconds in a minute.
 USEC_MINUTE = (USEC_SECOND * 60)
 
-if sys.version_info[0] >= 3:
-    _to_bytes_msg = lambda msg : msg if isinstance(msg, bytes) else msg.encode()
-    error_msg     = lambda msg : _error_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
-    warning_msg   = lambda msg : _warning_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
-    info_msg      = lambda msg : _info_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
-else:
-    error_msg   = lambda msg : _error_msg(msg.replace('%','%%'))
-    warning_msg = lambda msg : _warning_msg(msg.replace('%','%%'))
-    info_msg    = lambda msg : _info_msg(msg.replace('%','%%'))
+_to_bytes_msg = lambda msg : msg if isinstance(msg, bytes) else msg.encode()
+error_msg     = lambda msg : _error_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
+warning_msg   = lambda msg : _warning_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
+info_msg      = lambda msg : _info_msg(_to_bytes_msg(msg).replace(b'%',b'%%'))
 
 
 def output_bad(msg):
@@ -116,7 +111,7 @@ def set_output(sink):
     if sink:
         assert hasattr(sink, "write") and hasattr(sink, "isatty")
         _msg_stream = sink
-        if hasattr(_msg_stream, "encoding") or sys.version_info[0] < 3:
+        if hasattr(_msg_stream, "encoding"):
             _msg_stream_write = _msg_stream.write
         else:
             _msg_stream_write = lambda msg : _msg_stream.write(msg.encode())
