@@ -211,6 +211,7 @@ class group_properties_singleton(object):
             test = model[treeiter][1]
             test_file = test.get_file_to_local()
             doc_text = get_test_doc(test_file)
+            args = get_args_in_src(test_file)
             text_obj.get_buffer().set_text(doc_text)
 
             grid = Gtk.Grid(orientation=Gtk.Orientation.VERTICAL)
@@ -219,11 +220,13 @@ class group_properties_singleton(object):
             grid.set_column_spacing(10)
             test_props.add(grid)
 
-            for arg_name, arg_value in test.pending_properties.items():
+            for arg in args:
                 if self._only_unset:
-                    if arg_value is not None:
+                    test_props_values = test.pending_properties
+                    val_value = test_props_values[arg] if arg in test_props_values else None
+                    if val_value is not None:
                         continue
-                self._add_arg(tests_group, model[treeiter][1], arg_name, grid, all_files)
+                self._add_arg(tests_group, model[treeiter][1], arg, grid, all_files)
 
             if len(self._scans):
                 self._scans[0].open()
