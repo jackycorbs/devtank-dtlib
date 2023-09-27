@@ -65,9 +65,7 @@ class base_run_group_context(object):
         self.input_queue = Queue()
 
     def send_cmd(self, line):
-        self.stdout_out.write(_IPC_CMD)
-        self.stdout_out.write(line.encode())
-        self.stdout_out.write(b"\n")
+        self.stdout_out.write(_IPC_CMD + line.encode() + b"\n")
         self.stdout_out.flush()
 
     def get_ready_devices(self, bus_con):
