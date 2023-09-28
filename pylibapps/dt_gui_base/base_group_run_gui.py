@@ -55,7 +55,7 @@ class base_run_context(object):
         self.redo_btn.connect("clicked",       lambda btn: self.on_redo())
         self.unfreeze_btn.connect("clicked",   lambda btn: self.on_unfreeze())
         self.info_btn.connect("clicked",       lambda btn: self.on_info())
-        
+
         """ Define TestGroupRunnerInfo Objects """
 
         # Define buttons
@@ -415,7 +415,7 @@ class base_run_context(object):
             if not dev_result:
                 self.current_dev, dev_result = list(self.run_group_man.session_results.items())[0]
             if self.current_dev:
-                pass_fail = dev_result['tests'][self.current_test]
+                pass_fail = dev_result['tests'][self.current_test].get("passfail")
                 self.run_group_man.load_files(self.current_dev, self.current_test)
                 self.update_info_status(pass_fail)
                 self.update_info_status_icon(pass_fail)
