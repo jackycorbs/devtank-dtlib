@@ -46,10 +46,13 @@
      id="linearGradient873"><stop
        id="stop869"
        offset="0"
-       style="stop-color:#00cb00;stop-opacity:1;" /><stop
+       style="stop-color:#003f00;stop-opacity:0.9999553;" /><stop
+       id="stop3105"
+       offset="0.42949367"
+       style="stop-color:#008c00;stop-opacity:0.9999553;" /><stop
        id="stop871"
        offset="1"
-       style="stop-color:#00cb00;stop-opacity:0;" /></linearGradient><linearGradient
+       style="stop-color:#d9ff00;stop-opacity:0.41158736;" /></linearGradient><linearGradient
      gradientTransform="matrix(0.94613904,0.17559339,-0.17672725,0.94006877,5.092624,123.69334)"
      gradientUnits="userSpaceOnUse"
      y2="-150.12593"
