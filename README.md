@@ -21,7 +21,7 @@ To run the GUI example co:
 
     cd apps/gui/
     make
-    ./output/bin/example_tester_gui.sh --desktop --production
+    ./output/bin/example_tester_gui.sh --desktop
 
 The serial number is free text. It needs entering twice as that is a
 barcode check.
@@ -38,5 +38,4 @@ view the "output" and "log" of each.
 It's all designed to be simple.
 
 
-To be able to select and edit tests, leave off the "--production"
-argument.
+To be able to select and edit tests, add the "--super" argument.
