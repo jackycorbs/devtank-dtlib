@@ -54,7 +54,7 @@ coverage: default
 	$(COVERAGERUN) add_tar_filestore
 	python3-coverage combine
 	python3-coverage html
-	sensible-browser htmlcov/index.html
+	if [ "$$NOBROWSER" != "1" ]; then sensible-browser htmlcov/index.html; fi
 
 include $(LIBDEVTANKROOT)/pylibapps/Makefile.pylibapps
 
