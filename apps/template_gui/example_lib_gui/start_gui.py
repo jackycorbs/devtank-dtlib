@@ -50,6 +50,7 @@ class _start_double_scan(scan_box_base):
                                "start_scan_barcodeA_entry",
                                "start_scan_barcodeB_entry")
         self.start_scan_status_lab = context.builder.get_object("start_scan_status_lab")
+        self.selected_group = None
 
     def reset_scan(self):
         scan_box_base.reset_scan(self)
@@ -62,14 +63,22 @@ class _start_double_scan(scan_box_base):
                 self.set_status("Unable to connect to DB.")
                 return
 
-        if context.args['production']:
-            db_test_group = context.db.get_group(_default_test_group)
-            assert db_test_group, "Can't find default test group to run."
+        selected_group = context.db.get_group(serial_number)
+        if selected_group:
+            self.selected_group = selected_group
+            self.set_status("Test group selected.")
+            return
+
+        if context.args['super']:
+            next_view = example_lib_gui.open_groups_list
+        else:
+            if not self.selected_group:
+                self.selected_group = context.db.get_group(_default_test_group)
+                assert self.selected_group, "Can't find default test group to run."
+            db_test_group = self.selected_group
             context.tests_group.populate_from(db_test_group)
             from .group_run_gui import open_run_group
             next_view = open_run_group
-        else:
-            next_view = example_lib_gui.open_groups_list
 
         db_dev = example_lib.db_example_dev.get_by_serial(context.db, serial_number)
         if not db_dev:

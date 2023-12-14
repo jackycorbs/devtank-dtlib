@@ -121,7 +121,7 @@ class base_groups_list_gui(object):
 
         self.context.force_view("TestGroupActSelector")
 
-        is_advanced = not bool(self.context.args["production"])
+        is_advanced = bool(self.context.args.get("admin", False))
 
         for advanced_only in ["group_new_btn",
                               "group_clone_btn",
