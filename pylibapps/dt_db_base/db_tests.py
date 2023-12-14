@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import sys
 
 from .db_obj import db_obj
@@ -293,7 +291,7 @@ class test_group_obj(db_obj):
 
                 if log:
                     log = file_ids_map[log]
-                    
+
                 if output:
                     output = file_ids_map[output]
 

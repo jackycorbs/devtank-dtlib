@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import sys
 
 from .notify_gui import open_notify_gui
@@ -50,7 +48,7 @@ def open_test_group_naming(context):
 
 
 def init_test_group_naming(context):
-    
+
     tests_group = context.tests_group
     builder = context.builder
 

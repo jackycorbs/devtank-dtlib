@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import sys
 
 from .barcode_scan_gui import double_scan_view

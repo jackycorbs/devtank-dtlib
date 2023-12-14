@@ -1,4 +1,3 @@
-from __future__ import print_function
 import pymysql
 import paramiko
 import sqlite3
@@ -217,7 +216,7 @@ class db_process_t(object):
         assert row[0] == "SFTP"
         hostname=row[1]
         folder = row[2]
-        
+
         db_path = self.db_paths[c]
 
         if isinstance(db_path, str):
@@ -365,7 +364,7 @@ class db_process_t(object):
         c.execute(cmd)
         fs_id  = c.fetchone()[0]
         cmd = "INSERT INTO files (file_store_id, filename, size, modified_date, insert_time) VALUES(%u, '%s', %u, %u, %u)" % (fs_id, os.path.basename(filepath), os.path.getsize(filepath), os.path.getmtime(filepath), now)
-        c.execute(cmd) 
+        c.execute(cmd)
         file_id = c.lastrowid
         self.copy_file(self.get_db_folder(c), filepath, os.path.basename(filepath), file_id)
         return file_id

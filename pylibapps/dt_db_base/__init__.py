@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import sys
 
 from .base_run_test_group import base_run_group_manager, \

@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import os
 import sys
 import time
@@ -65,7 +63,7 @@ class mssql_db_inf(db_inf):
 class mssql_db_backend(object):
     def __init__(self, db_def):
         self.db_def = db_def
-    
+
     def open_raw_db(self):
         db_def = self.db_def
         return pymssql.connect( host=db_def['host'],

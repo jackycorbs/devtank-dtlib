@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import os
 import sys
 
@@ -28,7 +26,7 @@ class tests_group_creator:
         for key, val in self.props_defaults.items():
             assert 'type' in val
             assert 'desc' in val
-            
+
             val_type = py_type_from_db_type(val['type'])
 
             if val['type'] == 'int' or val['type'] == 'float':

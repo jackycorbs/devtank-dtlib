@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import sys
 from dt_gui_base import base_groups_list_gui
 

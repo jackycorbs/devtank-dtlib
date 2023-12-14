@@ -1,4 +1,3 @@
-from __future__ import print_function, absolute_import
 from .c_base import error_msg, warning_msg, info_msg
 
 

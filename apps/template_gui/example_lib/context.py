@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 from .example_hw import example_bus
 
 from dt_db_base import base_context_object

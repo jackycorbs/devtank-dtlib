@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 class db_tester_machine(object):
     def __init__(self,
                  machine_id,

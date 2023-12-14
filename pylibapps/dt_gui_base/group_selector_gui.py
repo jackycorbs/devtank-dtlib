@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import os
 import sys
 import copy
@@ -144,7 +142,7 @@ def open_test_group_selector(context):
 
 
 def init_test_group_selector(context):
-    
+
     tests_group = context.tests_group
     builder = context.builder
 

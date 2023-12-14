@@ -1,5 +1,3 @@
-from __future__ import print_function, absolute_import
-
 import sys
 
 from dt_db_base import set_log_file,          \
