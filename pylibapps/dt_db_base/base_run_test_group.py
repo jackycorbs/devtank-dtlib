@@ -13,7 +13,7 @@ from gi.repository import GLib
 
 from multiprocessing import Process, Queue
 
-from . import c_base
+from . import base
 from . import db_values
 from .py_log import dt_py_log_hook_init
 from .db_common import db_std_str
@@ -735,7 +735,7 @@ class base_run_group_manager(object):
 
 
 class default_group_context(base_run_group_context):
-    lib_inf = c_base
+    lib_inf = base
 
     def __init__(self, context, bus, last_end_time, stdout_out):
         tmp_dir="/tmp"

@@ -5,7 +5,7 @@ import sys
 
 
 from .db_common import *
-from .c_base import dt_get_build_info
+from .base import dt_get_build_info
 from .db_filestore_protocol import tar_transferer
 
 
