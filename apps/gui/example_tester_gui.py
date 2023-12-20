@@ -8,6 +8,7 @@ import types
 
 import example_lib
 import example_lib_gui
+import dt_db_base.int_logging
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -33,7 +34,9 @@ def db_load_extra(db):
 
 def main():
 
-    print("Running Example Tester GUI", datetime.datetime.utcnow())
+    logger = dt_db_base.int_logging.get_logger(__name__)
+
+    logger.info("Running Example Tester GUI " + str(datetime.datetime.utcnow()))
 
     args = vars(parser.parse_args())
 
