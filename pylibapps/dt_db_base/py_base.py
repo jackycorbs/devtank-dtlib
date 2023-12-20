@@ -133,35 +133,6 @@ def set_output(sink):
         _msg_stream_write = _msg_stream.write
 
 
-def make_c_buffer_from(buf, null_terminate=True):
-    """ Create a ctypes buffer from a string or list. """
-    if type(buf) is unicode:
-        buf = str(buf)
-    if type(buf) is str:
-        if buf.startswith("0x"):
-            if buf.count(','):
-                buf = "".join([chr(int(a[2:], 16)) for a in buf.split(',')])
-            else:
-                buf = buf[2:]
-                buf = "".join([chr(int(buf[n:n+2], 16)) for n in range(0, len(buf), 2)])
-        elif not null_terminate:
-            return create_string_buffer(buf, len(buf))
-        return create_string_buffer(buf)
-    elif type(buf) is list:
-        return create_string_buffer("".join([chr(n) for n in buf]))
-    elif buf is None:
-        return (c_char * 0)()
-    elif hasattr(buf,"_type_") and hasattr(buf, "__sizeof__") and (buf._type_ is c_uint8 or buf._type_ is c_char):
-        return buf # Nothing to do
-    else:
-        raise Exception("Invalid scan ID field, not string or list of numbers")
-
-
-def str_from_c_buffer(buf):
-    """ Create a string from a ctypes buffer. """
-    return ",".join(["0x%02x" % ord(c) for c in buf])
-
-
 def set_log_file(f):
     global _log_file
     if f is not None:

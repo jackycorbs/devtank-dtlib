@@ -1,8 +1,6 @@
 import sys
 
 from dt_db_base import set_log_file,          \
-                       str_from_c_buffer,     \
-                       make_c_buffer_from,    \
                        set_output,            \
                        output_normal,         \
                        output_good,           \
