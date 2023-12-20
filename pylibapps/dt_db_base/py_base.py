@@ -96,24 +96,40 @@ dt_usecs = int
 
 get_current_us = lambda: dt_usecs(time.time_ns / 1000.)
 
-log_fd = sys.stderr.fileno()
-out_fd = sys.stdout.fileno()
-
 _devtank_init       = lambda: None
 _devtank_ready      = lambda: True
 _devtank_shutdown   = lambda: None
+
+def _set_log_fd(fd):
+    global log_fd
+    print(f"SETTING {fd = }")
+    log_fd = fd
+    print(f"{log_fd = }")
+
+def _get_log_fd():
+    global log_fd
+    if log_fd is None:
+        log_fd = sys.stderr.fileno()
+    return log_fd
+
+def _log_msg(fd: int, msg: str, colour: str = _ANSI_DEFAULT):
+    if os.isatty(fd):
+        pl = f"{colour}{datetime.datetime.now().strftime('%d/%m %T.%f')} [{os.getpid()}] {msg}{_ANSI_DEFAULT}\n"
+    else:
+        pl = f"{datetime.datetime.now().strftime('%d/%m %T.%f')} [{os.getpid()}] {msg}\n"
+    return os.write(fd, pl.encode())
 
 if __USE_LOGGING__:
     error_msg           = lambda *x: logger.error(*x)
     warning_msg         = lambda *x: logger.warning(*x)
     info_msg            = lambda *x: logger.info(*x)
-    enable_info_msgs = lambda x: logger.setLevel(logging.INFO)
-    enable_warning_msgs = lambda x: logger.setLevel(logging.WARNING)
+    enable_info_msgs    = lambda x: logger.setLevel(logging.INFO) if x else logger.setLevel(logging.ERROR)
+    enable_warning_msgs = lambda x: logger.setLevel(logging.WARNING) if x else logger.setLevel(logging.ERROR)
     info_msgs_is_enabled = lambda: logger.level <= logging.INFO
 else:
-    _error_msg          = lambda *x: print(f"{_ANSI_RED}ERROR:", *x, _ANSI_DEFAULT)
-    _warning_msg        = lambda *x: print(f"{_ANSI_RED}WARNING:", *x, _ANSI_DEFAULT)
-    _info_msg           = lambda *x: print("INFO:", *x, _ANSI_DEFAULT)
+    _error_msg          = lambda *x: _log_msg(_get_log_fd(), f"ERROR: {str(*x)}", colour=_ANSI_RED)
+    _warning_msg        = lambda *x: _log_msg(_get_log_fd(), f"WARNING: {str(*x)}", colour=_ANSI_RED)
+    _info_msg           = lambda *x: _log_msg(_get_log_fd(), f"INFO: {str(*x)}")
     error_msg           = _error_msg
     warning_msg         = _warning_msg
     info_msg            = _info_msg
@@ -122,10 +138,6 @@ else:
     def enable_warning_msgs(enable: bool):
         warning_msg = _warning_msg if enable else lambda *x: None
     info_msgs_is_enabled = lambda: info_msg is _info_msg
-
-def _set_log_fd(fd):
-    log_fd = fd
-_get_log_fd         = lambda: log_fd
 
 def dt_get_build_info():
     cmd_get_commit = "git log -n 1 --format=\"%h-%f\""
