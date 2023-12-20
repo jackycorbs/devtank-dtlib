@@ -4,3 +4,4 @@
 *.pdf
 *.glade~
 *.glade#
+*__pycache__
