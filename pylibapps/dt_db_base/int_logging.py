@@ -14,7 +14,7 @@ class _logging_formatter_t(logging.Formatter):
     WHITE       = "\033[39:20m"
     BOLD_RED    = "\033[31;1m"
     RESET       = WHITE
-    FORMAT      = "%(asctime)s.%(msecs)03d [%(thread)s] %(levelname)s: %(message)s"
+    FORMAT      = "%(asctime)s.%(msecs)03d [%(processName)s (%(process)s)] %(filename)s:%(lineno)d %(levelname)s: %(message)s"
     DATEFMT     = "%d/%m %T"
 
     FORMATS = {

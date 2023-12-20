@@ -17,6 +17,7 @@ from . import base
 from . import db_values
 from .py_log import dt_py_log_hook_init
 from .db_common import db_std_str
+from . import int_logging
 
 def execfile(test_file, args):
     with open(test_file) as f:
@@ -305,6 +306,9 @@ class base_run_group_manager(object):
                  warning_line = None,
                  error_line = None,
                  cmds = None):
+
+        self._logger = int_logging.get_logger(__name__)
+
         self.process = None
         self.test_context = None
         self.last_end_time = 0
@@ -389,10 +393,12 @@ class base_run_group_manager(object):
                 return self.process_line(line)
             except Exception as e:
                 import traceback
-                print("LINE PROCESS FAILED")
-                traceback.print_exc()
+                self._logger.error("LINE PROCESS FAILED")
+                lines = traceback.format_exc().splitlines()
+                for line in lines:
+                    self._logger.error(line)
         else:
-            print("Part line received, but timed out.")
+            self._logger.warning("Part line received, but timed out.")
         self.stop()
         ext_cmd = self.external_cmds.get("FINISHED",None)
         if ext_cmd:
@@ -404,7 +410,7 @@ class base_run_group_manager(object):
         if self.process.exitcode is None:
             return True
         if self.process.exitcode < 0:
-            print("Process terminated.")
+            self._logger.info("Process terminated.")
             self.live = False
             self._complete_stop()
             self._finished()
@@ -741,16 +747,17 @@ class default_group_context(base_run_group_context):
         tmp_dir="/tmp"
         base_run_group_context.__init__(self, context, bus, last_end_time, stdout_out, tmp_dir)
         self.devices = context.devices
+        self._logger = int_logging.get_logger(__name__)
 
     def get_ready_devices(self, bus_con):
         try:
             bus_con.ready_devices(self.devices)
             return bus_con.devices
         except Exception as e:
-            print("Failed to get devices.")
-            print("Backtrace:")
+            self._logger.error("Failed to get devices.")
+            self._logger.error("Backtrace:")
             for line in traceback.format_exc().splitlines():
-                print(line)
+                self._logger.error(line)
             return []
 
     def stop_devices(self):
