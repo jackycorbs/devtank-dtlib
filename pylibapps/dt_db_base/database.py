@@ -453,7 +453,9 @@ class tester_database(object):
                 file_args = get_args_in_src(test_filename)
                 for arg in file_args:
                     if arg not in test_args:
-                        arg_def = default_args[arg]
+                        arg_def = default_args.get(arg, None)
+                        if arg_def is None:
+                            raise Exception(f"Argument '{arg}' in test '{test_filename}' not defined yet.")
                         default_val = arg_def.get("default", None)
                         if default_val is not None:
                             test_args[arg] = default_val
