@@ -1,5 +1,0 @@
-{
-    type: sqlite,
-    filename: test.db,
-    db_files: db_files
-}
