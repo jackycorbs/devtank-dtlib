@@ -1,7 +1,7 @@
 import os
 import sys
 import psycopg2
-import pytz
+from datetime import timezone
 
 
 from .database import tester_database
@@ -46,7 +46,7 @@ class pg_tester_database(tester_database):
 
     def get_db_now():
         row = self.db.query_one("SELECT CAST(CURRENT_TIMESTAMP AS TIMESTAMPTZ)")
-        return row[0].astimezone(pytz.utc)
+        return row[0].astimezone(timezone.utc)
 
 
 

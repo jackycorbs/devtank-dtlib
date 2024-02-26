@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import pymysql
-import pytz
+from datetime import timezone
 
 
 from .database import tester_database
@@ -45,7 +45,7 @@ class mysql_db_inf(db_inf):
 class mysql_tester_database(tester_database):
     def get_db_now():
         row = self.db.query_one("SELECT NOW()")
-        return row[0].astimezone(pytz.utc)
+        return row[0].astimezone(timezone.utc)
 
 
 class mysql_db_backend(object):
