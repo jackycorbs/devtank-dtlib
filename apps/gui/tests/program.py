@@ -16,6 +16,8 @@ Test Specific Arguments:
 
 '''
 
+from example_lib import CHECK_DESCS
+
 firmware_file = args["firmware"]
 expected_serial = args["serial"]
 write_enable = args["write_enable"]
@@ -28,4 +30,4 @@ dev.reset()
 output_normal("Reading device serial for boot message.")
 serial_data = dev.read_serial()
 store_value("Serial Data", serial_data)
-exact_check('"%s"' % expected_serial, '"%s"' % serial_data, "Serial welcome message")
+exact_check('"%s"' % expected_serial, '"%s"' % serial_data, CHECK_DESCS.FIRMWARE_BOOT)

@@ -2,6 +2,9 @@ import os
 import random
 import dt_db_base
 
+from .check_descs import CHECK_DESCS
+
+
 ## Example device
 class example_dev(object):
     def __init__(self, uuid):
@@ -43,7 +46,7 @@ class example_dev(object):
             dt_db_base.info_msg("HW ID: " + self._hw_id)
             self._uuid = self._hw_id
             r = True
-        self.exact_check(r, True, "HW ID Read")
+        self.exact_check(r, True, CHECK_DESCS.FIRMWARE_HW_ID)
 
     def read_serial(self):
         r = self._fw
@@ -83,7 +86,7 @@ class example_dev(object):
                 self._fw = f.readline().strip()
             dt_db_base.info_msg("Firmware loaded")
             r = True
-        self.exact_check(r, True, "Firmware Programmed")
+        self.exact_check(r, True, CHECK_DESCS.FIRMWARE_PROGRAM)
 
     def reset(self):
         dt_db_base.info_msg("Device reset")
