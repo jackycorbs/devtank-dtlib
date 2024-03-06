@@ -493,11 +493,9 @@ class base_run_group_manager(object):
 
     def _select_testfile(self, testfile):
         self.current_test = testfile
-        self.session_results[self.current_device]['tests'][self.current_test] = {'passfail' : False}
 
     def _select_dev(self, dev_uuid):
         self.current_device = dev_uuid.strip()
-        self.session_results[self.current_device] = {'tests': {}}
 
     def _start_outfile(self, outfile):
         if self.outfile:
@@ -518,7 +516,6 @@ class base_run_group_manager(object):
             self.session_results[self.current_device]['tests'][self.current_test]['logfile'] = logfile
 
     def _test_status(self, args):
-        self.has_new = True
         args = args.split(' ')
         passfail = args[0]
         passfail = passfail == "True"
@@ -647,9 +644,16 @@ class base_run_group_manager(object):
         try:
             self.readonly = False
             self.live = False
-            self.has_new = False
+            self.has_new = True
 
             self.session_results = {}
+
+            test_results = {'tests' :
+                            dict([( test.name, {'passfail' : False } )
+                            for test in self.context.tests_group.tests])}
+
+            for dev in self.context.devices:
+                self.session_results[dev.uuid.strip()] = test_results
 
             self.test_context = self._run_group_context_class(self.context, bus,
                                                               self.last_end_time,
