@@ -67,3 +67,11 @@ class db_base_dev(db_child):
         if row is None:
             return None
         return bool(row[1])
+
+    def get_last_session(self, group_name):
+        cmd = self.db.sql.get_dev_last_session(self.id, group_name)
+        row = self.db.db.query_one(cmd)
+        if row is None:
+            return None
+        return test_group_sessions(self.db.get_group_by_id(row[2]),
+                                   self.db, row[0], row[1], row[3], row[4])

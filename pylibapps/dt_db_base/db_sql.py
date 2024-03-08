@@ -116,6 +116,22 @@ class sql_common(object):
         DESC LIMIT {int(count)} OFFSET {int(offset)}
         """
 
+    def get_dev_last_session(self, dev_id, group_name):
+        return f"""
+        SELECT DISTINCT test_group_results.id,
+        test_group_results.time_of_tests,
+        test_group_results.group_id,
+        mac, hostname FROM {self.dev_result_table_name}
+        JOIN test_group_results ON
+        test_group_results.id = group_result_id
+        JOIN test_groups ON test_groups.id = test_group_results.group_id
+        LEFT JOIN tester_machines ON
+        tester_machines.id = tester_machine_id
+        WHERE {self.dev_result_table_name}.{self.device_key_name} =
+        {int(dev_id)} AND test_groups.name = '{db_safe_str(group_name)}'
+        ORDER BY time_of_tests DESC LIMIT 1
+        """
+
     def get_dev_last_result(self, dev_id, group_name):
         return f"""
         SELECT test_group_results.time_of_tests,
