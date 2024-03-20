@@ -16,11 +16,13 @@ from .group_selector_gui import open_test_group_selector
 from .group_properties_gui import open_tests_properties
 from .sessions_results_gui import base_session_results_singlton, open_tests_sessions_results, open_dev_tests_sessions_results, init_tests_sessions_results
 from .groups_list_gui import base_groups_list_gui
+from .multiselect_gui import open_multiselect_gui
 
 
 def dt_gui_base_init(context):
     from .notify_gui import init_notify_gui
     from .query_gui import init_query_gui
+    from .multiselect_gui import init_multiselect_gui
     from .group_selector_gui import init_test_group_selector
     from .group_properties_gui import init_tests_properties
     from .edit_test_gui import init_edit_test_page
@@ -28,6 +30,7 @@ def dt_gui_base_init(context):
     from .group_naming_gui import init_test_group_naming
     init_notify_gui(context)
     init_query_gui(context)
+    init_multiselect_gui(context)
     init_test_group_selector(context)
     init_tests_properties(context)
     init_edit_test_page(context)
