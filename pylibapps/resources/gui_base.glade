@@ -212,9 +212,8 @@
           <object class="GtkBox" id="choices_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
             <property name="orientation">vertical</property>
+            <property name="homogeneous">True</property>
             <child>
               <placeholder/>
             </child>
