@@ -5,7 +5,7 @@ from gi.repository import Gtk
 _singleton = None
 
 
-class multiselect_singleton(object):
+class multichoice_singleton(object):
     def __init__(self, context):
         self.context = context
         self.choice_lab = context.builder.get_object("choice_lab")
@@ -50,10 +50,10 @@ class multiselect_singleton(object):
 
 
 
-def open_multiselect_gui(msg, choice_map):
+def open_multichoice_gui(msg, choice_map):
     _singleton.open(msg, choice_map)
 
 
-def init_multiselect_gui(context):
+def init_multichoice_gui(context):
     global _singleton
-    _singleton = multiselect_singleton(context)
+    _singleton = multichoice_singleton(context)
