@@ -5,7 +5,10 @@ from .base_run_test_group import base_run_group_manager, \
                                  default_run_group_manager, \
                                  default_group_context, \
                                  test_desc_base, \
-                                 basic_test_desc
+                                 basic_test_desc, \
+                                 ForceExitException, \
+                                 EarlyExitException
+
 from .db_backend_open import base_open_db_backend
 from .db_common import *
 from .db_filestore_protocol import smb_transferer, sftp_transferer, tar_transferer
