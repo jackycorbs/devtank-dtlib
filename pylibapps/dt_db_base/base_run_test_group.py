@@ -202,6 +202,9 @@ class base_run_group_context(object):
         self.stdout_out.write(b"\n")
         self.stdout_out.flush()
 
+    def script_crash(self, filename):
+        pass
+
 
 
 def _thread_test(test_context):
@@ -323,6 +326,7 @@ def _thread_test(test_context):
                 except Exception as e:
                     duration = time.time() - start_time
                     results[name] = False
+                    test_context.script_crash(name)
                     store_value("SUB_FAIL_N", "SCRIPT CRASH")
                     lib_inf.output_bad("Exception:")
                     for line in str(e).splitlines():
