@@ -88,7 +88,7 @@ class base_run_group_context(object):
     def __init__(self, context, bus, last_end_time, stdout_out,
                  tmp_dir):
         tests_group = context.tests_group
-        self.args = context.args
+        self.global_args = context.args
         self.bus = bus
         self.tests = [(test.id, test.get_file_to_local(),
                        test.name,
@@ -132,20 +132,20 @@ class base_run_group_context(object):
         else:
             raise EarlyExitException
 
-    def _complete_check(self, passfail, msg):
+    def _complete_check(self, args, passfail, msg):
         if not passfail:
             self.store_value("SUB_FAIL_%u" % self.sub_test_count, msg)
-            if self.args.get("freeze_on_fail", False):
+            if self.global_args.get("freeze_on_fail", False):
                 self.lib_inf.output_normal(">>>>FROZEN UNTIL USER CONTINUES<<<<")
                 self.freeze()
 
-            if self.args.get("exit_on_fail", False):
+            if args.get("exit_on_fail", False):
                 self.forced_exit()
         self.sub_test_count += 1
 
-    def _error_code_process(self, test_name, results, passfail, desc, **args):
+    def _error_code_process(self, test_name, args, results, passfail, desc, **check_args):
         error_num = desc.get_error_no()
-        error_text = desc.get_text(passfail, args)
+        error_text = desc.get_text(passfail, check_args)
 
         if passfail:
             self.lib_inf.output_good(error_text)
@@ -154,11 +154,11 @@ class base_run_group_context(object):
             self.store_value("SUB_FAIL_CODE_%u" % self.sub_test_count, error_num)
             self.lib_inf.output_bad(error_text + f" [ERROR CODE: {error_num}]")
 
-        self._complete_check(passfail, error_text)
+        self._complete_check(args, passfail, error_text)
 
     def test_check(self, test_name, args, results, result, desc):
         if isinstance(desc, test_desc_base):
-            return self._error_code_process(test_name, results, result, desc)
+            return self._error_code_process(test_name, args, results, result, desc)
 
         ret = False
         desc = db_std_str(desc)
@@ -171,7 +171,7 @@ class base_run_group_context(object):
             results[test_name] = False
             msg = "%s - FAILED" % desc
             self.lib_inf.output_bad(msg)
-        self._complete_check(result, msg)
+        self._complete_check(args, result, msg)
 
         return ret
 
@@ -179,7 +179,7 @@ class base_run_group_context(object):
         margin = abs(margin)
         passfail = abs(sbj - ref) <= margin
         if isinstance(desc, test_desc_base):
-            return self._error_code_process(test_name, results, passfail, desc, sbj=sbj, ref=ref, margin=margin, unit=unit)
+            return self._error_code_process(test_name, args, results, passfail, desc, sbj=sbj, ref=ref, margin=margin, unit=unit)
         unit = db_std_str(unit)
         desc = db_std_str(desc)
         return self.test_check(test_name, args, results, passfail, "%s %g%s is %g%s +/- %g%s" % (desc, sbj, unit, ref, unit, margin, unit))
@@ -187,7 +187,7 @@ class base_run_group_context(object):
     def exact_check(self, test_name, args, results, sbj ,ref, desc):
         passfail = sbj == ref
         if isinstance(desc, test_desc_base):
-            return self._error_code_process(test_name, results, passfail, desc, sbj=sbj, ref=ref)
+            return self._error_code_process(test_name, args, results, passfail, desc, sbj=sbj, ref=ref)
         desc = db_std_str(desc)
         statement = "is" if passfail else "is not"
         msg = f"{desc} ({sbj} {statement} {ref})"
