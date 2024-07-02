@@ -1,9 +1,0 @@
-{
-    type: mysql,
-    user: sam,
-    password: brillant,
-#    host: 10.42.0.188,
-    host: localhost,
-    dbname: pizzastore,
-    file_stores: { sftp: [["localhost", "dbfiles"]] }
-}

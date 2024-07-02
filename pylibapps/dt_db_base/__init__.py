@@ -23,11 +23,9 @@ from .db_base_dev import db_base_dev
 from .context import base_context_object
 from .test_file_extract import *
 from .tests_group import *
-from .hw import power_controller_t, gpio_t
-from . import c_base
-from .c_base import set_log_file,          \
-                   str_from_c_buffer,     \
-                   make_c_buffer_from,    \
+
+from . import base
+from .base import set_log_file,         \
                    set_output,            \
                    output_normal,         \
                    output_good,           \
@@ -44,5 +42,6 @@ from .c_base import set_log_file,          \
                    info_msgs_is_enabled,  \
                    enable_warning_msgs,   \
                    enable_info_msgs
+
 from .timerfd import create_timerfd_of, drain_timerfd
 from .py_log import dt_py_log_hook_init
