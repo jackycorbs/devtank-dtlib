@@ -41,7 +41,11 @@ from .base import set_log_file,         \
                    dt_get_build_info,     \
                    info_msgs_is_enabled,  \
                    enable_warning_msgs,   \
-                   enable_info_msgs
+                   enable_info_msgs,      \
+                   dt_lib_with_c
 
 from .timerfd import create_timerfd_of, drain_timerfd
 from .py_log import dt_py_log_hook_init
+
+if dt_lib_with_c:
+    from .hw import power_controller_t, gpio_t
