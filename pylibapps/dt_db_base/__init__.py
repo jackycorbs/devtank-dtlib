@@ -23,6 +23,7 @@ from .db_base_dev import db_base_dev
 from .context import base_context_object
 from .test_file_extract import *
 from .tests_group import *
+from .db_tester import db_tester_machine
 
 from . import base
 from .base import set_log_file,         \

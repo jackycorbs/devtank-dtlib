@@ -728,16 +728,16 @@ class sql_common(object):
     #                                                            #
     ##############################################################
 
-    _MACHINE_SQL = "SELECT id, mac, hostname FROM tester_machines WHERE "
+    _MACHINE_SQL = "SELECT id, mac, hostname FROM tester_machines"
 
     def get_machine_by_id(self, machine_id):
         return f"""
-        {self._MACHINE_SQL}id={int(machine_id)}
+        {self._MACHINE_SQL} WHERE id={int(machine_id)}
         """
 
     def get_machine(self, mac, hostname):
         return f"""
-        {self._MACHINE_SQL}mac='{db_safe_str(mac).lower()}'
+        {self._MACHINE_SQL} WHERE mac='{db_safe_str(mac).lower()}'
         AND lower(hostname)='{db_safe_str(hostname).lower()}'
         """
 
@@ -745,4 +745,23 @@ class sql_common(object):
         return f"""
         INSERT INTO tester_machines (mac, hostname)
         VALUES('{db_safe_str(mac).lower()}','{db_safe_str(hostname)}')
+        """
+
+    def get_all_machines(self):
+        return self._MACHINE_SQL
+
+    def get_machine_sessions_count(self, machine_id):
+        return f"""
+        SELECT COUNT(id) FROM test_group_results
+        WHERE tester_machine_id={int(machine_id)}
+        """
+
+    def get_machine_sessions(self, machine_id, offset, count):
+        return f"""
+        SELECT test_group_results.group_id, test_group_results.id, Time_Of_tests, mac, hostname
+        FROM test_group_results LEFT JOIN tester_machines
+        ON tester_machines.id = test_group_results.tester_machine_id
+        WHERE tester_machine_id={int(machine_id)}
+        ORDER BY Time_Of_tests DESC LIMIT {int(count)}
+        OFFSET {int(offset)}
         """
