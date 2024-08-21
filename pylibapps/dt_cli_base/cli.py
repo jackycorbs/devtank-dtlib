@@ -435,6 +435,33 @@ def grep_files(context, cmd_args):
         n += 1
 
 
+def list_testers(context, cmd_args):
+    machines = dt_db_base.db_tester_machine.get_all_machines(context.db)
+    for machine in machines:
+        print(f"{machine.id} : {machine.mac} {machine.hostname}")
+
+
+def testers_results(context, cmd_args):
+    tester_id = int(cmd_args[0])
+    machine = dt_db_base.db_tester_machine.get_by_id(context.db, tester_id)
+    if machine:
+        print(f"Machine {tester_id} has {machine.get_sessions_count()} result sessions.")
+    else:
+        print(f"Machine {tester_id} not found.")
+
+
+def testers_result(context, cmd_args):
+    tester_id = int(cmd_args[0])
+    offset = int(cmd_args[1])
+    machine = dt_db_base.db_tester_machine.get_by_id(context.db, tester_id)
+    if machine:
+        sessions = machine.get_sessions(offset, 10)
+        for session in sessions:
+            print_session(session)
+    else:
+        print(f"Machine {tester_id} not found.")
+
+
 generic_cmds = {
     "update_tests"      : (update_tests,      "Update <groups yaml> in database."),
     "list_groups"       : (list_groups,       "List active groups."),
@@ -455,6 +482,9 @@ generic_cmds = {
     "add_tar_filestore" : (add_tar_filestore, "Enable the tar virtual filestore feature in the database."),
     "export_csv"        : (export_csv,        "export_csv <filename> [before] [after] : Export a CSV dump of database results in <filename>. Optional dates take the format YYYY-MM-DD:HH:MM:SS"),
     "grep_files"        : (grep_files,        "Grep for given text in given files."),
+    "list_testers"      : (list_testers,      "List all testers."),
+    "testers_results"   : (testers_results,   "Count session count of <tester ID>."),
+    "testers_result"    : (testers_result,    "Get sessions of <tester ID> from <offset>."),
 }
 
 

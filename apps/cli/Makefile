@@ -52,6 +52,10 @@ coverage: default
 	$(COVERAGERUN) group_result 3 0
 	$(COVERAGERUN) add_fail 04 "Sunny Day"
 	$(COVERAGERUN) add_tar_filestore
+	TESTER_ID=`$(COVERAGERUN) list_testers | awk '/[0-9]+ : [0-9a-zA-Z:]+ .*/{print $$1}'`; \
+		echo "\'$${TESTER_ID}\'"; \
+		$(COVERAGERUN) testers_results $${TESTER_ID}; \
+		$(COVERAGERUN) testers_result $${TESTER_ID} 0
 	python3-coverage combine
 	python3-coverage html
 	if [ "$$NOBROWSER" != "1" ]; then sensible-browser htmlcov/index.html; fi

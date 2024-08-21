@@ -1,11 +1,37 @@
 class db_tester_machine(object):
     def __init__(self,
+                 db,
                  machine_id,
                  mac,
                  hostname):
+        self.db       = db
         self.id       = machine_id
         self.mac      = mac.rstrip()
         self.hostname = hostname
+
+    @staticmethod
+    def get_all_machines(db):
+        cmd = db.sql.get_all_machines()
+        rows = db.db.query(cmd)
+        return [ db_tester_machine(db, *row) for row in rows ]
+
+    def get_sessions_count(self):
+        cmd = self.db.sql.get_machine_sessions_count(self.id)
+        row = self.db.db.query_one(cmd)
+        if not row:
+            return 0
+        return row[0]
+
+    def get_sessions(self, offset, count):
+        from .db_tests import test_group_sessions
+        cmd = self.db.sql.get_machine_sessions(self.id, offset, count)
+        rows = self.db.db.query(cmd)
+        r = []
+        for row in rows:
+            group_id = row[0]
+            group = self.db.get_group_by_id(group_id)
+            r += [ test_group_sessions(group, self.db, *row[1:]) ]
+        return r
 
     @staticmethod
     def get_by_id(db, machine_id):
@@ -16,7 +42,7 @@ class db_tester_machine(object):
         row = db.db.query_one(cmd)
         if not row:
             return None
-        return db_tester_machine(*row)
+        return db_tester_machine(db, *row)
 
     @staticmethod
     def get(db, mac, hostname):
@@ -27,7 +53,7 @@ class db_tester_machine(object):
         row = db.db.query_one(cmd)
         if not row:
             return None
-        return db_tester_machine(*row)
+        return db_tester_machine(db, *row)
 
     @staticmethod
     def get_own_machine(db):
