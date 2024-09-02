@@ -242,8 +242,11 @@ def _thread_test(test_context):
         bus_con = None
 
     if bus_con:
-        ready_devices = test_context.get_ready_devices(bus_con)
-
+        try:
+            ready_devices = test_context.get_ready_devices(bus_con)
+        except Exception as e:
+            lib_inf.error_msg("Get devices failed")
+            ready_devices = []
 
         if not len(ready_devices):
             lib_inf.error_msg("No devices")
