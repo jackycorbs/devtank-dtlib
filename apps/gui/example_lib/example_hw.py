@@ -3,12 +3,12 @@ import random
 import dt_db_base
 
 from .check_descs import CHECK_DESCS
-
+from dt_db_base import base_hw_dev, base_hw_bus, base_hw_bus_con
 
 ## Example device
-class example_dev(object):
+class example_dev(base_hw_dev):
     def __init__(self, uuid):
-        self._uuid=uuid
+        self._uuid = uuid
         self.test_check      = None
         self.threshold_check = None
         self.exact_check     = None
@@ -28,15 +28,6 @@ class example_dev(object):
         self.exact_check     = exact_check
         self.store_value     = store_value
         self.test_check      = test_check
-
-    ## Get Example device Universal Unique ID
-    @property
-    def uuid(self):
-        return self._uuid
-
-    @uuid.setter
-    def uuid(self, uuid):
-        self._uuid = uuid
 
     def update_uuid_from_hw(self):
         if not self._fw:
@@ -93,9 +84,9 @@ class example_dev(object):
 
 
 ## Open connection to a Example bus.
-class example_bus_con(object):
+class example_bus_con(base_hw_bus_con):
     def __init__(self):
-        self._devices = []
+        super().__init__()
 
     ## Load in known device UUIDs
     def ready_devices(self, known_devices):
@@ -104,33 +95,11 @@ class example_bus_con(object):
         else:
             self._devices = []
 
-    ## Get the Example device from the open bus.
-    @property
-    def devices(self):
-        return self._devices
-
-    ## Poll devices, which on this bus is a null-op.
-    def poll_devices(self):
-        pass
-
-
 ## Example bus ready to be openned for use.
-class example_bus(object):
+class example_bus(base_hw_bus):
     def __init__(self):
-        self._obj = None
+        super().__init__()
 
     def open(self):
         self._obj = example_bus_con()
         return self._obj
-
-    def close(self):
-        self._obj = None
-
-    def get_current(self):
-        return self._obj
-
-    def __enter__(self):
-        return self.open()
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        return self.close()

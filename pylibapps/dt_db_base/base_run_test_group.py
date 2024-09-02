@@ -370,8 +370,10 @@ def _thread_test(test_context):
     # Renable any debug logging for closing up bus.
     lib_inf.enable_info_msgs(info_enabled)
     test_context.finished(bus_con)
-    bus.close()
-
+    try:
+        bus.close()
+    except Exception as e:
+        lib_inf.error_msg("Bus close failed.")
 
 _ANSI_ERR     = "\x1B[31m"
 _ANSI_GREEN   = "\x1B[32m"
