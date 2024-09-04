@@ -235,9 +235,18 @@ def _thread_test(test_context):
                 'freeze_test' : test_context.freeze
                 }
 
-    with bus as bus_con:
+    try:
+        bus_con = bus.open()
+    except Exception as e:
+        lib_inf.error_msg("Bus open failed: " + str(e))
+        bus_con = None
 
-        ready_devices = test_context.get_ready_devices(bus_con)
+    if bus_con:
+        try:
+            ready_devices = test_context.get_ready_devices(bus_con)
+        except Exception as e:
+            lib_inf.error_msg("Get devices failed")
+            ready_devices = []
 
         if not len(ready_devices):
             lib_inf.error_msg("No devices")
@@ -358,10 +367,13 @@ def _thread_test(test_context):
             if full_stop:
                 break
 
-        # Renable any debug logging for closing up bus.
-        lib_inf.enable_info_msgs(info_enabled)
-        test_context.finished(bus_con)
-
+    # Renable any debug logging for closing up bus.
+    lib_inf.enable_info_msgs(info_enabled)
+    test_context.finished(bus_con)
+    try:
+        bus.close()
+    except Exception as e:
+        lib_inf.error_msg("Bus close failed.")
 
 _ANSI_ERR     = "\x1B[31m"
 _ANSI_GREEN   = "\x1B[32m"

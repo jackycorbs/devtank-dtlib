@@ -24,6 +24,7 @@ from .context import base_context_object
 from .test_file_extract import *
 from .tests_group import *
 from .db_tester import db_tester_machine
+from .hardware import base_hw_dev, base_hw_bus, base_hw_bus_con
 
 from . import base
 from .base import set_log_file,         \
@@ -50,3 +51,4 @@ from .py_log import dt_py_log_hook_init
 
 if dt_lib_with_c:
     from .hw import power_controller_t, gpio_t
+
