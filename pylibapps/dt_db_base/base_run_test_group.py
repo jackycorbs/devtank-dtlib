@@ -251,6 +251,10 @@ def _thread_test(test_context):
         if not len(ready_devices):
             lib_inf.error_msg("No devices")
 
+        # Set messages to go over ICP
+        lib_inf.set_log_file(test_context.stdout_out)
+        lib_inf.set_output(test_context.stdout_out)
+
         full_stop=False
 
         # Don't send the test announcement ever to info log
@@ -367,8 +371,10 @@ def _thread_test(test_context):
             if full_stop:
                 break
 
-    # Renable any debug logging for closing up bus.
+    # Renable any debug test logging for closing up bus, but send to stdout if set to do so.
     lib_inf.enable_info_msgs(info_enabled)
+    lib_inf.set_log_file(None)
+    lib_inf.set_output(None)
     test_context.finished(bus_con)
     try:
         bus.close()
@@ -680,9 +686,6 @@ class base_run_group_manager(object):
             self.test_context = self._run_group_context_class(self.context, bus,
                                                               self.last_end_time,
                                                               self.stdout_out)
-            lib_inf.set_output(self.stdout_out)
-            lib_inf.set_log_file(self.stdout_out)
-
             self.process = Process(target=_thread_test,
                                   args=(self.test_context,))
             GLib.timeout_add_seconds(1, self._process_die_catch)
@@ -711,16 +714,10 @@ class base_run_group_manager(object):
             self.process = None
             self.context.release_bus()
 
-        lib_inf.set_log_file(None)
-        lib_inf.set_output(None)
-
         self.last_end_time = time.time()
         self.readonly = True
 
     def _complete_stop(self):
-        lib_inf = self._run_group_context_class.lib_inf
-        lib_inf.set_log_file(None)
-        lib_inf.set_output(None)
         self.test_context.stop_devices()
         self.process = None
         self.last_end_time = time.time()
