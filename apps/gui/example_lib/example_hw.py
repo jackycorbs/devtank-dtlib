@@ -101,5 +101,12 @@ class example_bus(base_hw_bus):
         super().__init__()
 
     def open(self):
+        dt_db_base.info_msg("Openning my bus")
         self._obj = example_bus_con()
         return self._obj
+
+    def close(self):
+        super().close()
+        dt_db_base.info_msg("Closing my bus")
+
+
