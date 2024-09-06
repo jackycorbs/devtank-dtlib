@@ -81,11 +81,12 @@ def print_session(session):
 
         for result in dev_results.results:
             if len(result):
-                print('Test : "%s" (Output File:%s, Log File:%s) - %s' % (
+                print('Test : "%s" (Output File:%s, Log File:%s) - %s (%Gs)' % (
                         result[1],
                         "%u" % result[2] if result[2] else "NONE",
                         "%u" % result[3] if result[3] else "NONE",
-                        "passed" if result[0] else "FAILED"))
+                        "passed" if result[0] else "FAILED",
+                        dt_db_base.db_time(result[-2]) ))
 
 
 def group_result(context, cmd_args):
