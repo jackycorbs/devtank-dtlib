@@ -20,7 +20,7 @@ parser.add_argument('-v','--verbose', help='Increase log information', action='s
 parser.add_argument('--desktop', help='Running on a desktop', action='store_true')
 parser.add_argument('--admin', help='Show Test Groups', action='store_true')
 parser.add_argument('--super', help='Select Test Group to run', action='store_true')
-parser.add_argument('--config', help='DB config file to use', type=str)
+parser.add_argument('--config', help='DB config file to use', type=str, default="config_sqlite_db.yaml")
 parser.add_argument('--freeze_on_fail', help='Freeze on a failure', action='store_true')
 
 
@@ -40,13 +40,9 @@ def main():
 
     args = vars(parser.parse_args())
 
-    if args['verbose']:
-        example_lib.enable_info_msgs(True)
+    example_lib.enable_info_msgs(args['verbose'])
 
-    if args['config']:
-        db_def_file = args['config']
-    else:
-        db_def_file = "config_sqlite_db.yaml"
+    db_def_file = args['config']
 
     with open(db_def_file) as f:
         db_def_gen = yaml.safe_load_all(f)
