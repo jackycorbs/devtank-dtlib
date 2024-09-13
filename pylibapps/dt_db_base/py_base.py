@@ -36,6 +36,8 @@ def _set_log_fd(fd):
 
 def _get_log_fd():
     global log_fd
+    if "log_fd" not in globals():
+        log_fd = None
     if log_fd is None:
         log_fd = sys.stderr.fileno()
     return log_fd
