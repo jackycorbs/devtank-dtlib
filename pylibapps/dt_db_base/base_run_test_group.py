@@ -206,6 +206,9 @@ class base_run_group_context(object):
     def script_crash(self, filename):
         pass
 
+    def sleep(self, seconds):
+        self.lib_inf.output_normal("Sleeping for %G seconds" % seconds)
+        time.sleep(seconds)
 
 
 def _thread_test(test_context):
@@ -232,7 +235,8 @@ def _thread_test(test_context):
                 'error_msg': lib_inf.error_msg,
                 'warning_msg' : lib_inf.warning_msg,
                 'info_msg' : lib_inf.info_msg,
-                'freeze_test' : test_context.freeze
+                'freeze_test' : test_context.freeze,
+                "sleep" : test_context.sleep,
                 }
 
     try:
