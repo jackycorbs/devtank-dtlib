@@ -37,6 +37,9 @@ Each "test" is called with the predefined globals:
 "output_good"     : Message reported as good output and to "output" file.
 "output_bad"      : Message reported as bad output and to "output" file.
 "store_value"     : Add a named value to be stored in the database with the results.
+"sleep"           : Sleep to use in tests, the wait will be logged in output. Can be overloaded with custom code.
+"exit"            : Early exit the test. Default is a fail, but to exit early sucessfully, do exit(0)
+"freeze_test"     : Pause the test in given position for hardware debug.
 
 
 Tests are arranged into "test groups". These contain a list of tests and
