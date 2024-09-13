@@ -153,7 +153,7 @@ class base_run_group_context(object):
         else:
             results[test_name] = False
             self.store_value("SUB_FAIL_CODE_%u" % self.sub_test_count, error_num)
-            self.lib_inf.output_bad(error_text + f" [ERROR CODE: {error_num}]")
+            self.lib_inf.output_bad(f"[ERROR CODE: {error_num}] {error_text}")
 
         self._complete_check(args, passfail, error_text)
 
