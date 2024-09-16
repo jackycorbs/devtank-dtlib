@@ -206,8 +206,9 @@ class base_run_group_context(object):
     def script_crash(self, filename):
         pass
 
-    def sleep(self, seconds):
-        self.lib_inf.output_normal("Sleeping for %G seconds" % seconds)
+    def sleep(self, seconds, silent=False):
+        if not silent:
+            self.lib_inf.output_normal("Sleeping for %G seconds" % seconds)
         time.sleep(seconds)
 
 
