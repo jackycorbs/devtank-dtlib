@@ -66,7 +66,8 @@ def group_results(context, cmd_args):
 
 def print_session(session):
     print("=" * 72)
-    print("Time :", datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S'))
+    dt = datetime.fromtimestamp(session.time_of_tests)
+    print("Time :", dt.isoformat(sep=" "), dt.astimezone().tzname())
     print("Overall :", "passed" if session.pass_fail else "FAILED")
     print("Session :", session.id)
     machine = session.get_tester_line_str()
