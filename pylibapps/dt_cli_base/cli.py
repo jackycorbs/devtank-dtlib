@@ -86,7 +86,7 @@ def print_session(session):
                         "%u" % result[2] if result[2] else "NONE",
                         "%u" % result[3] if result[3] else "NONE",
                         "passed" if result[0] else "FAILED",
-                        dt_db_base.db_time(result[-2]) ))
+                        dt_db_base.db_time(result[-2]) if result[-2] is not None else 0 ))
 
 
 def group_result(context, cmd_args):
