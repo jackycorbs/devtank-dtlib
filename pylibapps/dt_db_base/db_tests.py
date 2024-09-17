@@ -389,9 +389,9 @@ class dev_results_builder(object):
         self.pass_fail = False
         self.results = []
 
-    def set_result(self, index, name, pass_fail, out_file_id, log_file_id):
+    def set_result(self, index, name, pass_fail, out_file_id, log_file_id, duration):
         self.results += [(False, "BAD DATA", None, None)] * (index - len(self.results) + 1)
-        self.results[index] = (pass_fail, name, out_file_id, log_file_id)
+        self.results[index] = (pass_fail, name, out_file_id, log_file_id, duration)
 
 
 class test_group_sessions(object):
@@ -424,7 +424,8 @@ class test_group_sessions(object):
             test_name   = row[6]
             test_file   = row[7]
             order_pos   = row[8]
-            serial_num  = row[9]
+            duration    = row[9]
+            serial_num  = row[10]
             if not test_name:
                 test_name = test_file
             if not pass_fail:
@@ -438,7 +439,7 @@ class test_group_sessions(object):
 
             serial_numbers[serial_num] = True
 
-            dev_results.set_result(order_pos, test_name, pass_fail, out_file_id, log_file_id)
+            dev_results.set_result(order_pos, test_name, pass_fail, out_file_id, log_file_id, duration)
 
         for dev in devs:
             dev_results = devs[dev]

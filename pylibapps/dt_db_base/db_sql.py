@@ -521,7 +521,7 @@ class sql_common(object):
         return f"""
         SELECT {self.dev_result_table_name}.id, {self.devices_table_name}.uid,
         pass_fail, output_file_id, log_file_id, Test_id, name, filename,
-        order_position, {self.devices_table_name}.serial_number
+        order_position, duration, {self.devices_table_name}.serial_number
         FROM {self.dev_result_table_name} JOIN test_group_entries
         ON test_group_entries.id = {self.dev_result_table_name}.group_entry_id
         JOIN tests ON tests.id = test_group_entries.Test_id

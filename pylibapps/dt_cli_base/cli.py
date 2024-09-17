@@ -66,7 +66,8 @@ def group_results(context, cmd_args):
 
 def print_session(session):
     print("=" * 72)
-    print("Time :", datetime.utcfromtimestamp(session.time_of_tests).strftime('%Y-%m-%d %H:%M:%S'))
+    dt = datetime.fromtimestamp(session.time_of_tests)
+    print("Time :", dt.isoformat(sep=" "), dt.astimezone().tzname())
     print("Overall :", "passed" if session.pass_fail else "FAILED")
     print("Session :", session.id)
     machine = session.get_tester_line_str()
@@ -81,11 +82,12 @@ def print_session(session):
 
         for result in dev_results.results:
             if len(result):
-                print('Test : "%s" (Output File:%s, Log File:%s) - %s' % (
+                print('Test : "%s" (Output File:%s, Log File:%s) - %s (%Gs)' % (
                         result[1],
                         "%u" % result[2] if result[2] else "NONE",
                         "%u" % result[3] if result[3] else "NONE",
-                        "passed" if result[0] else "FAILED"))
+                        "passed" if result[0] else "FAILED",
+                        dt_db_base.db_time(result[-2]) if result[-2] is not None else 0 ))
 
 
 def group_result(context, cmd_args):

@@ -782,7 +782,7 @@ class base_run_group_manager(object):
 
         for uuid, dev_results in session.devices.items():
             r = {}
-            for pass_fail, name, out_file_id, log_file_id in dev_results.results:
+            for pass_fail, name, out_file_id, log_file_id, duration in dev_results.results:
                 r[name] = { 'passfail': pass_fail,
                             'outfile': out_file_id,
                             'logfile': log_file_id}
