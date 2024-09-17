@@ -97,7 +97,7 @@ class double_scan_view(scan_box_base):
 
         builder = context.builder
         self.window                 = builder.get_object("BarcodeScan")
-        
+
         self.scan_parent_type_lab   = builder.get_object("scan_parent_type_lab")
         self.scan_parent_serial_lab = builder.get_object("scan_parent_serial_lab")
         self.scan_lab               = builder.get_object("scan_lab")
@@ -140,6 +140,9 @@ class double_scan_view(scan_box_base):
 
     def set_status(self, text):
         self.scan_status_lab.set_text(text)
+
+    def get_status(self):
+        return self.scan_status_lab.get_text()
 
     def close(self):
         if self._show_id:

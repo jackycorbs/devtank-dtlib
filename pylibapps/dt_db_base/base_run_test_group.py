@@ -36,9 +36,10 @@ _IPC_TIMEOUT = 1
 
 class ForceExitException(Exception):
     """Raise an exception exit is forced."""
-    def __init__(self, exit_code, *args):
-        super().__init__(args)
-        self.exit_code = exit_code
+    def __init__(self, exit_code, error_text="Forced Exit"):
+        super().__init__()
+        self.error_code = exit_code
+        self.error_text = error_text
 
 
 class EarlyExitException(Exception):
@@ -144,6 +145,12 @@ class base_run_group_context(object):
                 self.forced_exit()
         self.sub_test_count += 1
 
+
+    def do_error_code(self, post_fix, error_num, error_text):
+        self.store_value("SUB_FAIL_CODE_%s" % post_fix, error_num)
+        self.lib_inf.output_bad(f"[ERROR CODE: {error_num}] {error_text}")
+
+
     def _error_code_process(self, test_name, args, results, passfail, desc, **check_args):
         error_num = desc.get_error_no()
         error_text = desc.get_text(passfail, check_args)
@@ -152,8 +159,7 @@ class base_run_group_context(object):
             self.lib_inf.output_good(error_text)
         else:
             results[test_name] = False
-            self.store_value("SUB_FAIL_CODE_%u" % self.sub_test_count, error_num)
-            self.lib_inf.output_bad(f"[ERROR CODE: {error_num}] {error_text}")
+            self.do_error_code(str(self.sub_test_count), error_num, error_text)
 
         self._complete_check(args, passfail, error_text)
 
@@ -206,8 +212,9 @@ class base_run_group_context(object):
     def script_crash(self, filename):
         pass
 
-    def sleep(self, seconds):
-        self.lib_inf.output_normal("Sleeping for %G seconds" % seconds)
+    def sleep(self, seconds, silent=False):
+        if not silent:
+            self.lib_inf.output_normal("Sleeping for %G seconds" % seconds)
         time.sleep(seconds)
 
 
@@ -332,13 +339,15 @@ def _thread_test(test_context):
                         dev.start_test(name)
                     if hasattr(dev, "set_test_functions"):
                         dev.set_test_functions(test_check, threshold_check, exact_check, store_value)
+                    bus_con.poll_devices()
                     execfile(test_file, test_exec_map)
                     duration = time.time() - start_time
-                except ForceExitException:
+                except ForceExitException as e:
                     duration = time.time() - start_time
                     results[name] = False
                     lib_inf.output_bad("Forced Exit")
-                    store_value("SUB_FAIL_N", "SCRIPT EXITED")
+                    test_context.do_error_code('N', e.error_code, e.error_text)
+                    full_stop = True
                 except EarlyExitException:
                     duration = time.time() - start_time
                 except Exception as e:
@@ -352,12 +361,12 @@ def _thread_test(test_context):
                     lib_inf.output_bad("Backtrace:")
                     for line in traceback.format_exc().splitlines():
                         lib_inf.output_bad(line)
+                    full_stop = True
 
                 post_dev_uuid = dev.uuid.rstrip('\0')
                 if dev_uuid != post_dev_uuid:
                     test_context.send_cmd("SET_UUID %s" % post_dev_uuid)
                     dev_uuid = post_dev_uuid
-                bus_con.poll_devices()
                 lib_inf.enable_info_msgs(False)
 
                 test_pass = results.get(name, False)
@@ -368,6 +377,8 @@ def _thread_test(test_context):
 
                 if not test_pass and args.get('exit_on_fail', False):
                     full_stop = True
+
+                if full_stop:
                     break
 
             test_context.send_cmd("STATUS_DEV %s" % str(bool(dev_pass)))
