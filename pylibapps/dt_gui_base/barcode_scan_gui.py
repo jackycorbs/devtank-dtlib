@@ -76,7 +76,17 @@ class scan_box_base(object):
             self._scan_B_id = None
 
     def set_enable(self, enable):
-        self.scan_barcodeA_entry.set_sensitive(enable)
+        if enable:
+            if self.scan_barcodeA_entry.get_sensitive() or \
+               self.scan_barcodeB_entry.get_sensitive():
+                pass
+            else:
+                self.reset_scan()
+        else:
+            self.scan_barcodeA_entry.set_text("")
+            self.scan_barcodeB_entry.set_text("")
+            self.scan_barcodeA_entry.set_sensitive(False)
+            self.scan_barcodeB_entry.set_sensitive(False)
 
     def reset_scan(self):
         self.scan_barcodeA_entry.set_text("")
