@@ -353,7 +353,6 @@ def _thread_test(test_context):
                 except Exception as e:
                     duration = time.time() - start_time
                     results[name] = False
-                    test_context.script_crash(name)
                     store_value("SUB_FAIL_N", "SCRIPT CRASH")
                     lib_inf.output_bad("Exception:")
                     for line in str(e).splitlines():
@@ -361,6 +360,7 @@ def _thread_test(test_context):
                     lib_inf.output_bad("Backtrace:")
                     for line in traceback.format_exc().splitlines():
                         lib_inf.output_bad(line)
+                    test_context.script_crash(name)
                     full_stop = True
 
                 post_dev_uuid = dev.uuid.rstrip('\0')
