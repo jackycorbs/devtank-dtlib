@@ -271,6 +271,8 @@ def run_group(context, cmd_args, submit=True):
     print("=" * 72)
     if submit:
         run_group_man.submit()
+    if not run_group_man.is_pass:
+        sys.exit(-1)
 
 
 def dry_run_group(context, cmd_args):
