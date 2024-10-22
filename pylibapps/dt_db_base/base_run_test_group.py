@@ -347,6 +347,7 @@ def _thread_test(test_context):
                     results[name] = False
                     lib_inf.output_bad("Forced Exit")
                     test_context.do_error_code('N', e.error_code, e.error_text)
+                    store_value("SUB_FAIL_N", e.error_text)
                     full_stop = True
                 except EarlyExitException:
                     duration = time.time() - start_time
