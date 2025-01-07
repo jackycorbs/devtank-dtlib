@@ -21,34 +21,34 @@ class db_cursor(object):
         except Exception as e:
             self._parent.fail_catch(e)
 
-    def _execute(self, cmd):
+    def _execute(self, cmd, params=()):
         self._parent._last_used = time.time()
         try:
-            self._c.execute(cmd)
-            _db_debug_print("SQL : '%s'" % cmd)
+            self._c.execute(cmd, params)
+            _db_debug_print("SQL : '%s' (%s)" % (cmd, str(params)))
         except Exception as e:
-            _logger.error('SQL "%s" failed' % cmd)
+            _logger.error('SQL "%s" (%s) failed' % (cmd, str(params)))
             self._parent.fail_catch(e)
 
-    def query(self, cmd):
-        self._execute(cmd)
+    def query(self, cmd, params=()):
+        self._execute(cmd, params=params)
         try:
             return self._c.fetchall()
         except Exception as e:
             self._parent.fail_catch(e)
 
-    def query_one(self, cmd):
-        self._execute(cmd)
+    def query_one(self, cmd, params=()):
+        self._execute(cmd, params=params)
         try:
             return self._c.fetchone()
         except Exception as e:
             self._parent.fail_catch(e)
 
-    def update(self, cmd):
-        self._execute(cmd)
+    def update(self, cmd, params=()):
+        self._execute(cmd, params=params)
 
-    def insert(self, cmd):
-        self._execute(cmd)
+    def insert(self, cmd, params=()):
+        self._execute(cmd, params=params)
         return self._c.lastrowid
 
 
@@ -86,21 +86,21 @@ class db_inf(object):
         except Exception as e:
             self._parent.fail_catch(e)
 
-    def query(self, cmd):
-        return self.cursor().query(cmd)
+    def query(self, cmd, params=()):
+        return self.cursor().query(cmd, params=params)
 
-    def query_one(self, cmd):
-        return self.cursor().query_one(cmd)
+    def query_one(self, cmd, params=()):
+        return self.cursor().query_one(cmd, params=params)
 
-    def update(self, cmd):
+    def update(self, cmd, params=()):
         c = self.cursor()
-        c.update(cmd)
+        c.update(cmd, params=params)
         if self._current is None:
             self.commit()
 
-    def insert(self, cmd):
+    def insert(self, cmd, params=()):
         c = self.cursor()
-        r = c.insert(cmd)
+        r = c.insert(cmd, params=params)
         if self._current is None:
             self.commit()
         return r
