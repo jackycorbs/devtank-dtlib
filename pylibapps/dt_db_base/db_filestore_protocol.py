@@ -79,7 +79,7 @@ class smb_transferer(object):
 
     def _safe_name(self, filename):
         filename = "".join(
-            map(lambda x: "_" if x in ':*/\?<>"|' else x, filename))
+            map(lambda x: "_" if x in ':*/\\?<>"|' else x, filename))
         return urllib.pathname2url(filename) # Spaces are safe like this
 
     def upload(self, filepath, file_id):
