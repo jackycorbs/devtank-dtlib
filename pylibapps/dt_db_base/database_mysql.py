@@ -15,8 +15,8 @@ class mysql_db_cursor(db_cursor):
     def __init__(self, parent):
         db_cursor.__init__(self, parent)
 
-    def insert(self, cmd):
-        self._execute(cmd)
+    def insert(self, cmd, params=()):
+        self._execute(cmd, params)
         ret = self._c.lastrowid
         return ret
 
