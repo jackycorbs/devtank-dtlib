@@ -94,13 +94,13 @@ class db_inf(object):
 
     def update(self, cmd, params=()):
         c = self.cursor()
-        c.update(cmd, params=params)
+        c.update(cmd, params)
         if self._current is None:
             self.commit()
 
     def insert(self, cmd, params=()):
         c = self.cursor()
-        r = c.insert(cmd, params=params)
+        r = c.insert(cmd, params)
         if self._current is None:
             self.commit()
         return r
