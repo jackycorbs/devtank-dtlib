@@ -119,10 +119,15 @@ class sftp_connection(object):
             port = int(file_store_host[split_pos+1:])
             file_store_host = file_store_host[:split_pos]
 
+        username=db_def.get("sftp_user",None)
+        password=db_def.get("sftp_password",None)
+
         ssh.connect(file_store_host,
-                    username=db_def.get("sftp_user",None),
-                    password=db_def.get("sftp_password",None),
-                    port=port)
+                    username=username,
+                    password=password,
+                    port=port,
+                    allow_agent=False if password else True,
+                    look_for_keys=False if password else True)
         self.ssh = ssh
         self.sftp_con = ssh.open_sftp()
 
