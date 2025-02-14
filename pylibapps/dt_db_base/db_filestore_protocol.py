@@ -126,8 +126,8 @@ class sftp_connection(object):
                     username=username,
                     password=password,
                     port=port,
-                    allow_agent=False,
-                    look_for_keys=False)
+                    allow_agent=False if password else True,
+                    look_for_keys=False if password else True)
         self.ssh = ssh
         self.sftp_con = ssh.open_sftp()
 
