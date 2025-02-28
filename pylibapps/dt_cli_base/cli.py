@@ -466,6 +466,17 @@ def testers_result(context, cmd_args):
         print(f"Machine {tester_id} not found.")
 
 
+def db_upgrade5to6(context, cmd_args):
+    db = context.db
+    db.db.update("ALTER TABLE test_group_results ADD is_pass INT")
+    db.db.update(f"""
+    UPDATE test_group_results SET is_pass = (
+        SELECT MIN(pass_fail) FROM {db.sql.dev_result_table_name}
+        WHERE group_result_id = test_group_results.id
+        GROUP BY group_result_id)""")
+    db.db.update('UPDATE "values" SET value_int=6 WHERE id=1')
+
+
 generic_cmds = {
     "update_tests"      : (update_tests,      "Update <groups yaml> in database."),
     "list_groups"       : (list_groups,       "List active groups."),
@@ -489,6 +500,7 @@ generic_cmds = {
     "list_testers"      : (list_testers,      "List all testers."),
     "testers_results"   : (testers_results,   "Count session count of <tester ID>."),
     "testers_result"    : (testers_result,    "Get sessions of <tester ID> from <offset>."),
+    "db_upgrade5to6"    : (db_upgrade5to6,    "Upgrade a DB from v5 to v6."),
 }
 
 
