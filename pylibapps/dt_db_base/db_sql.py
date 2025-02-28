@@ -453,18 +453,30 @@ class sql_common(object):
     #                                                     #
     #######################################################
 
-    def add_test_group_results(self, group_id, machine_id, now):
+    def add_test_group_results(self, group_id, machine_id, now, is_pass=None):
         if self.db_version > 3:
             tz = tzlocal()
             tz_name = tz.tzname(datetime.datetime.now(tz))
             sw_git_sha1 = dt_get_build_info()[1][:7]
-            return f"""
-            INSERT INTO test_group_results
-            (group_id, time_Of_tests, logs_tz_name, tester_machine_id, sw_git_sha1)
-            VALUES ({int(group_id)},
-            {int(now)}, '{db_safe_str(tz_name)}',
-            {_id_null(machine_id)}, '{db_safe_str(sw_git_sha1)}')
-            """
+            if self.db_version > 5:
+                assert isinstance(is_pass, bool), "Invalid is_pass given."
+                return f"""
+                    INSERT INTO test_group_results
+                    (group_id, time_Of_tests, logs_tz_name,
+                     tester_machine_id, sw_git_sha1, is_pass)
+                    VALUES ({int(group_id)},
+                    {int(now)}, '{db_safe_str(tz_name)}',
+                    {_id_null(machine_id)}, '{db_safe_str(sw_git_sha1)}',
+                    {int(is_pass)})
+                    """
+            else:
+                return f"""
+                    INSERT INTO test_group_results
+                    (group_id, time_Of_tests, logs_tz_name, tester_machine_id, sw_git_sha1)
+                    VALUES ({int(group_id)},
+                    {int(now)}, '{db_safe_str(tz_name)}',
+                    {_id_null(machine_id)}, '{db_safe_str(sw_git_sha1)}')
+                    """
         else:
             return f"""
             INSERT INTO test_group_results (group_id, Time_Of_tests)

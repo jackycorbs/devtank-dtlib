@@ -239,10 +239,8 @@ class test_group_obj(db_obj):
         machine = self.db.get_own_machine()
         machine_id = machine.id if machine else None
 
-        cmd = sql.add_test_group_results(self.id, machine_id, now)
-        results_id = c.insert(cmd)
-
         result_values = self.db.result_values
+        is_pass = True
 
         files = []
         for dev_uuid, uuid_results in results.items():
@@ -252,10 +250,14 @@ class test_group_obj(db_obj):
                 if test_data:
                     output = test_data.get('outfile', None)
                     log = test_data.get('logfile', None)
+                    is_pass &= test_data.get('passfail', False)
                     if output:
                         files += [output]
                     if log:
                         files += [log]
+
+        cmd = sql.add_test_group_results(self.id, machine_id, now, is_pass)
+        results_id = c.insert(cmd)
 
         file_ids = self.db._add_files(c, files)
 
@@ -335,7 +337,7 @@ class test_group_obj(db_obj):
                     return False
         if not db_cursor:
             db.commit()
-        return True
+        return results_id
 
     def get_sessions_count(self):
         cmd = self.db.sql.get_test_group_results_count(self.id)
