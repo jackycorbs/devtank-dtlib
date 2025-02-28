@@ -468,6 +468,7 @@ def testers_result(context, cmd_args):
 
 def db_upgrade5to6(context, cmd_args):
     db = context.db
+    assert db.version == 5, "Wrong DB version"
     db.db.update("ALTER TABLE test_group_results ADD is_pass INT")
     db.db.update(f"""
     UPDATE test_group_results SET is_pass = (
