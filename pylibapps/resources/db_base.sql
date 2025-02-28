@@ -79,6 +79,7 @@ CREATE TABLE "test_group_results" (
 	"logs_tz_name" VARCHAR(32),
 	"tester_machine_id" INTEGER,
 	"sw_git_sha1" VARCHAR(8),
+	"is_pass" INT NOT NULL,
 	FOREIGN KEY("group_id") REFERENCES "test_groups" ("id"),
 	FOREIGN KEY("tester_machine_id") REFERENCES "tester_machines" ("id")
 );
@@ -91,7 +92,7 @@ CREATE TABLE "tar_files" (
 	FOREIGN KEY("parent_file_id") REFERENCES "files" ("id")
 );
 
-INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 5);
+INSERT INTO "values" ("name", "valid_from", "value_int") VALUES('version', 0, 6);
 INSERT INTO "values" ("name", "valid_from") VALUES('settings', 0);
 INSERT INTO "values" ("name", "parent_id", "valid_from") VALUES('defaults', 2, 0);
 INSERT INTO "values" ("name", "valid_from") VALUES('tests_properties', 0);
