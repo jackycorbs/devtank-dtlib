@@ -132,7 +132,9 @@ class sql_common(object):
         ORDER BY time_of_tests DESC LIMIT 1
         """
 
-    def get_dev_last_result(self, dev_id, group_name):
+    def get_dev_last_result(self, dev_id, group_name, do_like=False):
+        cmp_str = "test_groups.name LIKE '%{db_safe_str(group_name)}'%" \
+            if do_like else "test_groups.name = '{db_safe_str(group_name)}'"
         return f"""
         SELECT test_group_results.time_of_tests,
         MIN({self.dev_result_table_name}.pass_fail)
@@ -142,7 +144,7 @@ class sql_common(object):
         JOIN test_groups ON
         test_groups.id = test_group_results.group_id
         WHERE {self.dev_result_table_name}.{self.device_key_name} = {int(dev_id)}
-        AND test_groups.name = '{db_safe_str(group_name)}'
+        AND {cmp_str}
         GROUP BY test_group_results.time_of_tests
         ORDER BY test_group_results.time_of_tests
         DESC LIMIT 1

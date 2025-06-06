@@ -61,8 +61,8 @@ class db_base_dev(db_child):
         self.db.db.update(cmd)
         self.uuid = new_uuid
 
-    def get_last_result(self, group_name):
-        cmd = self.db.sql.get_dev_last_result(self.id, group_name)
+    def get_last_result(self, group_name, do_like=False):
+        cmd = self.db.sql.get_dev_last_result(self.id, group_name, do_like)
         row = self.db.db.query_one(cmd)
         if row is None:
             return None
